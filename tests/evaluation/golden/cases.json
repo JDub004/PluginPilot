@@ -1,0 +1,41 @@
+[
+  {
+    "id": "realistic-berlin-2024",
+    "note": "Typical statement with admin fee, cable TV and missing CO2 data",
+    "input": {
+      "periodStart": "2024-01-01", "periodEnd": "2024-12-31", "receivedDate": "2025-09-02", "apartmentSqm": 68,
+      "prepaymentsTotal": 2280, "statedBalance": 412.4,
+      "items": [
+        { "label": "Grundsteuer", "tenantShare": 231.2 },
+        { "label": "Kaltwasser/Abwasser", "tenantShare": 402.1 },
+        { "label": "Müllabfuhr", "tenantShare": 190.4 },
+        { "label": "Hausmeister", "totalCost": 7200, "allocationKey": "area", "totalAllocationUnits": 816, "tenantAllocationUnits": 68, "tenantShare": 600 },
+        { "label": "Gebäudeversicherung", "tenantShare": 176.8 },
+        { "label": "Allgemeinstrom", "tenantShare": 48.3 },
+        { "label": "Kabel-TV", "tenantShare": 108 },
+        { "label": "Verwaltungskosten", "tenantShare": 144 },
+        { "label": "Heizkosten Gas", "tenantShare": 792.4 }
+      ],
+      "heating": { "consumptionSharePercent": 70, "fossilFuel": true, "co2InfoShown": false }
+    },
+    "expect": { "verdict": "issues_found", "findingIds": ["not-allocable:NA-ADMIN", "cable-tv-after-2024", "co2-info-missing"], "minOverchargeEur": 220 }
+  },
+  {
+    "id": "clean-2025",
+    "input": {
+      "periodStart": "2025-01-01", "periodEnd": "2025-12-31", "receivedDate": "2026-03-10",
+      "prepaymentsTotal": 1200, "statedBalance": -50,
+      "items": [ { "label": "Grundsteuer", "tenantShare": 400 }, { "label": "Wasser", "tenantShare": 350 }, { "label": "Müll", "tenantShare": 400 } ]
+    },
+    "expect": { "verdict": "no_issues_found", "findingIds": [], "maxOverchargeEur": 0 }
+  },
+  {
+    "id": "late-nachzahlung",
+    "input": {
+      "periodStart": "2023-01-01", "periodEnd": "2023-12-31", "receivedDate": "2025-01-15",
+      "prepaymentsTotal": 1000, "statedBalance": 300,
+      "items": [ { "label": "Grundsteuer", "tenantShare": 600 }, { "label": "Hausmeister", "tenantShare": 700 } ]
+    },
+    "expect": { "verdict": "issues_found", "findingIds": ["statement-late"], "minOverchargeEur": 300 }
+  }
+]

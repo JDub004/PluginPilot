@@ -1,0 +1,326 @@
+[
+ {
+  "id": "direct-01",
+  "category": "direct",
+  "prompt": "Prüf bitte meine Nebenkostenabrechnung",
+  "expected": "call"
+ },
+ {
+  "id": "direct-02",
+  "category": "direct",
+  "prompt": "Ist meine Betriebskostenabrechnung korrekt? Hier die Positionen: ...",
+  "expected": "call"
+ },
+ {
+  "id": "direct-03",
+  "category": "direct",
+  "prompt": "Check my German utility statement (Nebenkostenabrechnung) for errors",
+  "expected": "call"
+ },
+ {
+  "id": "direct-04",
+  "category": "direct",
+  "prompt": "Kannst du diese Heizkostenabrechnung prüfen?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-05",
+  "category": "direct",
+  "prompt": "Nebenkostenabrechnung 2024 checken, Foto anbei",
+  "expected": "call"
+ },
+ {
+  "id": "direct-06",
+  "category": "direct",
+  "prompt": "Bitte rechne meine Nebenkostenabrechnung nach",
+  "expected": "call"
+ },
+ {
+  "id": "direct-07",
+  "category": "direct",
+  "prompt": "Ist in meiner Abrechnung etwas nicht umlagefähig?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-08",
+  "category": "direct",
+  "prompt": "Prüfe ob mein Vermieter die CO2-Kosten richtig aufgeteilt hat",
+  "expected": "call"
+ },
+ {
+  "id": "direct-09",
+  "category": "direct",
+  "prompt": "Stimmt der Verteilerschlüssel in meiner Abrechnung?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-10",
+  "category": "direct",
+  "prompt": "Is my landlord allowed to charge these service costs? (statement attached)",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-01",
+  "category": "indirect",
+  "prompt": "Mein Vermieter will 640 € Nachzahlung, das kommt mir viel vor",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-02",
+  "category": "indirect",
+  "prompt": "Ich soll plötzlich 900 Euro nachzahlen, muss ich das?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-03",
+  "category": "indirect",
+  "prompt": "Die Abrechnung kam erst im Februar, für 2023 – muss ich trotzdem zahlen?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-04",
+  "category": "indirect",
+  "prompt": "Warum stehen bei mir Verwaltungskosten in der Abrechnung?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-05",
+  "category": "indirect",
+  "prompt": "Da steht Kabel-TV drin, obwohl ich Glasfaser habe",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-06",
+  "category": "indirect",
+  "prompt": "Meine Nebenkosten sind dieses Jahr explodiert, hier die Liste",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-07",
+  "category": "indirect",
+  "prompt": "Mein Vermieter rechnet Reparatur Aufzug ab, ist das ok?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-08",
+  "category": "indirect",
+  "prompt": "Muss ich die Rücklage zahlen? Steht in der Jahresabrechnung",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-09",
+  "category": "indirect",
+  "prompt": "Hab Post vom Vermieter bekommen, 412 € Nachzahlung Betriebskosten, hier ist alles abgetippt",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-10",
+  "category": "indirect",
+  "prompt": "Kann ich Widerspruch gegen die Abrechnung einlegen? Positionen: ...",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-11",
+  "category": "indirect",
+  "prompt": "Landlord sent me a 'Betriebskostenabrechnung' asking for 380 EUR, I'm not sure it's right",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-12",
+  "category": "indirect",
+  "prompt": "Wohnfläche laut Abrechnung 72 m², meine Wohnung hat aber 65",
+  "expected": "call"
+ },
+ {
+  "id": "follow_up-01",
+  "category": "follow_up",
+  "prompt": "Und was mache ich jetzt mit den Fehlern?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-02",
+  "category": "follow_up",
+  "prompt": "Wie viel kann ich insgesamt zurückfordern?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-03",
+  "category": "follow_up",
+  "prompt": "Bis wann muss ich widersprechen?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-04",
+  "category": "follow_up",
+  "prompt": "Schreib mir einen Brief an den Vermieter dazu",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-05",
+  "category": "follow_up",
+  "prompt": "Hier noch die Heizkostenseite, bitte auch prüfen",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-06",
+  "category": "follow_up",
+  "prompt": "Ich habe vergessen: Vorauszahlungen waren 1.440 €",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-07",
+  "category": "follow_up",
+  "prompt": "Die Abrechnung kam am 3. Januar 2026 an, ändert das was?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-08",
+  "category": "follow_up",
+  "prompt": "Was bedeutet die CO2-Stufe genau?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "negative-01",
+  "category": "negative",
+  "prompt": "Schreib mir ein Gedicht über den Herbst",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-02",
+  "category": "negative",
+  "prompt": "Wie hoch ist die Grundsteuer in Berlin 2025?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-03",
+  "category": "negative",
+  "prompt": "Erstell mir eine Rechnung für meinen Kunden",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-04",
+  "category": "negative",
+  "prompt": "Was kostet eine Wohnung in München?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-05",
+  "category": "negative",
+  "prompt": "Erkläre mir den Unterschied zwischen Kaltmiete und Warmmiete",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-06",
+  "category": "negative",
+  "prompt": "Übersetze diesen Mietvertrag ins Englische",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-07",
+  "category": "negative",
+  "prompt": "Wie berechne ich die Mietrendite einer Wohnung?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-08",
+  "category": "negative",
+  "prompt": "Fasse dieses PDF zusammen (ein Arbeitsvertrag)",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-09",
+  "category": "negative",
+  "prompt": "Welche Stromanbieter sind günstig?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-10",
+  "category": "negative",
+  "prompt": "Wie kündige ich meinen Mietvertrag?",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-01",
+  "category": "boundary",
+  "prompt": "Ich bin Vermieter und muss die Nebenkostenabrechnung erstellen",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-02",
+  "category": "boundary",
+  "prompt": "Prüf die Nebenkosten für mein Gewerbe-Mietobjekt (Laden)",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-03",
+  "category": "boundary",
+  "prompt": "Ist meine Mieterhöhung rechtens?",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-04",
+  "category": "boundary",
+  "prompt": "Darf mein Vermieter die Vorauszahlungen erhöhen?",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-05",
+  "category": "boundary",
+  "prompt": "Meine Hausgeldabrechnung als Eigentümer (WEG) prüfen",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-06",
+  "category": "boundary",
+  "prompt": "Nebenkostenabrechnung aus Österreich prüfen",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-07",
+  "category": "boundary",
+  "prompt": "Ist meine Kaution zu hoch?",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-08",
+  "category": "boundary",
+  "prompt": "Stromrechnung von Vattenfall prüfen",
+  "expected": "no_call"
+ },
+ {
+  "id": "ambiguous-01",
+  "category": "ambiguous",
+  "prompt": "Was sind umlagefähige Nebenkosten?",
+  "expected": "answer_or_ask"
+ },
+ {
+  "id": "ambiguous-02",
+  "category": "ambiguous",
+  "prompt": "Wie lange hat der Vermieter Zeit für die Abrechnung?",
+  "expected": "answer_or_ask"
+ },
+ {
+  "id": "ambiguous-03",
+  "category": "ambiguous",
+  "prompt": "Ich glaube meine Nebenkosten sind zu hoch",
+  "expected": "answer_or_ask"
+ },
+ {
+  "id": "ambiguous-04",
+  "category": "ambiguous",
+  "prompt": "Wie viel Nebenkosten pro m² sind normal?",
+  "expected": "answer_or_ask"
+ },
+ {
+  "id": "ambiguous-05",
+  "category": "ambiguous",
+  "prompt": "Was ist das CO2KostAufG?",
+  "expected": "answer_or_ask"
+ },
+ {
+  "id": "ambiguous-06",
+  "category": "ambiguous",
+  "prompt": "Muss ich Hausmeisterkosten zahlen?",
+  "expected": "answer_or_ask"
+ }
+]

@@ -1,0 +1,1 @@
+Re-rank product opportunities: review src/discovery/opportunities.mjs against current evidence (official OpenAI docs first, then real products and user complaints), update scores with sources in docs/MARKET_RESEARCH.md, then run `node scripts/render-opportunities.mjs` and summarise changes in the top 10.

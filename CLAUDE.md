@@ -21,3 +21,6 @@ Goal: find a painful recurring workflow where ChatGPT is the right interface, bu
 ## Repo map
 - `docs/` — research and strategy. `docs/OPPORTUNITIES.md` is generated: `node scripts/render-opportunities.mjs`.
 - `src/discovery/` — opportunity dataset and scoring (seed of the `/discover` engine).
+- `src/domain/nebenkosten/` — pure rule engine. Bump `RULES_VERSION` and add tests for any legal change.
+- `src/tools/`, `src/mcp/`, `src/http.ts` — MCP surface. Keep one primary tool.
+- Commands: `npm test`, `npm run eval`, `npm run typecheck`, `npm run build`.

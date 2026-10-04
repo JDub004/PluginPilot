@@ -26,48 +26,51 @@ async function client(): Promise<Client> {
 }
 
 describe('MCP over HTTP', () => {
-  it('lists exactly one read-only tool', async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const death = new Date(Date.now() - 9 * 86_400_000).toISOString().slice(0, 10);
+
+  it('lists exactly one read-only tool linked to the widget', async () => {
     const c = await client();
     const { tools } = await c.listTools();
-    expect(tools.map((t) => t.name)).toEqual(['check_utility_statement']);
+    expect(tools.map((t) => t.name)).toEqual(['plan_after_death']);
     expect(tools[0]?.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false, openWorldHint: false });
-    expect(tools[0]?.outputSchema).toBeDefined();
+    expect(tools[0]?._meta).toMatchObject({ ui: { resourceUri: 'ui://trauerfall-lotse/timeline-v1.html' } });
     await c.close();
   });
 
-  it('returns structured findings', async () => {
+  it('serves the timeline widget as an MCP Apps resource', async () => {
+    const c = await client();
+    const res = await c.readResource({ uri: 'ui://trauerfall-lotse/timeline-v1.html' });
+    const content = res.contents[0] as { mimeType: string; text: string };
+    expect(content.mimeType).toBe('text/html;profile=mcp-app');
+    expect(content.text).toContain('ui/notifications/tool-result');
+    expect(content.text).not.toContain('innerHTML');
+    await c.close();
+  });
+
+  it('returns a structured plan', async () => {
     const c = await client();
     const res = await c.callTool({
-      name: 'check_utility_statement',
-      arguments: {
-        periodStart: '2024-01-01',
-        periodEnd: '2024-12-31',
-        receivedDate: '2025-04-10',
-        items: [
-          { label: 'Grundsteuer', tenantShare: 180 },
-          { label: 'Verwaltungskosten', tenantShare: 95 },
-        ],
-      },
+      name: 'plan_after_death',
+      arguments: { dateOfDeath: death, survivingSpouse: true, deceasedReceivedPension: true, rentedApartment: true },
     });
-    const sc = res.structuredContent as { verdict: string; estimatedOverchargeEur: number; objectionDeadline: string };
-    expect(sc.verdict).toBe('issues_found');
-    expect(sc.estimatedOverchargeEur).toBe(95);
-    expect(sc.objectionDeadline).toBe('2026-04-30');
+    const sc = res.structuredContent as { steps: { id: string }[]; nextDeadline?: { id: string } };
+    expect(sc.steps.map((s) => s.id)).toEqual(expect.arrayContaining(['standesamt', 'sterbevierteljahr', 'witwenrente', 'mietvertrag']));
+    expect(sc.nextDeadline?.id).toBe('sterbevierteljahr');
     await c.close();
   });
 
   it('rejects invalid input without leaking internals', async () => {
     const c = await client();
-    const res = await c.callTool({ name: 'check_utility_statement', arguments: { periodStart: 'gestern', items: [] } });
+    const res = await c.callTool({ name: 'plan_after_death', arguments: { dateOfDeath: '2999-01-01' } });
     expect(res.isError).toBe(true);
     await c.close();
   });
 
-  it('logs analytics without statement content', () => {
+  it('logs analytics without situation content', () => {
     const serialized = JSON.stringify(events);
-    expect(serialized).toContain('check_utility_statement');
-    expect(serialized).not.toContain('Verwaltungskosten');
-    expect(serialized).not.toContain('Grundsteuer');
+    expect(serialized).toContain('plan_after_death');
+    expect(serialized).not.toContain(death);
   });
 
   it('rejects oversized bodies with 413', async () => {

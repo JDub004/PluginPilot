@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#ffffff; --fg:#1d1d1f; --muted:#6b6b70; --line:#e3e3e8; --card:#f7f7f9; --crit:#b42318; --critbg:#fef3f2; --ok:#027a48; --accent:#3e4c8a; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1b1b1d; --fg:#ececf0; --muted:#a0a0a8; --line:#34343a; --card:#242428; --crit:#f97066; --critbg:#3a1d1b; --ok:#47cd89; --accent:#a4b0e8; } }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  h1 { font-size:16px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 14px; }
+  .next { border:1px solid var(--crit); background:var(--critbg); border-radius:10px; padding:10px 12px; margin-bottom:16px; }
+  .next b { color:var(--crit); }
+  .phase { margin:18px 0 6px; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  ol { list-style:none; margin:0; padding:0 0 0 18px; border-left:2px solid var(--line); }
+  li { position:relative; margin:0 0 10px; }
+  li::before { content:""; position:absolute; left:-25px; top:12px; width:12px; height:12px; border-radius:50%; background:var(--bg); border:2px solid var(--muted); }
+  li.crit::before { border-color:var(--crit); background:var(--crit); }
+  details { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 12px; }
+  summary { cursor:pointer; list-style:none; display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  summary::-webkit-details-marker { display:none; }
+  .t { font-weight:600; }
+  .due { white-space:nowrap; font-size:12px; color:var(--muted); }
+  .due.soon { color:var(--crit); font-weight:600; }
+  .due.over { color:#fff; background:var(--crit); padding:1px 6px; border-radius:6px; }
+  .body { margin-top:8px; color:var(--fg); }
+  .body p { margin:4px 0; }
+  .k { color:var(--muted); }
+  .foot { margin-top:16px; padding-top:10px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+  .support { color:var(--fg); font-size:13px; margin-bottom:6px; }
+  .empty { color:var(--muted); }
+</style>
+</head>
+<body>
+<div id="root"><p class="empty">Fahrplan wird geladen …</p></div>
+<script>
+(function () {
+  var PHASES = { sofort: 'Sofort', erste_woche: 'Erste Woche', erste_wochen: 'Erste Wochen und Monate', spaeter: 'Später' };
+  var root = document.getElementById('root');
+
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) { if (k === 'class') n.className = attrs[k]; else n.setAttribute(k, attrs[k]); }
+    (children || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function fmt(d) { var p = String(d).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : String(d); }
+  function dueText(s) {
+    if (s.overdue) return { cls: 'due over', text: 'Frist war ' + fmt(s.dueDate) + ' · schon erledigt?' };
+    if (s.dueDate && typeof s.daysLeft === 'number') {
+      var left = s.daysLeft === 0 ? 'heute' : s.daysLeft === 1 ? 'morgen' : 'noch ' + s.daysLeft + ' Tage';
+      return { cls: s.daysLeft <= 7 && s.critical ? 'due soon' : 'due', text: 'bis ' + fmt(s.dueDate) + ' · ' + left };
+    }
+    return { cls: 'due', text: String(s.dueLabel || '') };
+  }
+
+  // All values are rendered as text nodes only (untrusted input).
+  function render(plan) {
+    if (!plan || !Array.isArray(plan.steps)) return;
+    root.textContent = '';
+    root.appendChild(el('h1', null, ['Ihr Fahrplan nach dem Todesfall']));
+    root.appendChild(el('p', { class: 'sub' }, ['Sterbedatum ' + fmt(plan.dateOfDeath) + ' · Stand ' + fmt(plan.today) + ' · ' + plan.steps.length + ' Schritte']));
+    if (plan.nextDeadline) {
+      var n = plan.nextDeadline;
+      root.appendChild(el('div', { class: 'next' }, [el('b', null, ['Nächste wichtige Frist: ']), n.title + ' – ' + dueText(n).text]));
+    }
+    Object.keys(PHASES).forEach(function (ph) {
+      var steps = plan.steps.filter(function (s) { return s.phase === ph; });
+      if (!steps.length) return;
+      root.appendChild(el('div', { class: 'phase' }, [PHASES[ph]]));
+      var ol = el('ol');
+      steps.forEach(function (s) {
+        var d = dueText(s);
+        var body = el('div', { class: 'body' }, [
+          el('p', null, [s.why]),
+          el('p', null, [el('span', { class: 'k' }, ['Wo: ']), s.office]),
+          s.documents && s.documents.length ? el('p', null, [el('span', { class: 'k' }, ['Unterlagen: ']), s.documents.join(', ')]) : null,
+          s.legalBasis ? el('p', null, [el('span', { class: 'k' }, ['Grundlage: ']), s.legalBasis]) : null,
+        ]);
+        ol.appendChild(el('li', { class: s.critical ? 'crit' : '' }, [
+          el('details', null, [el('summary', null, [el('span', { class: 't' }, [s.title]), el('span', { class: d.cls }, [d.text])]), body]),
+        ]));
+      });
+      root.appendChild(ol);
+    });
+    root.appendChild(el('div', { class: 'foot' }, [el('div', { class: 'support' }, [plan.support]), plan.disclaimer]));
+    reportSize();
+  }
+
+  // --- MCP Apps bridge (postMessage JSON-RPC with the host) ---------------------------------
+  var nextId = 1;
+  function send(msg) { window.parent.postMessage(Object.assign({ jsonrpc: '2.0' }, msg), '*'); }
+  function reportSize() {
+    send({ method: 'ui/notifications/size-changed', params: { height: Math.ceil(document.documentElement.scrollHeight) } });
+  }
+  window.addEventListener('message', function (event) {
+    if (event.source !== window.parent) return;
+    var m = event.data;
+    if (!m || m.jsonrpc !== '2.0') return;
+    if (m.id === 1 && m.result) send({ method: 'ui/notifications/initialized', params: {} });
+    if (m.method === 'ui/notifications/tool-result') render(m.params && m.params.structuredContent);
+  });
+  send({ id: nextId++, method: 'ui/initialize', params: { appInfo: { name: 'trauerfall-lotse', version: '0.1.0' }, appCapabilities: {}, protocolVersion: '2026-01-26' } });
+  // Legacy ChatGPT fallback.
+  if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput);
+  window.addEventListener('openai:set_globals', function () { if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput); });
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(reportSize).observe(document.body);
+})();
+</script>
+</body>
+</html>

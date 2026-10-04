@@ -1,16 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerCheckUtilityStatement } from '../tools/checkUtilityStatement.js';
+import { registerPlanAfterDeath } from '../tools/planAfterDeath.js';
 
-export function createServer(): McpServer {
+export function createServer(now?: () => string): McpServer {
   const server = new McpServer(
-    { name: 'nebenkosten-check', version: '0.1.0' },
+    { name: 'trauerfall-lotse', version: '0.1.0' },
     {
       instructions:
-        'Checks German utility statements (Nebenkostenabrechnung) with deterministic rules. ' +
-        'Extract all cost lines from the statement the user provides, then call check_utility_statement. ' +
-        'Present errors first with the legal basis, then the objection deadline. Never present results as legal advice.',
+        'Helps bereaved people in Germany with the official steps after a death. Be gentle and brief. ' +
+        'Ask only for the date of death and the yes/no facts you are missing, then call plan_after_death. ' +
+        'Present the next critical deadline first. Never give individual legal advice on the estate.',
     },
   );
-  registerCheckUtilityStatement(server);
+  registerPlanAfterDeath(server, now);
   return server;
 }

@@ -1,4 +1,6 @@
-# PluginPilot: Lebenslagen-Lotsen (Trauerfall, Geburt)
+# PluginPilot: ChatGPT plugins (Surcharge Check, Trauerfall-Lotse, Geburts-Lotse)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jdub004/pluginpilot)
 
 A ChatGPT plugin (remote MCP server + visual timeline) for bereaved people in Germany: **"Someone has died, what do I have to do now?"**
 It returns a personal, dated plan with the next critical deadline, responsible office, documents and legal basis.

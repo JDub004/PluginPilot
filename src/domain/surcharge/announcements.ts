@@ -8,7 +8,7 @@ export type SurchargeCode = 'WRS' | 'ECS' | 'EBS' | 'OCR';
 
 export interface Announcement {
   id: string;
-  carrier: 'HAPAG-LLOYD' | 'CMA CGM' | 'MAERSK' | 'MSC';
+  carrier: 'HAPAG-LLOYD' | 'CMA CGM' | 'MAERSK' | 'MSC' | 'ONE';
   code: SurchargeCode;
   name: string;
   /** Countries (ISO 3166-1 alpha-2) where origin OR destination must lie, unless `originCountries` restricts direction. */
@@ -24,6 +24,8 @@ export interface Announcement {
   /** Later effective date for FMC-regulated (US) trades, if announced. */
   effectiveUsRegulated?: string;
   appliesToCargoAfloat: boolean | 'unspecified';
+  /** Which shipment date the carrier uses to decide whether the surcharge applies. Default: booking. */
+  priceBasis?: 'booking' | 'gate_in';
   amounts: Partial<Record<ContainerType, number>>;
   /** EBS-style headhaul/backhaul split: amounts above are headhaul, these are backhaul/intra. */
   backhaulAmounts?: Partial<Record<ContainerType, number>>;
@@ -39,10 +41,10 @@ const EU_NORTH_MED = ['DE', 'NL', 'BE', 'FR', 'GB', 'DK', 'SE', 'NO', 'FI', 'PL'
 export const ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'HL-WRS-ME-2026', carrier: 'HAPAG-LLOYD', code: 'WRS', name: 'War Risk Surcharge (Upper/Persian/Arabian Gulf)',
-    countries: GULF, effective: '2026-03-02', appliesToCargoAfloat: true,
+    countries: GULF, effective: '2026-03-02', effectiveUsRegulated: '2026-04-01', appliesToCargoAfloat: true,
     amounts: { '20DV': 1500, '40DV': 3000, '40HC': 3000, '45HC': 3000, '20RF': 3500, '40RF': 3500, SPECIAL: 3500 },
-    notes: 'USD 1,500 per TEU for standard containers (40\' = 2 TEU), USD 3,500 per reefer/special container. Applies to bookings issued from 02.03.2026 and to cargo on the water not yet discharged/loaded.',
-    source: 'https://container-news.com/hapag-lloyd-introduces-war-risk-surcharge-for-gulf-cargo/', confidence: 'secondary',
+    notes: 'USD 1,500 per TEU for standard containers (40\' = 2 TEU), USD 3,500 per reefer/special container. Applies to bookings issued from 02.03.2026 and to cargo on the water not yet discharged/loaded. FMC scope (USA ↔ Persian Gulf): from 01.04.2026. Also reported: https://container-news.com/hapag-lloyd-introduces-war-risk-surcharge-for-gulf-cargo/',
+    source: 'https://www.hapag-lloyd.com/en/services-information/news/2026/03/shipping-from-upper-gulf--arabian-gulf--and-persian-gulf--a-war-.html', confidence: 'secondary',
   },
   {
     id: 'CMA-ECS-ME-2026', carrier: 'CMA CGM', code: 'ECS', name: 'Emergency Conflict Surcharge (Middle East)',
@@ -74,6 +76,22 @@ export const ANNOUNCEMENTS: Announcement[] = [
     amounts: { '20DV': 500, '40DV': 500, '40HC': 500, '45HC': 500, '20RF': 500, '40RF': 500, SPECIAL: 500 },
     notes: 'From worldwide origins excluding Far East Asia.',
     source: 'https://www.seatrade-maritime.com/tankers/maersk-and-msc-add-middle-east-gulf-ports-risk-surcharges', confidence: 'secondary',
+  },
+  {
+    id: 'MSC-WRS-ARABPEN-AFRICA-2026', carrier: 'MSC', code: 'WRS', name: 'War Risk Surcharge (Arabian Peninsula to Sub-Saharan Africa & Indian Ocean)',
+    originCountries: ['BH', 'IQ', 'KW', 'OM', 'QA', 'SA', 'AE'],
+    destinationCountries: ['NG', 'GH', 'CI', 'SN', 'TG', 'BJ', 'CM', 'GA', 'CG', 'CD', 'AO', 'GN', 'SL', 'LR', 'GM', 'MR', 'KE', 'TZ', 'SO', 'ZA', 'NA', 'MZ', 'MU', 'MG', 'RE', 'SC', 'KM', 'YT'],
+    effective: '2026-03-05', priceBasis: 'gate_in', appliesToCargoAfloat: 'unspecified',
+    amounts: { '20DV': 2000, '40DV': 3000, '40HC': 3000, '45HC': 3000, '20RF': 4000, '40RF': 4000 },
+    notes: 'Gate-in date from 05.03.2026 (local time). MSC names regions (West, East, South Africa, Mozambique, Indian Ocean Islands); the country list is our mapping. Advisory page blocks automated access, so the amounts are taken from search snippets of msc.com and trade press (https://container-news.com/msc-introduces-war-surcharges/).',
+    source: 'https://www.msc.com/en/newsroom/customer-advisories/2026/march/war-risk-surcharge-trade-from-middle-east-to-subsaharan-africa-and-indian-ocean', confidence: 'secondary',
+  },
+  {
+    id: 'ONE-EMS-PG-2026', carrier: 'ONE', code: 'ECS', name: 'Emergency Surcharge EMS (to/from Persian Gulf countries)',
+    countries: ['BH', 'IQ', 'SA', 'KW', 'OM', 'QA', 'AE'], effective: '2026-03-04', appliesToCargoAfloat: true,
+    amounts: {},
+    notes: 'Applies to imports not yet discharged and exports loaded and still on board as of 04.03.2026. Saudi Arabia only Dammam and Jubail. Amounts are not stated in the advisory; subject to regulatory approvals and notice periods on regulated lanes.',
+    source: 'https://www.one-line.com/en/newsroom/emergency-surcharge-shipments-persian-gulf-countries', confidence: 'primary',
   },
 ];
 

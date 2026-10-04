@@ -1,6 +1,10 @@
 # Deployment
 
 ## 1. Put it online (Render, free tier, Frankfurt)
+
+**One click:** https://render.com/deploy?repo=https://github.com/jdub004/pluginpilot (sign in with GitHub, confirm the Blueprint, click *Apply*). If the repo is private, Render first asks for access to it via its GitHub app; grant access to `pluginpilot` only.
+
+Manual alternative:
 1. Sign in at https://render.com with the GitHub account that owns `jdub004/pluginpilot`.
 2. **New → Blueprint**, choose this repository. Render reads `render.yaml` and builds the `Dockerfile`.
 3. After the first deploy you get a URL like `https://trauerfall-lotse.onrender.com`. Check `https://…/health` → `{"ok":true}`.

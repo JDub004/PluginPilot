@@ -39,4 +39,5 @@ Risk: the database needs weekly curation; the crisis may end, but surcharge audi
 2. Add or update entries with source URL, effective dates (incl. FMC date), scope, amounts and the cargo-in-transit rule.
 3. Add a unit test for each new entry; bump `DB_VERSION`.
 
-Missing next: MSC (WRS $40/TEU from July 2026, exact dates unverified), ONE, Evergreen, COSCO, ZIM; per-port scope (e.g. Saudi Red Sea vs Gulf ports).
+Added 2026-10-04: MSC WRS Arabian Peninsula → Sub-Saharan Africa/Indian Ocean (gate-in basis, secondary), ONE EMS Persian Gulf (primary, no amount published), Hapag-Lloyd FMC date 01.04.2026.
+Still missing (no reliable source found yet): MSC Gulf WRS ($40/TEU from July, exact dates unverified), MSC "end of voyage" $800 deviation charge (no effective date), Evergreen, COSCO, ZIM; per-port scope (e.g. Saudi Red Sea vs Gulf ports).

@@ -99,3 +99,36 @@ describe('regressions', () => {
     expect(r.totalOverchargeUsd).toBe(0);
   });
 });
+
+describe('database extension 2026-10-04 (MSC, ONE, Hapag-Lloyd FMC date)', () => {
+  it('Hapag-Lloyd WRS on a US ↔ Gulf lane starts 01.04.2026', () => {
+    const line = [{ label: 'WRS', amountUsd: 3000, containerType: '40HC' }];
+    const r = run({ carrier: 'Hapag-Lloyd', originCountry: 'US', destinationCountry: 'AE', bookingDate: '2026-03-20', sailingDate: '2026-03-25', lines: line });
+    expect(r.lines[0]?.findings.join(' ')).toContain('2026-04-01');
+  });
+
+  it('MSC WRS is priced by gate-in date (missing → check, before 05.03. incl. sailing → flag, after → check because source is secondary)', () => {
+    const line = [{ label: 'War Risk Surcharge', amountUsd: 3000, containerType: '40HC' }];
+    const noGate = run({ carrier: 'MSC', originCountry: 'AE', destinationCountry: 'KE', bookingDate: '2026-03-01', lines: line });
+    expect(noGate.lines[0]?.status).toBe('check');
+    expect(noGate.lines[0]?.findings.join(' ')).toContain('gate-in');
+    const before = run({ carrier: 'MSC', originCountry: 'AE', destinationCountry: 'KE', bookingDate: '2026-03-01', gateInDate: '2026-03-02', sailingDate: '2026-03-03', lines: line });
+    expect(before.lines[0]?.status).toBe('flag'); // gate-in and sailing both before 05.03.
+    const after = run({ carrier: 'MSC', originCountry: 'AE', destinationCountry: 'KE', bookingDate: '2026-03-01', gateInDate: '2026-03-06', lines: line });
+    expect(after.lines[0]?.status).toBe('check'); // amount matches, but source is secondary
+    expect(after.totalOverchargeUsd).toBe(0);
+  });
+
+  it('MSC WRS is directional: Africa → Gulf is outside the announced scope', () => {
+    const r = run({ carrier: 'MSC', originCountry: 'KE', destinationCountry: 'AE', bookingDate: '2026-04-01', lines: [{ label: 'WRS', amountUsd: 3000, containerType: '40HC' }] });
+    expect(r.lines[0]?.status).toBe('flag');
+  });
+
+  it('ONE EMS: recognised, no amount announced → ask for the tariff amount, never flag on amount', () => {
+    expect(classify('EMS')).toBe('ECS');
+    const r = run({ carrier: 'ONE', originCountry: 'SG', destinationCountry: 'QA', bookingDate: '2026-04-01', lines: [{ label: 'Emergency Surcharge (EMS)', amountUsd: 2500, containerType: '40HC' }] });
+    expect(r.lines[0]?.status).toBe('check');
+    expect(r.lines[0]?.findings.join(' ')).toContain('does not state an amount');
+    expect(r.totalOverchargeUsd).toBe(0);
+  });
+});

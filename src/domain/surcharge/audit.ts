@@ -13,6 +13,7 @@ export const AuditInputSchema = z
     destinationCountry: iso2.describe('Country of the port of discharge'),
     bookingDate: isoDate.describe('Date the booking was issued/confirmed'),
     sailingDate: isoDate.optional().describe('Actual or planned departure from the port of loading'),
+    gateInDate: isoDate.optional().describe('Date the full container was delivered to the loading terminal (some carriers price by gate-in)'),
     headhaul: z.boolean().default(true).describe('false for backhaul/intra-region trades (affects emergency bunker amounts)'),
     fixedAllInRate: z.boolean().default(false).describe('true if the contract/quote states an all-in rate including surcharges'),
     lines: z
@@ -49,7 +50,7 @@ const US_REGULATED = new Set(['US', 'PR', 'GU', 'AS', 'VI', 'MP']);
 export function classify(label: string): LineResult['code'] {
   const l = label.toLowerCase();
   if (/\bwrs\b|war.?risk/.test(l)) return 'WRS';
-  if (/\becs\b|emergency (conflict|contingency)|conflict surcharge|contingency surcharge/.test(l)) return 'ECS';
+  if (/\becs\b|\bems\b|emergency (conflict|contingency)|conflict surcharge|contingency surcharge|^emergency surcharge/.test(l)) return 'ECS';
   if (/\bebs\b|\befs\b|emergency (bunker|fuel)/.test(l)) return 'EBS';
   if (/\bocr\b|operational cost recovery/.test(l)) return 'OCR';
   if (/\bbaf\b|bunker adjustment|fuel surcharge|\blss\b|low sulphur/.test(l)) return 'BAF';
@@ -65,6 +66,7 @@ function normCarrier(c: string): Announcement['carrier'] | undefined {
   if (x.startsWith('cma')) return 'CMA CGM';
   if (x.startsWith('maersk')) return 'MAERSK';
   if (x.startsWith('msc') || x.includes('mediterraneanshipping')) return 'MSC';
+  if (x === 'one' || x.startsWith('oceannetwork')) return 'ONE';
   return undefined;
 }
 
@@ -96,7 +98,6 @@ export function auditSurcharges(input: AuditInput): AuditResult {
   const o = input.originCountry;
   const d = input.destinationCountry;
   const usRegulated = US_REGULATED.has(o) || US_REGULATED.has(d);
-  const priceDate = input.bookingDate;
   const seen = new Map<string, number>();
   const lines: LineResult[] = [];
 
@@ -150,6 +151,13 @@ export function auditSurcharges(input: AuditInput): AuditResult {
     r.source = match.source;
     r.sourceConfidence = match.confidence;
     const effective = usRegulated && match.effectiveUsRegulated ? match.effectiveUsRegulated : match.effective;
+    const gateIn = match.priceBasis === 'gate_in';
+    if (gateIn && !input.gateInDate) {
+      if (r.status === 'ok') r.status = 'check';
+      r.findings.push(`${carrier} applies this surcharge by gate-in date (from ${effective}). Add the gate-in date to check the timing.`);
+    }
+    const priceDate = gateIn ? input.gateInDate ?? '9999-12-31' : input.bookingDate;
+    const dateWord = gateIn ? 'Gate-in' : 'Booked';
 
     // Timing
     if (priceDate < effective) {
@@ -157,14 +165,14 @@ export function auditSurcharges(input: AuditInput): AuditResult {
       if (match.appliesToCargoAfloat === false && (departedBefore || input.sailingDate === undefined)) {
         r.status = 'flag';
         r.overchargeUsd = line.amountUsd;
-        r.findings.push(`Booked ${priceDate}, before the effective date ${effective}${usRegulated && match.effectiveUsRegulated ? ' (later date for FMC-regulated US trades)' : ''}. The carrier states cargo in transit is not impacted.`);
+        r.findings.push(`${dateWord} ${priceDate}, before the effective date ${effective}${usRegulated && match.effectiveUsRegulated ? ' (later date for FMC-regulated US trades)' : ''}. The carrier states cargo in transit is not impacted.`);
       } else if (match.appliesToCargoAfloat === true) {
         r.status = r.status === 'flag' ? 'flag' : 'check';
         r.findings.push(`Booked before the effective date ${effective}, but the carrier announced that the surcharge also applies to cargo already afloat. Check whether your contract or national rules exclude this (some regulators stopped it for cargo in transit).`);
       } else if (departedBefore) {
         r.status = 'flag';
         r.overchargeUsd = line.amountUsd;
-        r.findings.push(`Booked ${priceDate} and sailed ${input.sailingDate}, both before the effective date ${effective}.`);
+        r.findings.push(`${dateWord} ${priceDate} and sailed ${input.sailingDate}, both before the effective date ${effective}.`);
       } else {
         r.status = r.status === 'flag' ? 'flag' : 'check';
         r.findings.push(`Booked before the effective date ${effective}. Ask on which date (booking, gate-in, sailing) the carrier calculates the price.`);
@@ -174,7 +182,10 @@ export function auditSurcharges(input: AuditInput): AuditResult {
     // Amount
     const table = !input.headhaul && match.backhaulAmounts ? match.backhaulAmounts : match.amounts;
     const unit = table[line.containerType];
-    if (unit !== undefined) {
+    if (Object.keys(table).length === 0) {
+      if (r.status === 'ok') r.status = 'check';
+      r.findings.push('The carrier advisory does not state an amount. Ask for the tariff amount behind this charge.');
+    } else if (unit !== undefined) {
       const expected = unit * line.quantity;
       r.expected = expected;
       const diff = line.amountUsd - expected;

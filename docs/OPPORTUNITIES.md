@@ -29,60 +29,81 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 
 | # | Opportunity | Score | Risk | EV | pain | freq | fit | native | mcp | wtp | comp | mvp | ret | dist | MVP days |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Public tender finder (TED/national) | 74 | 15 | **68** | 4 | 4 | 4 | 5 | 5 | 4 | 2 | 3 | 5 | 3 | 7 |
-| 2 | GAEB/LV file reader & pricer | 71 | 20 | **64** | 4 | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 7 |
-| 3 | E-Rechnung erstellen from chat | 70 | 20 | **63** | 4 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 4 | 3 | 5 |
-| 4 | E-Rechnung lesen & prüfen (DE SMB inbox) | 64 | 15 | **59** | 3 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 3 | 3 | 4 |
-| 5 | EU cross-border VAT treatment checker | 67 | 30 | **57** | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 3 | 4 |
-| 6 | Nebenkostenabrechnung erstellen (small landlords) | 66 | 30 | **56** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 3 | 4 | 7 |
-| 7 | BFSG/EAA website accessibility check | 66 | 30 | **56** | 4 | 3 | 4 | 4 | 5 | 4 | 2 | 3 | 4 | 3 | 4 |
-| 8 | Förderprogramm finder (DE SMB grants) | 65 | 30 | **55** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 2 | 4 | 4 |
-| 9 | HS/customs tariff code finder | 65 | 35 | **54** | 4 | 3 | 4 | 4 | 5 | 3 | 3 | 3 | 3 | 3 | 4 |
-| 10 | Contract version redline compare | 62 | 25 | **54** | 4 | 3 | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 |
-| 11 | CRM update from call notes | 62 | 25 | **54** | 3 | 5 | 4 | 5 | 3 | 1 | 3 | 4 | 3 | 3 | 2 |
-| 12 | Timesheet to invoice (freelancers) | 61 | 25 | **53** | 3 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 4 |
-| 13 | Nebenkosten-Check (DE utility-bill audit) | 63 | 35 | **52** | 5 | 2 | 5 | 4 | 4 | 2 | 1 | 4 | 2 | 5 | 5 |
-| 14 | Trade quote builder (Handwerker Angebot) | 59 | 25 | **52** | 4 | 4 | 4 | 2 | 3 | 4 | 2 | 3 | 4 | 3 | 6 |
-| 15 | Parcel rate comparer (DE/EU) | 58 | 20 | **52** | 3 | 4 | 4 | 4 | 4 | 2 | 2 | 4 | 3 | 3 | 3 |
-| 16 | CO2 cost split calculator (CO2KostAufG) | 58 | 20 | **52** | 3 | 2 | 3 | 5 | 4 | 3 | 3 | 5 | 2 | 3 | 1 |
-| 17 | Tender requirements matrix extractor | 59 | 30 | **50** | 4 | 3 | 4 | 2 | 3 | 4 | 3 | 4 | 3 | 3 | 4 |
-| 18 | Heating/energy subsidy calculator (BEG/GEG) | 61 | 35 | **50** | 4 | 1 | 5 | 4 | 4 | 4 | 2 | 4 | 1 | 5 | 4 |
-| 19 | Marketplace fee & margin calculator | 54 | 15 | **50** | 2 | 4 | 4 | 3 | 4 | 2 | 3 | 5 | 3 | 3 | 2 |
-| 20 | Mietspiegel / Mietpreisbremse checker | 63 | 40 | **50** | 5 | 1 | 5 | 4 | 4 | 3 | 3 | 2 | 1 | 5 | 4 |
-| 21 | Receipts to DATEV export | 59 | 35 | **49** | 4 | 4 | 3 | 3 | 3 | 4 | 2 | 3 | 4 | 3 | 5 |
-| 22 | SEO page audit | 53 | 15 | **49** | 3 | 3 | 4 | 3 | 4 | 3 | 1 | 4 | 3 | 4 | 2 |
-| 23 | Mahnwesen (dunning letters with interest calc) | 58 | 30 | **49** | 3 | 3 | 4 | 4 | 3 | 4 | 3 | 3 | 3 | 3 | 4 |
-| 24 | Public sector invoicing helper (Leitweg-ID, portals) | 56 | 25 | **49** | 3 | 2 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 2 | 4 |
-| 25 | Working-time compliance check (ArbZG) | 56 | 25 | **49** | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 | 4 | 3 | 3 |
-| 26 | Handelsregister/company check (KYB) | 58 | 35 | **48** | 3 | 4 | 4 | 4 | 4 | 3 | 2 | 3 | 3 | 3 | 3 |
-| 27 | Website legal check (Impressum/cookie/DSGVO) | 60 | 45 | **47** | 4 | 2 | 4 | 4 | 4 | 4 | 2 | 3 | 2 | 4 | 4 |
-| 28 | Amazon listing compliance/keyword check | 54 | 25 | **47** | 3 | 4 | 3 | 3 | 4 | 3 | 2 | 3 | 4 | 3 | 4 |
-| 29 | Fill official PDF forms (AcroForm) | 57 | 35 | **47** | 4 | 3 | 4 | 3 | 3 | 3 | 2 | 4 | 3 | 3 | 3 |
-| 30 | Trademark availability pre-check (DPMA/EUIPO) | 59 | 40 | **47** | 4 | 1 | 5 | 4 | 3 | 4 | 3 | 3 | 1 | 4 | 4 |
-| 31 | Recipe nutrition calculator | 51 | 15 | **47** | 2 | 5 | 3 | 3 | 4 | 1 | 4 | 4 | 3 | 2 | 2 |
-| 32 | SEPA XML payment file generator | 55 | 30 | **47** | 3 | 3 | 3 | 4 | 3 | 3 | 3 | 4 | 3 | 3 | 3 |
-| 33 | Flight delay compensation claim (EU261) | 57 | 40 | **46** | 2 | 4 | 4 | 4 | 4 | 4 | 2 | 3 | 2 | 5 | 5 |
-| 34 | Rental property yield calculator (DE) | 51 | 20 | **46** | 3 | 2 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 4 | 3 |
-| 35 | Bank CSV vs invoices reconciliation | 55 | 35 | **45** | 4 | 4 | 3 | 2 | 3 | 3 | 2 | 4 | 4 | 3 | 3 |
-| 36 | Insurance policy comparison (DE Gewerbe) | 55 | 35 | **45** | 4 | 3 | 4 | 2 | 2 | 4 | 3 | 3 | 3 | 3 | 4 |
-| 37 | Gehaltsabrechnung erklären/prüfen | 55 | 40 | **44** | 3 | 2 | 5 | 4 | 4 | 2 | 3 | 3 | 2 | 4 | 4 |
-| 38 | Contract cancellation letter + deadline calc | 53 | 35 | **44** | 3 | 2 | 5 | 3 | 4 | 3 | 2 | 3 | 2 | 5 | 3 |
-| 39 | Peppol participant lookup | 48 | 15 | **44** | 2 | 3 | 3 | 4 | 5 | 3 | 1 | 4 | 2 | 3 | 2 |
-| 40 | Minijob/Midijob calculator & compliance | 50 | 25 | **44** | 3 | 2 | 4 | 3 | 4 | 3 | 2 | 4 | 2 | 3 | 2 |
-| 41 | Brutto-Netto & offer comparison | 48 | 20 | **43** | 2 | 3 | 5 | 4 | 4 | 1 | 2 | 4 | 2 | 3 | 3 |
-| 42 | Supplier quote comparison | 50 | 30 | **43** | 3 | 3 | 4 | 2 | 2 | 4 | 3 | 3 | 3 | 3 | 3 |
-| 43 | Steuererklärung deduction finder | 51 | 45 | **40** | 4 | 1 | 5 | 3 | 3 | 3 | 1 | 4 | 1 | 5 | 3 |
-| 44 | DSGVO Auskunft request + tracker | 44 | 25 | **39** | 3 | 1 | 4 | 3 | 4 | 3 | 1 | 4 | 2 | 3 | 2 |
-| 45 | Address list cleanup & dedupe | 45 | 30 | **38** | 3 | 3 | 4 | 2 | 3 | 2 | 2 | 4 | 2 | 3 | 2 |
-| 46 | Deutsche Bahn Fahrgastrechte form | 44 | 30 | **37** | 2 | 3 | 4 | 3 | 3 | 3 | 1 | 4 | 2 | 4 | 2 |
-| 47 | Mietkaution return deadline/interest calc | 45 | 35 | **37** | 3 | 1 | 4 | 3 | 3 | 2 | 3 | 4 | 1 | 4 | 3 |
-| 48 | Exam/shift schedule to calendar | 41 | 25 | **36** | 2 | 4 | 2 | 4 | 2 | 2 | 1 | 4 | 3 | 3 | 2 |
-| 49 | Email templating | 38 | 60 | **27** | 2 | 5 | 1 | 2 | 1 | 1 | 5 | 4 | 2 | 2 | 2 |
-| 50 | Meeting minutes formatter | 33 | 60 | **23** | 2 | 5 | 1 | 1 | 1 | 1 | 5 | 3 | 2 | 2 | 2 |
+| 1 | Pflege-Budget-Lotse (Pflegeleistungen nutzen) | 83 | 25 | **73** | 5 | 4 | 5 | 5 | 5 | 3 | 3 | 4 | 4 | 4 | 5 |
+| 2 | Public tender finder (TED/national) | 74 | 15 | **68** | 4 | 4 | 4 | 5 | 5 | 4 | 2 | 3 | 5 | 3 | 7 |
+| 3 | Vergabe-Navigator für öffentliche Auftraggeber | 77 | 30 | **65** | 4 | 4 | 4 | 5 | 5 | 4 | 4 | 3 | 4 | 3 | 6 |
+| 4 | GAEB/LV file reader & pricer | 71 | 20 | **64** | 4 | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 7 |
+| 5 | Leistungs-Navigator (Sozialleistungen, Vorrangprüfung) | 78 | 35 | **64** | 5 | 3 | 5 | 5 | 5 | 3 | 3 | 2 | 4 | 5 | 7 |
+| 6 | E-Rechnung erstellen from chat | 70 | 20 | **63** | 4 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 4 | 3 | 5 |
+| 7 | E-Rechnung lesen & prüfen (DE SMB inbox) | 64 | 15 | **59** | 3 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 3 | 3 | 4 |
+| 8 | EU cross-border VAT treatment checker | 67 | 30 | **57** | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 3 | 4 |
+| 9 | Nebenkostenabrechnung erstellen (small landlords) | 66 | 30 | **56** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 3 | 4 | 7 |
+| 10 | BFSG/EAA website accessibility check | 66 | 30 | **56** | 4 | 3 | 4 | 4 | 5 | 4 | 2 | 3 | 4 | 3 | 4 |
+| 11 | Förderprogramm finder (DE SMB grants) | 65 | 30 | **55** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 2 | 4 | 4 |
+| 12 | Vereins-Compliance (Gemeinnützigkeit, Zuwendungsbestätigung) | 63 | 25 | **55** | 4 | 3 | 4 | 4 | 4 | 3 | 2 | 4 | 3 | 4 | 3 |
+| 13 | HS/customs tariff code finder | 65 | 35 | **54** | 4 | 3 | 4 | 4 | 5 | 3 | 3 | 3 | 3 | 3 | 4 |
+| 14 | Contract version redline compare | 62 | 25 | **54** | 4 | 3 | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 |
+| 15 | CRM update from call notes | 62 | 25 | **54** | 3 | 5 | 4 | 5 | 3 | 1 | 3 | 4 | 3 | 3 | 2 |
+| 16 | Timesheet to invoice (freelancers) | 61 | 25 | **53** | 3 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 4 |
+| 17 | Ratsinfo-Assistent (OParl) | 57 | 15 | **53** | 3 | 3 | 4 | 4 | 5 | 2 | 3 | 3 | 3 | 3 | 5 |
+| 18 | Nebenkosten-Check (DE utility-bill audit) | 63 | 35 | **52** | 5 | 2 | 5 | 4 | 4 | 2 | 1 | 4 | 2 | 5 | 5 |
+| 19 | Trade quote builder (Handwerker Angebot) | 59 | 25 | **52** | 4 | 4 | 4 | 2 | 3 | 4 | 2 | 3 | 4 | 3 | 6 |
+| 20 | Parcel rate comparer (DE/EU) | 58 | 20 | **52** | 3 | 4 | 4 | 4 | 4 | 2 | 2 | 4 | 3 | 3 | 3 |
+| 21 | CO2 cost split calculator (CO2KostAufG) | 58 | 20 | **52** | 3 | 2 | 3 | 5 | 4 | 3 | 3 | 5 | 2 | 3 | 1 |
+| 22 | Tender requirements matrix extractor | 59 | 30 | **50** | 4 | 3 | 4 | 2 | 3 | 4 | 3 | 4 | 3 | 3 | 4 |
+| 23 | Heating/energy subsidy calculator (BEG/GEG) | 61 | 35 | **50** | 4 | 1 | 5 | 4 | 4 | 4 | 2 | 4 | 1 | 5 | 4 |
+| 24 | Marketplace fee & margin calculator | 54 | 15 | **50** | 2 | 4 | 4 | 3 | 4 | 2 | 3 | 5 | 3 | 3 | 2 |
+| 25 | Mietspiegel / Mietpreisbremse checker | 63 | 40 | **50** | 5 | 1 | 5 | 4 | 4 | 3 | 3 | 2 | 1 | 5 | 4 |
+| 26 | Receipts to DATEV export | 59 | 35 | **49** | 4 | 4 | 3 | 3 | 3 | 4 | 2 | 3 | 4 | 3 | 5 |
+| 27 | SEO page audit | 53 | 15 | **49** | 3 | 3 | 4 | 3 | 4 | 3 | 1 | 4 | 3 | 4 | 2 |
+| 28 | Mahnwesen (dunning letters with interest calc) | 58 | 30 | **49** | 3 | 3 | 4 | 4 | 3 | 4 | 3 | 3 | 3 | 3 | 4 |
+| 29 | Public sector invoicing helper (Leitweg-ID, portals) | 56 | 25 | **49** | 3 | 2 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 2 | 4 |
+| 30 | Working-time compliance check (ArbZG) | 56 | 25 | **49** | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 | 4 | 3 | 3 |
+| 31 | Handelsregister/company check (KYB) | 58 | 35 | **48** | 3 | 4 | 4 | 4 | 4 | 3 | 2 | 3 | 3 | 3 | 3 |
+| 32 | Lehrkräfte: Lehrplan-Navigator | 55 | 25 | **48** | 3 | 4 | 4 | 3 | 4 | 2 | 2 | 3 | 4 | 4 | 5 |
+| 33 | Website legal check (Impressum/cookie/DSGVO) | 60 | 45 | **47** | 4 | 2 | 4 | 4 | 4 | 4 | 2 | 3 | 2 | 4 | 4 |
+| 34 | Amazon listing compliance/keyword check | 54 | 25 | **47** | 3 | 4 | 3 | 3 | 4 | 3 | 2 | 3 | 4 | 3 | 4 |
+| 35 | Fill official PDF forms (AcroForm) | 57 | 35 | **47** | 4 | 3 | 4 | 3 | 3 | 3 | 2 | 4 | 3 | 3 | 3 |
+| 36 | Trademark availability pre-check (DPMA/EUIPO) | 59 | 40 | **47** | 4 | 1 | 5 | 4 | 3 | 4 | 3 | 3 | 1 | 4 | 4 |
+| 37 | Recipe nutrition calculator | 51 | 15 | **47** | 2 | 5 | 3 | 3 | 4 | 1 | 4 | 4 | 3 | 2 | 2 |
+| 38 | SEPA XML payment file generator | 55 | 30 | **47** | 3 | 3 | 3 | 4 | 3 | 3 | 3 | 4 | 3 | 3 | 3 |
+| 39 | Flight delay compensation claim (EU261) | 57 | 40 | **46** | 2 | 4 | 4 | 4 | 4 | 4 | 2 | 3 | 2 | 5 | 5 |
+| 40 | Rental property yield calculator (DE) | 51 | 20 | **46** | 3 | 2 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 4 | 3 |
+| 41 | BITV-Barrierefreiheitserklärung für Behörden | 51 | 20 | **46** | 3 | 2 | 4 | 4 | 4 | 3 | 2 | 3 | 2 | 3 | 4 |
+| 42 | Bank CSV vs invoices reconciliation | 55 | 35 | **45** | 4 | 4 | 3 | 2 | 3 | 3 | 2 | 4 | 4 | 3 | 3 |
+| 43 | Insurance policy comparison (DE Gewerbe) | 55 | 35 | **45** | 4 | 3 | 4 | 2 | 2 | 4 | 3 | 3 | 3 | 3 | 4 |
+| 44 | Gehaltsabrechnung erklären/prüfen | 55 | 40 | **44** | 3 | 2 | 5 | 4 | 4 | 2 | 3 | 3 | 2 | 4 | 4 |
+| 45 | Contract cancellation letter + deadline calc | 53 | 35 | **44** | 3 | 2 | 5 | 3 | 4 | 3 | 2 | 3 | 2 | 5 | 3 |
+| 46 | Peppol participant lookup | 48 | 15 | **44** | 2 | 3 | 3 | 4 | 5 | 3 | 1 | 4 | 2 | 3 | 2 |
+| 47 | Minijob/Midijob calculator & compliance | 50 | 25 | **44** | 3 | 2 | 4 | 3 | 4 | 3 | 2 | 4 | 2 | 3 | 2 |
+| 48 | Brutto-Netto & offer comparison | 48 | 20 | **43** | 2 | 3 | 5 | 4 | 4 | 1 | 2 | 4 | 2 | 3 | 3 |
+| 49 | Supplier quote comparison | 50 | 30 | **43** | 3 | 3 | 4 | 2 | 2 | 4 | 3 | 3 | 3 | 3 | 3 |
+| 50 | Bescheid-Erklärer (Behördenbriefe verstehen) | 52 | 35 | **43** | 4 | 3 | 5 | 2 | 3 | 1 | 2 | 4 | 3 | 4 | 3 |
+| 51 | Kita-Platz & Gebühren-Navigator | 48 | 20 | **43** | 3 | 2 | 4 | 3 | 4 | 3 | 2 | 3 | 2 | 3 | 3 |
+| 52 | Steuererklärung deduction finder | 51 | 45 | **40** | 4 | 1 | 5 | 3 | 3 | 3 | 1 | 4 | 1 | 5 | 3 |
+| 53 | DSGVO Auskunft request + tracker | 44 | 25 | **39** | 3 | 1 | 4 | 3 | 4 | 3 | 1 | 4 | 2 | 3 | 2 |
+| 54 | Address list cleanup & dedupe | 45 | 30 | **38** | 3 | 3 | 4 | 2 | 3 | 2 | 2 | 4 | 2 | 3 | 2 |
+| 55 | Deutsche Bahn Fahrgastrechte form | 44 | 30 | **37** | 2 | 3 | 4 | 3 | 3 | 3 | 1 | 4 | 2 | 4 | 2 |
+| 56 | Mietkaution return deadline/interest calc | 45 | 35 | **37** | 3 | 1 | 4 | 3 | 3 | 2 | 3 | 4 | 1 | 4 | 3 |
+| 57 | Exam/shift schedule to calendar | 41 | 25 | **36** | 2 | 4 | 2 | 4 | 2 | 2 | 1 | 4 | 3 | 3 | 2 |
+| 58 | Aufenthalts-/Anerkennungs-Navigator | 45 | 40 | **36** | 3 | 1 | 5 | 3 | 4 | 2 | 2 | 3 | 2 | 3 | 5 |
+| 59 | Email templating | 38 | 60 | **27** | 2 | 5 | 1 | 2 | 1 | 1 | 5 | 4 | 2 | 2 | 2 |
+| 60 | Meeting minutes formatter | 33 | 60 | **23** | 2 | 5 | 1 | 1 | 1 | 1 | 5 | 3 | 2 | 2 | 2 |
 
 ## Detail
 
-### 1. Public tender finder (TED/national) (`tender-find`)
+### 1. Pflege-Budget-Lotse (Pflegeleistungen nutzen) (`pflege-budget`)
+
+- **Target user:** Family carers (~5M care recipients at home) + Pflegestützpunkte, Pflegedienste
+- **Problem:** Entlastungsbetrag used <50%, Entlastungsbudget 3,539 EUR/yr expires, rules confusing
+- **Current workaround:** Pflegekasse letters, blogs, single calculators
+- **Example prompt:** "Mama hat Pflegegrad 3, welches Geld steht uns zu und was verfällt dieses Jahr?"
+- **What the plugin adds beyond plain ChatGPT:** Entitlement + remaining-budget calculation with deadlines (carry-over to 30.06.), claim letters
+- **Existing alternatives:** pflegekompass.de calculators, pflege.de, Pflegekassen apps
+- **Monetization:** Free for families; licences for Pflegedienste/Pflegeberatung; lead gen to providers
+- **Score / Risk / EV:** 83 / 25 / 73
+
+### 2. Public tender finder (TED/national) (`tender-find`)
 
 - **Target user:** SMBs bidding on public contracts
 - **Problem:** Finding relevant tenders across portals daily
@@ -93,7 +114,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription 29-99 EUR/mo
 - **Score / Risk / EV:** 74 / 15 / 68
 
-### 2. GAEB/LV file reader & pricer (`gaeb`)
+### 3. Vergabe-Navigator für öffentliche Auftraggeber (`vergabe-kommune`)
+
+- **Target user:** Buyers in ~11,000 municipalities, schools, hospitals, universities
+- **Problem:** 16 state regimes, NRW deregulated 2026, UVgO reform 2026: which procedure, thresholds, documentation?
+- **Current workaround:** Call the Vergabestelle, cosinex blog, lawyers
+- **Example prompt:** "Wir wollen Reinigungsleistungen für 120.000 € netto vergeben, Gemeinde in Bayern — welches Verfahren?"
+- **What the plugin adds beyond plain ChatGPT:** Maintained per-state threshold/rule database + deterministic procedure decision + documentation checklist
+- **Existing alternatives:** cosinex/eVergabe platforms (execution, not advice), law firms, Auftragsberatungsstellen
+- **Monetization:** B2G subscription per authority, via OpenAI for Germany/ChatGPT Work
+- **Score / Risk / EV:** 77 / 30 / 65
+
+### 4. GAEB/LV file reader & pricer (`gaeb`)
 
 - **Target user:** German trades/contractors
 - **Problem:** GAEB X83/X84 bill of quantities files need special software
@@ -104,7 +136,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per file or 19 EUR/mo
 - **Score / Risk / EV:** 71 / 20 / 64
 
-### 3. E-Rechnung erstellen from chat (`erech-create`)
+### 5. Leistungs-Navigator (Sozialleistungen, Vorrangprüfung) (`leistungs-navigator`)
+
+- **Target user:** Citizens with low income + Sozialberatungen, Jobcenter, Kommunen
+- **Problem:** Non-uptake of Wohngeld/KiZ/Grundsicherung 40-88%; counselling centres overloaded, months of waiting
+- **Current workaround:** Single-benefit calculator sites, Beratungsstelle, nothing
+- **Example prompt:** "Ich verdiene 2.100 netto, 2 Kinder, Miete 950 — welche Leistungen stehen mir zu?"
+- **What the plugin adds beyond plain ChatGPT:** Deterministic multi-benefit engine with priority rules (Wohngeld/KiZ vs Bürgergeld), Mietstufen data, versioned law, sources
+- **Existing alternatives:** dersozialerechner.de, rechner-portal, BA KiZ-Lotse, Caritas chatbot (in development)
+- **Monetization:** Institutional licences (Wohlfahrtsverbände, Kommunen), foundation/public funding; free for citizens
+- **Score / Risk / EV:** 78 / 35 / 64
+
+### 6. E-Rechnung erstellen from chat (`erech-create`)
 
 - **Target user:** German freelancers issuing B2B invoices (2027/28 mandate)
 - **Problem:** Must issue XRechnung/ZUGFeRD; Word/Excel cannot
@@ -115,7 +158,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium per invoice
 - **Score / Risk / EV:** 70 / 20 / 63
 
-### 4. E-Rechnung lesen & prüfen (DE SMB inbox) (`erech-inbox`)
+### 7. E-Rechnung lesen & prüfen (DE SMB inbox) (`erech-inbox`)
 
 - **Target user:** German SMBs/freelancers receiving XRechnung/ZUGFeRD
 - **Problem:** Mandatory receipt since 2025; XML is unreadable; invalid invoices risk input-VAT deduction
@@ -126,7 +169,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium, 5-9 EUR/mo
 - **Score / Risk / EV:** 64 / 15 / 59
 
-### 5. EU cross-border VAT treatment checker (`vat-xborder`)
+### 8. EU cross-border VAT treatment checker (`vat-xborder`)
 
 - **Target user:** EU freelancers/SMBs invoicing other EU countries
 - **Problem:** Reverse charge vs OSS vs local VAT; wrong invoice wording; VIES proof
@@ -137,7 +180,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium, 5-10 EUR/mo
 - **Score / Risk / EV:** 67 / 30 / 57
 
-### 6. Nebenkostenabrechnung erstellen (small landlords) (`nk-landlord`)
+### 9. Nebenkostenabrechnung erstellen (small landlords) (`nk-landlord`)
 
 - **Target user:** Private landlords with 1-10 units
 - **Problem:** Building a legally correct annual statement with allocation keys is error-prone
@@ -148,7 +191,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per statement 15-29 EUR or subscription
 - **Score / Risk / EV:** 66 / 30 / 56
 
-### 7. BFSG/EAA website accessibility check (`accessibility`)
+### 10. BFSG/EAA website accessibility check (`accessibility`)
 
 - **Target user:** EU e-commerce SMBs (EAA since June 2025)
 - **Problem:** Legal accessibility obligation, audits expensive
@@ -159,7 +202,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per scan / subscription
 - **Score / Risk / EV:** 66 / 30 / 56
 
-### 8. Förderprogramm finder (DE SMB grants) (`grant-finder`)
+### 11. Förderprogramm finder (DE SMB grants) (`grant-finder`)
 
 - **Target user:** German SMBs/founders
 - **Problem:** Hundreds of federal/state programs, hard to find eligibility
@@ -170,7 +213,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen to consultants, B2B
 - **Score / Risk / EV:** 65 / 30 / 55
 
-### 9. HS/customs tariff code finder (`customs-hs`)
+### 12. Vereins-Compliance (Gemeinnützigkeit, Zuwendungsbestätigung) (`verein-gemeinnuetzig`)
+
+- **Target user:** ~600k Vereine, volunteer treasurers
+- **Problem:** Donation receipts, Übungsleiterpauschale, Ehrenamtspauschale limits
+- **Current workaround:** Templates, Steuerberater
+- **Example prompt:** "Darf unser Verein dem Trainer 3.500 € steuerfrei zahlen?"
+- **What the plugin adds beyond plain ChatGPT:** Rule engine for AO/EStG limits + official receipt templates
+- **Existing alternatives:** easyVerein, WISO Mein Verein, Vereinsknowhow
+- **Monetization:** Freemium per Verein
+- **Score / Risk / EV:** 63 / 25 / 55
+
+### 13. HS/customs tariff code finder (`customs-hs`)
 
 - **Target user:** Exporters, Etsy sellers
 - **Problem:** Wrong HS codes cause delays/duty errors
@@ -181,7 +235,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per lookup credits
 - **Score / Risk / EV:** 65 / 35 / 54
 
-### 10. Contract version redline compare (`doc-compare`)
+### 14. Contract version redline compare (`doc-compare`)
 
 - **Target user:** Lawyers, procurement
 - **Problem:** Spotting changes between versions
@@ -192,7 +246,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per doc / subscription
 - **Score / Risk / EV:** 62 / 25 / 54
 
-### 11. CRM update from call notes (`crm-update`)
+### 15. CRM update from call notes (`crm-update`)
 
 - **Target user:** Sales reps
 - **Problem:** Logging calls in CRM
@@ -203,7 +257,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 62 / 25 / 54
 
-### 12. Timesheet to invoice (freelancers) (`timesheet-invoice`)
+### 16. Timesheet to invoice (freelancers) (`timesheet-invoice`)
 
 - **Target user:** Freelancers
 - **Problem:** Monthly invoicing from tracked hours
@@ -214,7 +268,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 61 / 25 / 53
 
-### 13. Nebenkosten-Check (DE utility-bill audit) (`nk-check`)
+### 17. Ratsinfo-Assistent (OParl) (`ratsinfo`)
+
+- **Target user:** Citizens, journalists, council members
+- **Problem:** Council decisions buried in Ratsinformationssystemen
+- **Current workaround:** Manual RIS search
+- **Example prompt:** "Was hat der Stadtrat Köln zum Radweg Venloer Straße beschlossen?"
+- **What the plugin adds beyond plain ChatGPT:** Live OParl API across cities + document search
+- **Existing alternatives:** jtwolfe OParl MCP (dev, untested), RIS vendors
+- **Monetization:** Grants, newsroom licences
+- **Score / Risk / EV:** 57 / 15 / 53
+
+### 18. Nebenkosten-Check (DE utility-bill audit) (`nk-check`)
 
 - **Target user:** German tenants (~21M rental households)
 - **Problem:** Annual service-charge statement is wrong in ~1 of 2 cases; tenants cannot check legality, deadlines, CO2 split, benchmarks
@@ -225,7 +290,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Free check, paid letter/report 9-19 EUR per use
 - **Score / Risk / EV:** 63 / 35 / 52
 
-### 14. Trade quote builder (Handwerker Angebot) (`trade-quote`)
+### 19. Trade quote builder (Handwerker Angebot) (`trade-quote`)
 
 - **Target user:** Small trade businesses
 - **Problem:** Quotes take hours in Excel/Word
@@ -236,7 +301,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 59 / 25 / 52
 
-### 15. Parcel rate comparer (DE/EU) (`shipping-rates`)
+### 20. Parcel rate comparer (DE/EU) (`shipping-rates`)
 
 - **Target user:** Small e-commerce sellers
 - **Problem:** Comparing DHL/DPD/GLS/Hermes rates per parcel
@@ -247,7 +312,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Affiliate/lead gen
 - **Score / Risk / EV:** 58 / 20 / 52
 
-### 16. CO2 cost split calculator (CO2KostAufG) (`co2-split`)
+### 21. CO2 cost split calculator (CO2KostAufG) (`co2-split`)
 
 - **Target user:** Landlords and tenants
 - **Problem:** Since 2023 CO2 heating cost must be split by building class
@@ -258,7 +323,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Feature of nk-check
 - **Score / Risk / EV:** 58 / 20 / 52
 
-### 17. Tender requirements matrix extractor (`tender-req`)
+### 22. Tender requirements matrix extractor (`tender-req`)
 
 - **Target user:** Bid managers
 - **Problem:** Turning 100-page RFPs into compliance matrices
@@ -269,7 +334,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per document
 - **Score / Risk / EV:** 59 / 30 / 50
 
-### 18. Heating/energy subsidy calculator (BEG/GEG) (`energy-ausweis`)
+### 23. Heating/energy subsidy calculator (BEG/GEG) (`energy-ausweis`)
 
 - **Target user:** Homeowners
 - **Problem:** Heat pump subsidy rules complex
@@ -280,7 +345,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen to installers
 - **Score / Risk / EV:** 61 / 35 / 50
 
-### 19. Marketplace fee & margin calculator (`etsy-fees`)
+### 24. Marketplace fee & margin calculator (`etsy-fees`)
 
 - **Target user:** Etsy/eBay/Amazon sellers
 - **Problem:** True margin after fees
@@ -291,7 +356,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Free/affiliate
 - **Score / Risk / EV:** 54 / 15 / 50
 
-### 20. Mietspiegel / Mietpreisbremse checker (`mietspiegel`)
+### 25. Mietspiegel / Mietpreisbremse checker (`mietspiegel`)
 
 - **Target user:** German tenants
 - **Problem:** Is my rent legal under Mietpreisbremse?
@@ -302,7 +367,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen / success fee
 - **Score / Risk / EV:** 63 / 40 / 50
 
-### 21. Receipts to DATEV export (`receipt-datev`)
+### 26. Receipts to DATEV export (`receipt-datev`)
 
 - **Target user:** Freelancers with Steuerberater
 - **Problem:** Monthly receipt handover
@@ -313,7 +378,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 59 / 35 / 49
 
-### 22. SEO page audit (`seo-audit`)
+### 27. SEO page audit (`seo-audit`)
 
 - **Target user:** Marketers
 - **Problem:** On-page audits
@@ -324,7 +389,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 53 / 15 / 49
 
-### 23. Mahnwesen (dunning letters with interest calc) (`payment-reminder`)
+### 28. Mahnwesen (dunning letters with interest calc) (`payment-reminder`)
 
 - **Target user:** Freelancers/SMBs
 - **Problem:** Late payers; legal interest (§288 BGB) calc
@@ -335,7 +400,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per letter
 - **Score / Risk / EV:** 58 / 30 / 49
 
-### 24. Public sector invoicing helper (Leitweg-ID, portals) (`leitweg`)
+### 29. Public sector invoicing helper (Leitweg-ID, portals) (`leitweg`)
 
 - **Target user:** Suppliers to German authorities
 - **Problem:** Submitting XRechnung via ZRE/OZG-RE portals
@@ -346,7 +411,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per invoice
 - **Score / Risk / EV:** 56 / 25 / 49
 
-### 25. Working-time compliance check (ArbZG) (`hr-arbeitszeit`)
+### 30. Working-time compliance check (ArbZG) (`hr-arbeitszeit`)
 
 - **Target user:** Small employers
 - **Problem:** Rota violations of rest periods
@@ -357,7 +422,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 56 / 25 / 49
 
-### 26. Handelsregister/company check (KYB) (`company-lookup`)
+### 31. Handelsregister/company check (KYB) (`company-lookup`)
 
 - **Target user:** SMBs vetting partners
 - **Problem:** Checking company existence, directors
@@ -368,7 +433,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Credits
 - **Score / Risk / EV:** 58 / 35 / 48
 
-### 27. Website legal check (Impressum/cookie/DSGVO) (`impressum`)
+### 32. Lehrkräfte: Lehrplan-Navigator (`schule-zeugnis`)
+
+- **Target user:** Teachers (~800k)
+- **Problem:** Finding the curriculum competence for a state/grade/subject
+- **Current workaround:** Bildungsserver PDFs
+- **Example prompt:** "Welche Kompetenzen verlangt der Lehrplan Bayern Mathe Klasse 7?"
+- **What the plugin adds beyond plain ChatGPT:** Structured curricula of 16 states
+- **Existing alternatives:** fobizz, to-teach.ai, schulKI
+- **Monetization:** School licences
+- **Score / Risk / EV:** 55 / 25 / 48
+
+### 33. Website legal check (Impressum/cookie/DSGVO) (`impressum`)
 
 - **Target user:** Small website owners
 - **Problem:** Abmahnung risk
@@ -379,7 +455,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 60 / 45 / 47
 
-### 28. Amazon listing compliance/keyword check (`amazon-listing`)
+### 34. Amazon listing compliance/keyword check (`amazon-listing`)
 
 - **Target user:** Amazon sellers
 - **Problem:** Suppressed listings, keyword gaps
@@ -390,7 +466,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 54 / 25 / 47
 
-### 29. Fill official PDF forms (AcroForm) (`pdf-forms`)
+### 35. Fill official PDF forms (AcroForm) (`pdf-forms`)
 
 - **Target user:** Anyone filling government forms
 - **Problem:** Retyping data into PDF forms
@@ -401,7 +477,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per form
 - **Score / Risk / EV:** 57 / 35 / 47
 
-### 30. Trademark availability pre-check (DPMA/EUIPO) (`trademark`)
+### 36. Trademark availability pre-check (DPMA/EUIPO) (`trademark`)
 
 - **Target user:** Founders
 - **Problem:** Naming risk
@@ -412,7 +488,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen
 - **Score / Risk / EV:** 59 / 40 / 47
 
-### 31. Recipe nutrition calculator (`recipe-macro`)
+### 37. Recipe nutrition calculator (`recipe-macro`)
 
 - **Target user:** Fitness users
 - **Problem:** Macro counting
@@ -423,7 +499,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium
 - **Score / Risk / EV:** 51 / 15 / 47
 
-### 32. SEPA XML payment file generator (`iban-sepa`)
+### 38. SEPA XML payment file generator (`iban-sepa`)
 
 - **Target user:** SMBs paying many suppliers
 - **Problem:** Bulk transfers need pain.001 XML
@@ -434,7 +510,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per file
 - **Score / Risk / EV:** 55 / 30 / 47
 
-### 33. Flight delay compensation claim (EU261) (`flight-comp`)
+### 39. Flight delay compensation claim (EU261) (`flight-comp`)
 
 - **Target user:** Travellers
 - **Problem:** Claiming 250-600 EUR is tedious
@@ -445,7 +521,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Success fee or flat fee
 - **Score / Risk / EV:** 57 / 40 / 46
 
-### 34. Rental property yield calculator (DE) (`real-estate-yield`)
+### 40. Rental property yield calculator (DE) (`real-estate-yield`)
 
 - **Target user:** Small investors
 - **Problem:** Mietrendite, Grunderwerbsteuer, AfA
@@ -456,7 +532,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium
 - **Score / Risk / EV:** 51 / 20 / 46
 
-### 35. Bank CSV vs invoices reconciliation (`bank-recon`)
+### 41. BITV-Barrierefreiheitserklärung für Behörden (`barrierefreiheit-oeffentlich`)
+
+- **Target user:** Public bodies (mandatory)
+- **Problem:** Accessibility statements and reporting duties
+- **Current workaround:** Agencies
+- **Example prompt:** "Erstelle unsere Erklärung zur Barrierefreiheit"
+- **What the plugin adds beyond plain ChatGPT:** Audit + mandatory template
+- **Existing alternatives:** BIK BITV-Test, agencies
+- **Monetization:** B2G
+- **Score / Risk / EV:** 51 / 20 / 46
+
+### 42. Bank CSV vs invoices reconciliation (`bank-recon`)
 
 - **Target user:** Small businesses, bookkeepers
 - **Problem:** Matching bank lines to invoices monthly
@@ -467,7 +554,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium
 - **Score / Risk / EV:** 55 / 35 / 45
 
-### 36. Insurance policy comparison (DE Gewerbe) (`insurance-compare`)
+### 43. Insurance policy comparison (DE Gewerbe) (`insurance-compare`)
 
 - **Target user:** SMBs, brokers
 - **Problem:** Comparing coverage tables across offers
@@ -478,7 +565,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** B2B broker SaaS
 - **Score / Risk / EV:** 55 / 35 / 45
 
-### 37. Gehaltsabrechnung erklären/prüfen (`payslip`)
+### 44. Gehaltsabrechnung erklären/prüfen (`payslip`)
 
 - **Target user:** German employees
 - **Problem:** Payslips are opaque; errors in tax class etc.
@@ -489,7 +576,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Free/lead gen
 - **Score / Risk / EV:** 55 / 40 / 44
 
-### 38. Contract cancellation letter + deadline calc (`kuendigung`)
+### 45. Contract cancellation letter + deadline calc (`kuendigung`)
 
 - **Target user:** Consumers
 - **Problem:** Finding notice periods, sending legally valid cancellation
@@ -500,7 +587,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per send 2-5 EUR
 - **Score / Risk / EV:** 53 / 35 / 44
 
-### 39. Peppol participant lookup (`peppol-lookup`)
+### 46. Peppol participant lookup (`peppol-lookup`)
 
 - **Target user:** B2B finance teams (BE, DE)
 - **Problem:** Is customer on Peppol, what ID?
@@ -511,7 +598,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Low
 - **Score / Risk / EV:** 48 / 15 / 44
 
-### 40. Minijob/Midijob calculator & compliance (`payroll-minijob`)
+### 47. Minijob/Midijob calculator & compliance (`payroll-minijob`)
 
 - **Target user:** Small employers
 - **Problem:** Limits & contributions change yearly
@@ -522,7 +609,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Low
 - **Score / Risk / EV:** 50 / 25 / 44
 
-### 41. Brutto-Netto & offer comparison (`brutto-netto`)
+### 48. Brutto-Netto & offer comparison (`brutto-netto`)
 
 - **Target user:** German job seekers
 - **Problem:** Comparing job offers net
@@ -533,7 +620,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen only
 - **Score / Risk / EV:** 48 / 20 / 43
 
-### 42. Supplier quote comparison (`rfq-compare`)
+### 49. Supplier quote comparison (`rfq-compare`)
 
 - **Target user:** Procurement in SMBs
 - **Problem:** Normalizing 3-5 supplier quotes
@@ -544,7 +631,29 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 50 / 30 / 43
 
-### 43. Steuererklärung deduction finder (`steuer-pendler`)
+### 50. Bescheid-Erklärer (Behördenbriefe verstehen) (`leichte-sprache-bescheid`)
+
+- **Target user:** Citizens receiving Bescheide; Beratungsstellen
+- **Problem:** 86% of Caritas clients overwhelmed by forms/letters; Widerspruch deadlines missed
+- **Current workaround:** Beratungsstelle, family
+- **Example prompt:** "Ich habe diesen Bescheid vom Jobcenter bekommen, was heißt das?"
+- **What the plugin adds beyond plain ChatGPT:** Deadline calc + Widerspruch templates; largely native ChatGPT
+- **Existing alternatives:** Native ChatGPT, SUMM AI, capito
+- **Monetization:** Low
+- **Score / Risk / EV:** 52 / 35 / 43
+
+### 51. Kita-Platz & Gebühren-Navigator (`kita-gebuehr`)
+
+- **Target user:** Parents
+- **Problem:** Fees and Kita-Anspruch rules differ per municipality
+- **Current workaround:** Kommune website
+- **Example prompt:** "Was kostet ein Kitaplatz in Leipzig bei 60k Einkommen?"
+- **What the plugin adds beyond plain ChatGPT:** Municipal fee tables
+- **Existing alternatives:** Municipal calculators
+- **Monetization:** Low
+- **Score / Risk / EV:** 48 / 20 / 43
+
+### 52. Steuererklärung deduction finder (`steuer-pendler`)
 
 - **Target user:** German employees
 - **Problem:** Missing deductions (Pendlerpauschale, Homeoffice)
@@ -555,7 +664,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen
 - **Score / Risk / EV:** 51 / 45 / 40
 
-### 44. DSGVO Auskunft request + tracker (`gdpr-dsar`)
+### 53. DSGVO Auskunft request + tracker (`gdpr-dsar`)
 
 - **Target user:** Consumers
 - **Problem:** Requesting personal data from companies
@@ -566,7 +675,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Low
 - **Score / Risk / EV:** 44 / 25 / 39
 
-### 45. Address list cleanup & dedupe (`csv-clean`)
+### 54. Address list cleanup & dedupe (`csv-clean`)
 
 - **Target user:** Office admins
 - **Problem:** Dirty contact lists
@@ -577,7 +686,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Low
 - **Score / Risk / EV:** 45 / 30 / 38
 
-### 46. Deutsche Bahn Fahrgastrechte form (`bahn-refund`)
+### 55. Deutsche Bahn Fahrgastrechte form (`bahn-refund`)
 
 - **Target user:** German rail travellers
 - **Problem:** Delay compensation forms
@@ -588,7 +697,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Low
 - **Score / Risk / EV:** 44 / 30 / 37
 
-### 47. Mietkaution return deadline/interest calc (`kaution`)
+### 56. Mietkaution return deadline/interest calc (`kaution`)
 
 - **Target user:** Tenants after move-out
 - **Problem:** Getting deposit back with interest
@@ -599,7 +708,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per letter
 - **Score / Risk / EV:** 45 / 35 / 37
 
-### 48. Exam/shift schedule to calendar (`ics-schedule`)
+### 57. Exam/shift schedule to calendar (`ics-schedule`)
 
 - **Target user:** Students/workers
 - **Problem:** Turning PDFs into calendar events
@@ -610,7 +719,18 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Low
 - **Score / Risk / EV:** 41 / 25 / 36
 
-### 49. Email templating (`email-reply`)
+### 58. Aufenthalts-/Anerkennungs-Navigator (`ehrenamt-fluechtlingshilfe`)
+
+- **Target user:** Migrants + volunteer helpers, Migrationsberatung
+- **Problem:** Which permit, which recognition procedure for a foreign degree
+- **Current workaround:** anerkennung-in-deutschland.de, Beratung
+- **Example prompt:** "Wie lasse ich meinen syrischen Pflegeabschluss anerkennen?"
+- **What the plugin adds beyond plain ChatGPT:** Official procedure data + checklists
+- **Existing alternatives:** anerkennung-in-deutschland.de (official), Make it in Germany
+- **Monetization:** Grants
+- **Score / Risk / EV:** 45 / 40 / 36
+
+### 59. Email templating (`email-reply`)
 
 - **Target user:** Support agents
 - **Problem:** Repetitive replies
@@ -621,7 +741,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** None
 - **Score / Risk / EV:** 38 / 60 / 27
 
-### 50. Meeting minutes formatter (`meeting-minutes`)
+### 60. Meeting minutes formatter (`meeting-minutes`)
 
 - **Target user:** Office workers
 - **Problem:** Turning notes into minutes

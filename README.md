@@ -1,9 +1,15 @@
-# PluginPilot: Trauerfall-Lotse
+# PluginPilot: Lebenslagen-Lotsen (Trauerfall, Geburt)
 
 A ChatGPT plugin (remote MCP server + visual timeline) for bereaved people in Germany: **"Someone has died, what do I have to do now?"**
 It returns a personal, dated plan with the next critical deadline, responsible office, documents and legal basis.
 
 ![Timeline widget](assets/widget-light.png)
+
+**Geburts-Lotse** (`/geburt/mcp`, tool `plan_after_birth`): birth registration, Elternzeit notice (§ 16 BEEG), Elterngeld (§ 7 BEEG, 3 months retroactive), Kindergeld (§ 70 EStG, 6 months), Unterhaltsvorschuss (§ 4 UVG, 1 month), paternity, Kita. Support line: Elterntelefon 0800 111 0 550.
+
+![Geburts-Lotse](assets/geburt-light.png)
+
+Endpoints: `/mcp` (Trauerfall, also `/trauerfall/mcp`) and `/geburt/mcp`, which are separate plugins on one server with a shared deadline core and widget.
 
 Why this product: [docs/DEMAND_ANALYSIS.md](docs/DEMAND_ANALYSIS.md) → [docs/BEHOERDEN_LOTSE_VARIANTS.md](docs/BEHOERDEN_LOTSE_VARIANTS.md).
 

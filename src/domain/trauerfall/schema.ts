@@ -52,7 +52,11 @@ export type Step = z.infer<typeof StepSchema>;
 export const PlanSchema = z.object({
   rulesVersion: z.string(),
   today: z.string(),
-  dateOfDeath: z.string(),
+  heading: z.string(),
+  intro: z.string(),
+  phaseSet: z.enum(['default', 'geburt']).optional(),
+  anchorLabel: z.string().describe('Event the plan is anchored to, e.g. "Todestag 28.09.2026"'),
+  dateOfDeath: z.string().optional(),
   nextDeadline: StepSchema.optional(),
   steps: z.array(StepSchema),
   support: z.string(),

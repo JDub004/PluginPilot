@@ -7,6 +7,12 @@
 
 Free-tier note: the service sleeps after inactivity, so the first request then takes ~30–60 s. Use a paid instance (~7 $/month) before real users.
 
+## Plugin endpoints
+- Trauerfall-Lotse: `https://<host>/mcp`
+- Geburts-Lotse: `https://<host>/geburt/mcp`
+
+Each is connected/submitted as its own app.
+
 ## 2. Connect it to ChatGPT (developer mode, for testing)
 Requires a paid ChatGPT plan with developer mode. In ChatGPT: Settings → Apps/Connectors → Advanced → enable developer mode → create a new app/connector with the URL `https://<your-render-url>/mcp`, no authentication. (Menu names change; current steps: https://developers.openai.com/apps-sdk/deploy/connect-chatgpt.)
 Then test with the prompts in `tests/evaluation/prompts.trauerfall.json`.

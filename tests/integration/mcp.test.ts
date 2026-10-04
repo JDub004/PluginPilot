@@ -80,6 +80,16 @@ describe('MCP over HTTP', () => {
     expect(serialized).not.toContain(death);
   });
 
+  it('serves the Geburts-Lotse as a separate plugin on /geburt/mcp', async () => {
+    const c = new Client({ name: 'test', version: '0' });
+    await c.connect(new StreamableHTTPClientTransport(new URL('/geburt/mcp', url)));
+    const { tools } = await c.listTools();
+    expect(tools.map((t) => t.name)).toEqual(['plan_after_birth']);
+    const res = await c.callTool({ name: 'plan_after_birth', arguments: { birthDate: death } });
+    expect((res.structuredContent as { phaseSet: string }).phaseSet).toBe('geburt');
+    await c.close();
+  });
+
   it('rejects oversized bodies with 413', async () => {
     const r = await fetch(url, {
       method: 'POST',

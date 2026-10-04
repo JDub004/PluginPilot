@@ -1,12 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { track } from '../analytics/events.js';
 import { InvalidSituationError, planAfterDeath } from '../domain/trauerfall/plan.js';
 import { PlanSchema, SituationSchema, type Plan } from '../domain/trauerfall/schema.js';
 
 export const TOOL_NAME = 'plan_after_death';
-// MCP Apps UI MIME type (current OpenAI Apps SDK docs).
-export const RESOURCE_MIME_TYPE = 'text/html;profile=mcp-app';
 export const WIDGET_URI = 'ui://trauerfall-lotse/timeline-v1.html';
 
 export const TOOL_DESCRIPTION = [
@@ -19,13 +16,7 @@ export const TOOL_DESCRIPTION = [
   'Do not use for deaths outside German law, for funeral planning before a death, or to decide legal questions about the estate.',
 ].join(' ');
 
-// Works from src/tools (tsx) and dist/src/tools (compiled).
-const WIDGET_HTML = (() => {
-  for (const rel of ['../../web/src/timeline.html', '../../../web/src/timeline.html']) {
-    if (existsSync(new URL(rel, import.meta.url))) return readFileSync(new URL(rel, import.meta.url), 'utf8');
-  }
-  throw new Error('timeline.html not found');
-})();
+import { RESOURCE_MIME_TYPE, WIDGET_HTML } from './widget.js';
 
 export function registerPlanAfterDeath(server: McpServer, now: () => string = () => new Date().toISOString().slice(0, 10)): void {
   server.registerResource('Trauerfall-Fahrplan', WIDGET_URI, { mimeType: RESOURCE_MIME_TYPE }, async () => ({

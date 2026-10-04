@@ -1,8 +1,25 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerDraftLetter } from '../tools/draftLetter.js';
+import { registerPlanAfterBirth } from '../tools/planAfterBirth.js';
 import { registerPlanAfterDeath } from '../tools/planAfterDeath.js';
 
-export function createServer(now: () => string = () => new Date().toISOString().slice(0, 10)): McpServer {
+export type PluginKind = 'trauerfall' | 'geburt';
+const today = () => new Date().toISOString().slice(0, 10);
+
+/** One MCP server per plugin; all share the deadline core and the timeline widget. */
+export function createServer(kind: PluginKind = 'trauerfall', now: () => string = today): McpServer {
+  if (kind === 'geburt') {
+    const server = new McpServer(
+      { name: 'geburts-lotse', version: '0.1.0' },
+      {
+        instructions:
+          'Helps new parents in Germany with official steps after a birth. Be warm and brief. Ask only for the birth date and missing yes/no facts, ' +
+          'then call plan_after_birth. Present the next critical deadline first (Elterngeld and Kindergeld are only paid retroactively for a limited time).',
+      },
+    );
+    registerPlanAfterBirth(server, now);
+    return server;
+  }
   const server = new McpServer(
     { name: 'trauerfall-lotse', version: '0.1.0' },
     {

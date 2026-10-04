@@ -22,7 +22,8 @@ Goal: find a painful recurring workflow where ChatGPT is the right interface, bu
 - `docs/` — research and strategy. `docs/OPPORTUNITIES.md` is generated: `node scripts/render-opportunities.mjs`.
 - `src/discovery/` — opportunity dataset and scoring (seed of the `/discover` engine).
 - `src/domain/trauerfall/` — active product: pure deadline engine (calendar + plan). Bump `RULES_VERSION` and add tests for any legal change.
+- `src/domain/geburt/` — Geburts-Lotse (plugin on `/geburt/mcp`), reuses trauerfall calendar + Plan schema.
 - `src/domain/nebenkosten/` — archived prototype, not registered.
 - `web/src/timeline.html` — MCP Apps widget (vanilla JS, text nodes only). Preview: `npx tsx scripts/preview-widget.ts out.html`.
-- `src/tools/`, `src/mcp/`, `src/http.ts` — MCP surface. Keep one primary tool.
+- `src/tools/`, `src/mcp/`, `src/http.ts` — MCP surface. One primary tool per plugin; plugins are routed by path in `src/http.ts`.
 - Commands: `npm test`, `npm run eval`, `npm run typecheck`, `npm run build`.

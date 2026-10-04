@@ -1,10 +1,13 @@
 // Builds a standalone preview of the timeline widget with an example plan (no ChatGPT needed).
-// Usage: npx tsx scripts/preview-widget.ts <out.html>
+// Usage: npx tsx scripts/preview-widget.ts <out.html> [trauerfall|geburt]
 import { readFileSync, writeFileSync } from 'node:fs';
+import { BirthSituationSchema, planAfterBirth } from '../src/domain/geburt/plan.js';
 import { planAfterDeath } from '../src/domain/trauerfall/plan.js';
 import { SituationSchema } from '../src/domain/trauerfall/schema.js';
 
-const plan = planAfterDeath(
+const plan = process.argv[3] === 'geburt'
+  ? planAfterBirth(BirthSituationSchema.parse({ birthDate: '2026-09-15', motherEmployed: true, otherParentEmployed: true, otherParentLeaveStart: '2027-01-15', parentsMarried: false, needsChildcare: true }), '2026-09-20')
+  : planAfterDeath(
   SituationSchema.parse({
     dateOfDeath: '2026-09-28', relationship: 'spouse_or_partner', survivingSpouse: true, survivingSpouseFamilyInsured: true,
     deceasedReceivedPension: true, rentedApartment: true, livedTogether: true, ownedVehicle: true, hasLifeInsurance: true,

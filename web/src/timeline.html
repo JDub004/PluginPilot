@@ -39,7 +39,11 @@
 <div id="root"><p class="empty">Einen Moment bitte …</p></div>
 <script>
 (function () {
-  var PHASES = { sofort: 'Jetzt als Erstes', erste_woche: 'In den nächsten Tagen', erste_wochen: 'In den kommenden Wochen', spaeter: 'Wenn Sie wieder Kraft haben' };
+  var PHASE_SETS = {
+    default: { sofort: 'Jetzt als Erstes', erste_woche: 'In den nächsten Tagen', erste_wochen: 'In den kommenden Wochen', spaeter: 'Wenn Sie wieder Kraft haben' },
+    geburt: { sofort: 'Gleich nach der Geburt', erste_woche: 'In der ersten Woche', erste_wochen: 'In den ersten Monaten', spaeter: 'Später im ersten Jahr' }
+  };
+  var PHASES = PHASE_SETS.default;
   var root = document.getElementById('root');
 
   function el(tag, attrs, children) {
@@ -53,7 +57,8 @@
     if (s.overdue) return { cls: 'due over', text: 'vielleicht schon erledigt? (bis ' + fmt(s.dueDate) + ')' };
     if (s.dueDate && typeof s.daysLeft === 'number') {
       var left = s.daysLeft === 0 ? 'heute' : s.daysLeft === 1 ? 'morgen' : 'noch ' + s.daysLeft + ' Tage Zeit';
-      return { cls: s.daysLeft <= 7 && s.critical ? 'due soon' : 'due', text: 'bis ' + fmt(s.dueDate) + ' · ' + left };
+      var guide = String(s.dueLabel || '').indexOf('Richtwert') === 0;
+      return { cls: s.daysLeft <= 7 && s.critical ? 'due soon' : 'due', text: (guide ? 'etwa bis ' : 'bis ') + fmt(s.dueDate) + ' · ' + left };
     }
     return { cls: 'due', text: String(s.dueLabel || '') };
   }
@@ -61,10 +66,11 @@
   // All values are rendered as text nodes only (untrusted input).
   function render(plan) {
     if (!plan || !Array.isArray(plan.steps)) return;
+    PHASES = PHASE_SETS[plan.phaseSet] || PHASE_SETS.default;
     root.textContent = '';
-    root.appendChild(el('h1', null, ['Schritt für Schritt – was jetzt zu tun ist']));
-    root.appendChild(el('p', { class: 'intro' }, ['Es tut uns sehr leid. Sie müssen nicht alles auf einmal erledigen. Vieles übernimmt auf Wunsch der Bestatter. Hier sehen Sie, was wann wichtig ist.']));
-    root.appendChild(el('p', { class: 'sub' }, ['Todestag ' + fmt(plan.dateOfDeath) + ' · Stand ' + fmt(plan.today)]));
+    root.appendChild(el('h1', null, [String(plan.heading || 'Schritt für Schritt')]));
+    if (plan.intro) root.appendChild(el('p', { class: 'intro' }, [String(plan.intro)]));
+    root.appendChild(el('p', { class: 'sub' }, [String(plan.anchorLabel || '') + ' · Stand ' + fmt(plan.today)]));
     if (plan.nextDeadline) {
       var n = plan.nextDeadline;
       root.appendChild(el('div', { class: 'next' }, [el('b', null, ['Als Nächstes wichtig: ']), n.title + ' – ' + dueText(n).text]));
@@ -107,7 +113,7 @@
     if (m.id === 1 && m.result) send({ method: 'ui/notifications/initialized', params: {} });
     if (m.method === 'ui/notifications/tool-result') render(m.params && m.params.structuredContent);
   });
-  send({ id: nextId++, method: 'ui/initialize', params: { appInfo: { name: 'trauerfall-lotse', version: '0.1.0' }, appCapabilities: {}, protocolVersion: '2026-01-26' } });
+  send({ id: nextId++, method: 'ui/initialize', params: { appInfo: { name: 'lebenslagen-lotse', version: '0.2.0' }, appCapabilities: {}, protocolVersion: '2026-01-26' } });
   // Legacy ChatGPT fallback.
   if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput);
   window.addEventListener('openai:set_globals', function () { if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput); });

@@ -1,7 +1,10 @@
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Env } from './config/env.js';
-import { createServer } from './mcp/server.js';
+import { createServer, type PluginKind } from './mcp/server.js';
+
+// One endpoint per plugin (each is listed separately in the plugin directory).
+const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt' };
 
 
 function readJson(req: IncomingMessage, limit: number): Promise<unknown> {
@@ -43,10 +46,10 @@ function send(res: ServerResponse, status: number, body: unknown): void {
 }
 
 // Stateless streamable HTTP: a fresh server and transport per request, no session state.
-async function handleMcp(env: Env, req: IncomingMessage, res: ServerResponse): Promise<void> {
+async function handleMcp(env: Env, kind: PluginKind, req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== 'POST') return send(res, 405, { error: 'method not allowed' });
   const body = await readJson(req, env.MAX_BODY_BYTES);
-  const server = createServer();
+  const server = createServer(kind);
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   res.on('close', () => {
     void transport.close();
@@ -60,8 +63,9 @@ export function createApp(env: Env): Server {
   return createHttpServer((req, res) => {
     const path = (req.url ?? '/').split('?')[0];
     if (path === '/health') return send(res, 200, { ok: true });
-    if (path === '/mcp') {
-      handleMcp(env, req, res).catch((err: { status?: number }) => {
+    const kind = ROUTES[path ?? ''];
+    if (kind) {
+      handleMcp(env, kind, req, res).catch((err: { status?: number }) => {
         if (!res.headersSent) send(res, err.status ?? 500, { error: err.status ? 'bad request' : 'internal error' });
       });
       return;

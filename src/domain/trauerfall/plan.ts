@@ -231,6 +231,9 @@ export function planAfterDeath(s: Situation, today: string): Plan {
   return {
     rulesVersion: RULES_VERSION,
     today,
+    heading: 'Schritt für Schritt – was jetzt zu tun ist',
+    intro: 'Es tut uns sehr leid. Sie müssen nicht alles auf einmal erledigen. Vieles übernimmt auf Wunsch der Bestatter. Hier sehen Sie, was wann wichtig ist.',
+    anchorLabel: `Todestag ${d.split('-').reverse().join('.')}`,
     dateOfDeath: d,
     ...(nextDeadline ? { nextDeadline } : {}),
     steps,

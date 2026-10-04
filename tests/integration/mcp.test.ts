@@ -29,12 +29,12 @@ describe('MCP over HTTP', () => {
   const today = new Date().toISOString().slice(0, 10);
   const death = new Date(Date.now() - 9 * 86_400_000).toISOString().slice(0, 10);
 
-  it('lists exactly one read-only tool linked to the widget', async () => {
+  it('lists the plan tool (with widget) and the letter tool, both read-only', async () => {
     const c = await client();
     const { tools } = await c.listTools();
-    expect(tools.map((t) => t.name)).toEqual(['plan_after_death']);
-    expect(tools[0]?.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false, openWorldHint: false });
-    expect(tools[0]?._meta).toMatchObject({ ui: { resourceUri: 'ui://trauerfall-lotse/timeline-v1.html' } });
+    expect(tools.map((t) => t.name).sort()).toEqual(['draft_letter', 'plan_after_death']);
+    for (const t of tools) expect(t.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false, openWorldHint: false });
+    expect(tools.find((t) => t.name === 'plan_after_death')?._meta).toMatchObject({ ui: { resourceUri: 'ui://trauerfall-lotse/timeline-v1.html' } });
     await c.close();
   });
 
@@ -57,6 +57,13 @@ describe('MCP over HTTP', () => {
     const sc = res.structuredContent as { steps: { id: string }[]; nextDeadline?: { id: string } };
     expect(sc.steps.map((s) => s.id)).toEqual(expect.arrayContaining(['standesamt', 'sterbevierteljahr', 'witwenrente', 'mietvertrag']));
     expect(sc.nextDeadline?.id).toBe('sterbevierteljahr');
+    await c.close();
+  });
+
+  it('drafts a letter', async () => {
+    const c = await client();
+    const res = await c.callTool({ name: 'draft_letter', arguments: { type: 'rundfunk_abmeldung', dateOfDeath: death } });
+    expect((res.structuredContent as { subject: string }).subject).toContain('Rundfunkbeitrag');
     await c.close();
   });
 

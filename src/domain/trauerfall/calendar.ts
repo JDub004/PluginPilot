@@ -61,3 +61,23 @@ export function nthWerktagAfter(d: string, n: number): string {
   }
   return cur;
 }
+
+/**
+ * End of a residential tenancy terminated with the statutory period (§ 573d Abs. 2 BGB):
+ * notice received by the 3rd working day of a month ends the lease at the end of the month after next.
+ * Saturdays are not counted for this deadline (BGH, 27.04.2005, VIII ZR 206/04).
+ */
+export function tenancyEndAfterNotice(received: string): string {
+  const x = parseIso(received);
+  const y = x.getUTCFullYear();
+  const m = x.getUTCMonth();
+  let count = 0;
+  let thirdWorkday = '';
+  for (let day = 1; day <= 31 && !thirdWorkday; day++) {
+    const d = iso(new Date(Date.UTC(y, m, day)));
+    const wd = parseIso(d).getUTCDay();
+    if (wd !== 0 && wd !== 6 && !nationalHolidays(y).has(d) && ++count === 3) thirdWorkday = d;
+  }
+  const monthsAhead = received <= thirdWorkday ? 2 : 3;
+  return iso(new Date(Date.UTC(y, m + monthsAhead + 1, 0)));
+}

@@ -69,20 +69,20 @@ export function planAfterDeath(s: Situation, today: string): Plan {
       office: 'Standesamt des Sterbeortes (Krankenhaus/Heim oder Bestatter erledigen das oft)',
       documents: ['Todesbescheinigung', 'Personalausweis', 'Geburtsurkunde', 'ggf. Heirats-/Scheidungsurkunde'],
       why: 'Die Sterbeurkunde brauchen Sie für fast jeden weiteren Schritt. Bestellen Sie gleich mehrere Exemplare.',
-      legalBasis: '§ 28 PStG',
+      legalBasis: '§ 28 PStG', sourceUrl: 'https://www.gesetze-im-internet.de/pstg/__28.html',
     });
   }
   if (s.willFound) {
     drafts.push({
-      id: 'testament', title: 'Gefundenes Testament beim Nachlassgericht abliefern', dueLabel: 'unverzüglich', critical: true,
+      id: 'testament', letterType: 'testament_ablieferung', title: 'Gefundenes Testament beim Nachlassgericht abliefern', dueLabel: 'unverzüglich', critical: true,
       office: 'Nachlassgericht (Amtsgericht am letzten Wohnsitz)', documents: ['Original-Testament', 'Sterbeurkunde'],
       why: 'Wer ein Testament findet, muss es abliefern, auch wenn es ihn nicht begünstigt. Das Gericht eröffnet es.',
-      legalBasis: '§ 2259 BGB',
+      legalBasis: '§ 2259 BGB', sourceUrl: 'https://www.gesetze-im-internet.de/bgb/__2259.html',
     });
   }
   if (s.deceasedEmployed) {
     drafts.push({
-      id: 'arbeitgeber', title: 'Arbeitgeber informieren', dueLabel: 'in der ersten Woche', phase: 'erste_woche', critical: false,
+      id: 'arbeitgeber', letterType: 'arbeitgeber_mitteilung', title: 'Arbeitgeber informieren', dueLabel: 'in der ersten Woche', phase: 'erste_woche', critical: false,
       office: 'Personalabteilung', documents: ['Sterbeurkunde'],
       why: 'Restlohn, Urlaubsabgeltung und ggf. tarifliches Sterbegeld klären.',
     });
@@ -111,34 +111,34 @@ export function planAfterDeath(s: Situation, today: string): Plan {
       office: 'Renten Service der Deutschen Post (Antrag auch über Bestatter oder Rentenversicherung)',
       documents: ['Sterbeurkunde', 'Rentennummer der verstorbenen Person', 'Ihre Bankverbindung'],
       why: 'Für drei Monate nach dem Sterbemonat wird die volle Rente der verstorbenen Person als Vorschuss weitergezahlt. Der Antrag muss innerhalb von 30 Tagen gestellt werden.',
-      legalBasis: 'Sterbevierteljahr nach SGB VI; Vorschusszahlung über den Renten Service',
+      legalBasis: 'Sterbevierteljahr; Vorschuss nur bei Antrag innerhalb von 30 Tagen (Deutsche Rentenversicherung)', sourceUrl: 'https://www.deutsche-rentenversicherung.de/DRV/DE/Ueber-uns-und-Presse/Presse/Meldungen/2025/251007-sterbevierteljahr-vorschuss.html',
     });
   }
   if (s.survivingSpouseFamilyInsured) {
     drafts.push({
-      id: 'krankenversicherung', title: 'Eigene Krankenversicherung klären (freiwillige Versicherung)', dueDate: addMonths(d, 3),
+      id: 'krankenversicherung', letterType: 'krankenkasse_beitritt', title: 'Eigene Krankenversicherung klären (freiwillige Versicherung)', dueDate: addMonths(d, 3),
       dueLabel: 'innerhalb von 3 Monaten', critical: true,
       office: 'Krankenkasse', documents: ['Sterbeurkunde', 'Versichertenkarte'],
       why: 'Die Familienversicherung endet. Der Beitritt zur freiwilligen Versicherung ist nur innerhalb von drei Monaten möglich.',
-      legalBasis: '§ 9 Abs. 2 SGB V',
+      legalBasis: '§ 9 Abs. 2 SGB V', sourceUrl: 'https://www.gesetze-im-internet.de/sgb_5/__9.html',
     });
   }
   if (s.rentedApartment) {
     drafts.push(
       s.livedTogether
         ? {
-            id: 'mietvertrag', title: 'Entscheiden, ob Sie den Mietvertrag fortführen', dueDate: addMonths(known, 1),
+            id: 'mietvertrag', letterType: 'mietvertrag_nicht_fortsetzen', title: 'Entscheiden, ob Sie den Mietvertrag fortführen', dueDate: addMonths(known, 1),
             dueLabel: 'innerhalb eines Monats ab Kenntnis', critical: true,
             office: 'Vermieter (schriftlich)', documents: ['Sterbeurkunde', 'Mietvertrag'],
             why: 'Wer im Haushalt lebte, tritt automatisch in den Mietvertrag ein. Wer das nicht will, muss es innerhalb eines Monats erklären.',
-            legalBasis: '§ 563 Abs. 3 BGB',
+            legalBasis: '§ 563 Abs. 3 BGB', sourceUrl: 'https://www.gesetze-im-internet.de/bgb/__563.html',
           }
         : {
-            id: 'mietvertrag', title: 'Mietwohnung mit Sonderkündigungsrecht kündigen', dueDate: addMonths(known, 1),
+            id: 'mietvertrag', letterType: 'mietvertrag_kuendigung_erben', title: 'Mietwohnung mit Sonderkündigungsrecht kündigen', dueDate: addMonths(known, 1),
             dueLabel: 'innerhalb eines Monats ab Kenntnis', critical: true,
             office: 'Vermieter (schriftlich, von allen Erben unterschrieben)', documents: ['Sterbeurkunde', 'Mietvertrag', 'ggf. Erbnachweis'],
             why: 'Erben können außerordentlich mit der gesetzlichen Frist (3 Monate) kündigen, aber nur innerhalb eines Monats. Danach läuft der Vertrag regulär weiter.',
-            legalBasis: '§ 564 BGB',
+            legalBasis: '§ 564 BGB', sourceUrl: 'https://www.gesetze-im-internet.de/bgb/__564.html',
           },
     );
   }
@@ -151,41 +151,43 @@ export function planAfterDeath(s: Situation, today: string): Plan {
     critical: s.debtsSuspected,
     office: 'Nachlassgericht (Amtsgericht) oder Notar, persönlich bzw. öffentlich beglaubigt',
     documents: ['Personalausweis', 'Sterbeurkunde', 'Angaben zum Nachlass'],
-    why: s.debtsSuspected
+    why: (s.debtsSuspected
       ? 'Wer nicht rechtzeitig ausschlägt, hat das Erbe angenommen und haftet grundsätzlich auch für Schulden. Nicht über Nachlassgegenstände verfügen, bevor das geklärt ist.'
-      : 'Nach Ablauf gilt das Erbe als angenommen. Nur relevant, wenn Sie das Erbe nicht wollen, etwa bei Schulden.',
-    legalBasis: '§§ 1943, 1944, 1945 BGB',
+      : 'Nach Ablauf gilt das Erbe als angenommen. Nur relevant, wenn Sie das Erbe nicht wollen, etwa bei Schulden.') +
+      (s.willFound ? ' Weil ein Testament vorliegt, beginnt die Frist erst, wenn das Nachlassgericht es Ihnen bekannt gegeben hat; das Datum hier ist die früheste Möglichkeit.' : '') +
+      ' Halten Sie sich bei Beginn der Frist im Ausland auf, beträgt sie sechs Monate.',
+    legalBasis: '§§ 1943, 1944, 1945 BGB', sourceUrl: 'https://www.gesetze-im-internet.de/bgb/__1944.html',
   });
   if (s.survivingSpouse) {
     drafts.push({
-      id: 'witwenrente', title: 'Witwen- bzw. Witwerrente beantragen', dueDate: endOfMonthAfter(d, 12),
+      id: 'witwenrente', phase: 'erste_wochen', title: 'Witwen- bzw. Witwerrente beantragen', dueDate: endOfMonthAfter(d, 12),
       dueLabel: 'spätestens 12 Kalendermonate nach dem Sterbemonat, besser sofort', critical: true,
       office: 'Deutsche Rentenversicherung (Auskunfts- und Beratungsstelle, Versichertenälteste oder online)',
       documents: ['Sterbeurkunde', 'Heiratsurkunde', 'Rentenversicherungsnummern', 'Einkommensnachweise'],
       why: 'Die Rente wird höchstens 12 Kalendermonate rückwirkend gezahlt. Ein späterer Antrag kostet Geld.',
-      legalBasis: '§ 46, § 99 Abs. 2 SGB VI',
+      legalBasis: '§ 46, § 99 Abs. 2 SGB VI', sourceUrl: 'https://www.gesetze-im-internet.de/sgb_6/__99.html',
     });
   }
   if (s.childrenUnder27) {
     drafts.push({
-      id: 'waisenrente', title: 'Waisenrente für Kinder prüfen und beantragen', dueDate: endOfMonthAfter(d, 12),
+      id: 'waisenrente', phase: 'erste_wochen', title: 'Waisenrente für Kinder prüfen und beantragen', dueDate: endOfMonthAfter(d, 12),
       dueLabel: 'spätestens 12 Kalendermonate nach dem Sterbemonat', critical: true,
       office: 'Deutsche Rentenversicherung', documents: ['Sterbeurkunde', 'Geburtsurkunden der Kinder', 'ggf. Schul-/Ausbildungsnachweis (ab 18)'],
       why: 'Kinder bis 18, in Ausbildung bis 27, können Waisenrente erhalten. Auch hier gilt die 12-Monats-Grenze für Nachzahlungen.',
-      legalBasis: '§ 48, § 99 Abs. 2 SGB VI',
+      legalBasis: '§ 48, § 99 Abs. 2 SGB VI', sourceUrl: 'https://www.gesetze-im-internet.de/sgb_6/__99.html',
     });
   }
   drafts.push({
     id: 'erbschaftsteuer', title: 'Erbschaft dem Finanzamt anzeigen (falls nötig)', dueDate: addMonths(known, 3),
     dueLabel: 'innerhalb von 3 Monaten ab Kenntnis', critical: false,
     office: 'Erbschaftsteuer-Finanzamt', documents: ['Sterbeurkunde', 'Übersicht über den Nachlass'],
-    why: 'Die Anzeige entfällt meist, wenn ein Testament gerichtlich oder notariell eröffnet wurde und sich der Erwerb daraus eindeutig ergibt. Banken melden Konten ohnehin.',
-    legalBasis: '§ 30 ErbStG',
+    why: 'Die Anzeige entfällt, wenn ein Testament gerichtlich oder notariell eröffnet wurde und sich Ihr Verhältnis zur verstorbenen Person daraus eindeutig ergibt. Sie bleibt aber nötig, wenn Grundbesitz, Betriebsvermögen, bestimmte Firmenanteile oder Auslandsvermögen dazugehören.',
+    legalBasis: '§ 30 ErbStG', sourceUrl: 'https://www.gesetze-im-internet.de/erbstg_1974/__30.html',
   });
 
   // --- later ---------------------------------------------------------------------------------
   drafts.push({
-    id: 'banken', title: 'Banken informieren und Erbnachweis klären', dueLabel: 'in den ersten Wochen', phase: 'erste_wochen', critical: false,
+    id: 'banken', letterType: 'bank_mitteilung', title: 'Banken informieren und Erbnachweis klären', dueLabel: 'in den ersten Wochen', phase: 'erste_wochen', critical: false,
     office: 'Banken und Sparkassen der verstorbenen Person', documents: ['Sterbeurkunde', 'Erbschein oder eröffnetes notarielles Testament', 'ggf. Vollmacht über den Tod hinaus'],
     why: 'Daueraufträge prüfen, Bestattungskosten können oft direkt vom Konto bezahlt werden.',
   });
@@ -201,16 +203,16 @@ export function planAfterDeath(s: Situation, today: string): Plan {
       id: 'gewerbe', title: 'Gewerbe abmelden und Finanzamt informieren', dueLabel: 'in den ersten Wochen', phase: 'erste_wochen', critical: false,
       office: 'Gewerbeamt, Finanzamt', documents: ['Sterbeurkunde', 'Gewerbeanmeldung'],
       why: 'Mit der Aufgabe des Betriebs ist das Gewerbe abzumelden.',
-      legalBasis: '§ 14 GewO',
+      legalBasis: '§ 14 GewO', sourceUrl: 'https://www.gesetze-im-internet.de/gewo/__14.html',
     });
   }
   drafts.push({
-    id: 'rundfunk', title: 'Rundfunkbeitrag abmelden', dueLabel: 'in den ersten Wochen', phase: 'erste_wochen', critical: false,
+    id: 'rundfunk', letterType: 'rundfunk_abmeldung', title: 'Rundfunkbeitrag abmelden', dueLabel: 'in den ersten Wochen', phase: 'erste_wochen', critical: false,
     office: 'ARD ZDF Deutschlandradio Beitragsservice (online)', documents: ['Beitragsnummer', 'Sterbeurkunde'],
     why: 'Der Beitrag wird sonst weiter abgebucht.',
   });
   drafts.push({
-    id: 'vertraege', title: 'Verträge, Mitgliedschaften und Online-Konten kündigen', dueLabel: 'später, ohne Eile', phase: 'spaeter', critical: false,
+    id: 'vertraege', letterType: 'vertrag_kuendigung', title: 'Verträge, Mitgliedschaften und Online-Konten kündigen', dueLabel: 'später, ohne Eile', phase: 'spaeter', critical: false,
     office: 'Telefon/Internet, Strom, Abos, Vereine, E-Mail und soziale Netzwerke', documents: ['Sterbeurkunde'],
     why: 'Viele Verträge enden nicht automatisch. Bei Online-Konten gibt es oft eigene Verfahren für Hinterbliebene.',
   });
@@ -219,7 +221,7 @@ export function planAfterDeath(s: Situation, today: string): Plan {
     dueLabel: 'falls Pflicht: bis 31.07. des Folgejahres', critical: false,
     office: 'Finanzamt der verstorbenen Person', documents: ['Einkommensnachweise', 'Belege zu Bestattungskosten'],
     why: 'Die Erben müssen die letzte Erklärung abgeben. Mit Steuerberatung gelten längere Fristen.',
-    legalBasis: '§ 149 AO',
+    legalBasis: '§ 149 AO', sourceUrl: 'https://www.gesetze-im-internet.de/ao_1977/__149.html',
   });
 
   const steps = drafts.map((x) => finish(x, today, d)).sort(order);

@@ -1,0 +1,134 @@
+[
+ {
+  "id": "direct-01",
+  "category": "direct",
+  "prompt": "Mein Vater ist gestern gestorben, was muss ich jetzt alles erledigen?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-02",
+  "category": "direct",
+  "prompt": "Todesfall in der Familie – welche Behördengänge und Fristen gibt es?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-03",
+  "category": "direct",
+  "prompt": "Meine Frau ist verstorben, sie bekam Rente. Was muss ich beantragen?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-04",
+  "category": "direct",
+  "prompt": "Was muss man nach einem Todesfall alles kündigen und bis wann?",
+  "expected": "call"
+ },
+ {
+  "id": "direct-05",
+  "category": "direct",
+  "prompt": "Checkliste Trauerfall bitte, Todestag war am 28.09.",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-01",
+  "category": "indirect",
+  "prompt": "Meine Mutter ist letzte Woche im Krankenhaus gestorben und ich weiß nicht, wo ich anfangen soll",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-02",
+  "category": "indirect",
+  "prompt": "Ich glaube, mein Onkel hatte Schulden. Er ist vor 10 Tagen gestorben. Was jetzt?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-03",
+  "category": "indirect",
+  "prompt": "Opa hatte eine Mietwohnung, was passiert damit jetzt?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-04",
+  "category": "indirect",
+  "prompt": "Ich war über meinen Mann familienversichert und er ist verstorben",
+  "expected": "call"
+ },
+ {
+  "id": "follow_up-01",
+  "category": "follow_up",
+  "prompt": "Kannst du mir den Brief an den Vermieter schreiben?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-02",
+  "category": "follow_up",
+  "prompt": "Schreib mir die Kündigung für den Handyvertrag",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-03",
+  "category": "follow_up",
+  "prompt": "Wie melde ich den Rundfunkbeitrag ab?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-04",
+  "category": "follow_up",
+  "prompt": "Bis wann genau muss ich die Wohnung kündigen, wenn ich den Brief heute abschicke?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "negative-01",
+  "category": "negative",
+  "prompt": "Wie plane ich eine Hochzeit?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-02",
+  "category": "negative",
+  "prompt": "Schreib ein Gedicht über Trauer",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-03",
+  "category": "negative",
+  "prompt": "Was kostet eine Beerdigung in München?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-04",
+  "category": "negative",
+  "prompt": "Wie schreibe ich ein Testament?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-05",
+  "category": "negative",
+  "prompt": "Erkläre mir die Erbfolge in Österreich",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-01",
+  "category": "boundary",
+  "prompt": "Soll ich das Erbe ausschlagen?",
+  "expected": "no_call_or_answer"
+ },
+ {
+  "id": "boundary-02",
+  "category": "boundary",
+  "prompt": "Wie viel Erbschaftsteuer muss ich zahlen?",
+  "expected": "no_call_or_answer"
+ },
+ {
+  "id": "boundary-03",
+  "category": "boundary",
+  "prompt": "Mein Hund ist gestorben, was muss ich tun?",
+  "expected": "no_call_or_answer"
+ },
+ {
+  "id": "boundary-04",
+  "category": "boundary",
+  "prompt": "Ich möchte für meine eigene Beerdigung vorsorgen",
+  "expected": "no_call_or_answer"
+ }
+]

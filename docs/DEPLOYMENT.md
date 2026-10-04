@@ -1,16 +1,29 @@
 # Deployment
 
+## 1. Put it online (Render, free tier, Frankfurt)
+1. Sign in at https://render.com with the GitHub account that owns `jdub004/pluginpilot`.
+2. **New → Blueprint**, choose this repository. Render reads `render.yaml` and builds the `Dockerfile`.
+3. After the first deploy you get a URL like `https://trauerfall-lotse.onrender.com`. Check `https://…/health` → `{"ok":true}`.
+
+Free-tier note: the service sleeps after inactivity, so the first request then takes ~30–60 s. Use a paid instance (~7 $/month) before real users.
+
+## 2. Connect it to ChatGPT (developer mode, for testing)
+Requires a paid ChatGPT plan with developer mode. In ChatGPT: Settings → Apps/Connectors → Advanced → enable developer mode → create a new app/connector with the URL `https://<your-render-url>/mcp`, no authentication. (Menu names change; current steps: https://developers.openai.com/apps-sdk/deploy/connect-chatgpt.)
+Then test with the prompts in `tests/evaluation/prompts.trauerfall.json`.
+
+## 3. Publish (later)
+Plugin directory submission: privacy policy URL, support contact, screenshots (`assets/`), test prompts. Re-check https://developers.openai.com/plugins/deploy/submission first.
+
+## Other places the same server works
+The server is plain MCP, so with no code changes it also works in:
+- Claude (custom connector)
+- any MCP client
+- the planned "OpenAI for Germany" for municipalities
+
+Funeral homes can link to it, or later embed it as a white-label web page.
+
 ## Local
 ```bash
-npm ci && npm test && npm run build
-PORT=8787 npm start            # http://localhost:8787/mcp
+npm ci && npm test && npm run build && PORT=8787 npm start
+npx tsx scripts/preview-widget.ts preview.html   # widget preview in the browser
 ```
-To try it in ChatGPT developer mode, expose it over HTTPS (e.g. `ngrok http 8787`) and add `https://<host>/mcp` as a connector.
-
-## Production (any container/Node host: Render, Fly.io, Railway, Cloud Run)
-- Build `npm ci && npm run build`, start `node dist/src/index.js`.
-- Env: see `.env.example`. HTTPS terminates at the platform. Health check: `GET /health`.
-- Add a platform rate limit (e.g. 60 req/min/IP) and request logging **without bodies**.
-- Single instance is enough; the server is stateless and scales horizontally.
-
-Not deployed yet: it needs a hosting account and domain from the owner.

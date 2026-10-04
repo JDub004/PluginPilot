@@ -44,6 +44,8 @@ export const StepSchema = z.object({
   documents: z.array(z.string()),
   why: z.string(),
   legalBasis: z.string().optional(),
+  letterType: z.string().optional().describe('If set, draft_letter can prepare the letter for this step'),
+  sourceUrl: z.string().url().optional().describe('Official text to read up on the rule'),
 });
 export type Step = z.infer<typeof StepSchema>;
 

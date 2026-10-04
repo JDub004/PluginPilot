@@ -1,0 +1,14 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: trauerfall-lotse
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: LOG_ANALYTICS
+        value: "on"
+      - key: MAX_BODY_BYTES
+        value: "65536"

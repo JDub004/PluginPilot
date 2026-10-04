@@ -110,3 +110,15 @@ describe('planAfterDeath', () => {
     expect(() => SituationSchema.parse({ dateOfDeath: '2026-10-01', name: 'Max' })).toThrow();
   });
 });
+
+describe('regressions', () => {
+  it('survivor pensions are shown in the coming weeks, not "later" (apply early)', () => {
+    const p = planAfterDeath(SituationSchema.parse({ dateOfDeath: '2026-09-28', survivingSpouse: true, childrenUnder27: true }), '2026-10-04');
+    expect(p.steps.find((s) => s.id === 'witwenrente')?.phase).toBe('erste_wochen');
+    expect(p.steps.find((s) => s.id === 'waisenrente')?.phase).toBe('erste_wochen');
+  });
+  it('every step with a § reference links to an official source', () => {
+    const p = planAfterDeath(SituationSchema.parse({ dateOfDeath: '2026-09-28', survivingSpouse: true, deceasedReceivedPension: true, survivingSpouseFamilyInsured: true, rentedApartment: true, willFound: true, deceasedSelfEmployed: true }), '2026-10-04');
+    for (const s of p.steps.filter((x) => x.legalBasis?.includes('§'))) expect(s.sourceUrl, s.id).toMatch(/^https:\/\//);
+  });
+});

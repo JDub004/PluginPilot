@@ -179,3 +179,23 @@ See [VALIDATION_PLAN.md](VALIDATION_PLAN.md).
 - [S22] LexSocket TED MCP: https://glama.ai/mcp/servers/lexsocket/mcp-tenders ; TenderAPI MCP: https://pypi.org/project/tenderapi-mcp/ ; TED API docs: https://docs.ted.europa.eu/api/latest/index.html (Tier 1/2)
 - [S23] Rechnungslotse MCP: https://mcpservers.org/servers/xkallex/rechnungslotse-mcp ; Scribo: https://glama.ai/mcp/servers/mn5r1c8uk3 (Tier 2)
 - [S24] pyGAEB MCP: https://pygaeb.readthedocs.io/en/latest/guides/mcp-server/ ; BauGPT GAEB export: https://www.baulinks.de/webplugin/2026/0937.php4 (Tier 2)
+
+---
+
+## CORRECTION 2026-10-04: the Nebenkosten-Check competitor claim was wrong
+
+A deeper search (owner's question "gibt es das nicht schon?") disproves §8/§13: the market is **crowded with AI checkers**, several of them cheaper than our planned letter price:
+
+| Competitor | Offer |
+|---|---|
+| Mineko | Free quick check in 2–3 min after upload, experts within 24 h, avg 565 € errors found |
+| mein-nebenkostenrechner.de ("Lena") | KI check, 30 BetrKV/HeizKV checkpoints, free preview, full report 9,90 € |
+| mein-mietcheck.de | Free: deadline, forbidden costs, heating duty, CO2 split, objection template |
+| NebenkostenPro | Free AI instant analysis, report 5 € |
+| NebenkostenKlar (iOS) | DIY app, 5,99 € in-app incl. objection letters |
+| CheckNebenkosten.de, nebenkostenprüfen.de, reklamo.ai | AI + regional benchmarks, objection letter |
+| ImmoScout24 | Nebenkosten-Check included in Premium membership |
+
+Sources: https://www.mineko.de/nebenkostenabrechnung-pruefen-lassen · https://www.mein-nebenkostenrechner.de/nebenkostenabrechnung-pruefen · https://mein-mietcheck.de/nebenkostenabrechnung-pruefen · https://nebenkostenpro.de/ · https://www.appgefahren.de/?p=398288 · https://checknebenkosten.de/ · https://www.immobilienscout24.de/unternehmen/news-medien/news/default-title/nebenkosten-check-als-integrierter-service-der-premium-mitgliedschaft-von-immobilienscout24/
+
+**What remains true:** no ChatGPT plugin/MCP for this was found. But "the same thing, inside ChatGPT" is not innovation, and the planned price (9–19 €) is above competitors' 0–10 €. Competition score for `nk-check` drops from 4 to 1, and WTP from 4 to 2. **The winner is reopened.** Lesson for the process: competitor search must include plain-language consumer queries ("… prüfen KI kostenlos") and app stores, not just MCP registries.

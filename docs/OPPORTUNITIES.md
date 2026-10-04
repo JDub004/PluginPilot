@@ -32,16 +32,16 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 | 1 | Public tender finder (TED/national) | 74 | 15 | **68** | 4 | 4 | 4 | 5 | 5 | 4 | 2 | 3 | 5 | 3 | 7 |
 | 2 | GAEB/LV file reader & pricer | 71 | 20 | **64** | 4 | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 7 |
 | 3 | E-Rechnung erstellen from chat | 70 | 20 | **63** | 4 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 4 | 3 | 5 |
-| 4 | Nebenkosten-Check (DE utility-bill audit) | 75 | 35 | **62** | 5 | 2 | 5 | 4 | 4 | 4 | 4 | 4 | 2 | 5 | 5 |
-| 5 | E-Rechnung lesen & prüfen (DE SMB inbox) | 64 | 15 | **59** | 3 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 3 | 3 | 4 |
-| 6 | EU cross-border VAT treatment checker | 67 | 30 | **57** | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 3 | 4 |
-| 7 | Nebenkostenabrechnung erstellen (small landlords) | 66 | 30 | **56** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 3 | 4 | 7 |
-| 8 | BFSG/EAA website accessibility check | 66 | 30 | **56** | 4 | 3 | 4 | 4 | 5 | 4 | 2 | 3 | 4 | 3 | 4 |
-| 9 | Förderprogramm finder (DE SMB grants) | 65 | 30 | **55** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 2 | 4 | 4 |
-| 10 | HS/customs tariff code finder | 65 | 35 | **54** | 4 | 3 | 4 | 4 | 5 | 3 | 3 | 3 | 3 | 3 | 4 |
-| 11 | Contract version redline compare | 62 | 25 | **54** | 4 | 3 | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 |
-| 12 | CRM update from call notes | 62 | 25 | **54** | 3 | 5 | 4 | 5 | 3 | 1 | 3 | 4 | 3 | 3 | 2 |
-| 13 | Timesheet to invoice (freelancers) | 61 | 25 | **53** | 3 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 4 |
+| 4 | E-Rechnung lesen & prüfen (DE SMB inbox) | 64 | 15 | **59** | 3 | 4 | 4 | 5 | 5 | 3 | 2 | 3 | 3 | 3 | 4 |
+| 5 | EU cross-border VAT treatment checker | 67 | 30 | **57** | 4 | 3 | 5 | 4 | 4 | 4 | 2 | 4 | 3 | 3 | 4 |
+| 6 | Nebenkostenabrechnung erstellen (small landlords) | 66 | 30 | **56** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 3 | 4 | 7 |
+| 7 | BFSG/EAA website accessibility check | 66 | 30 | **56** | 4 | 3 | 4 | 4 | 5 | 4 | 2 | 3 | 4 | 3 | 4 |
+| 8 | Förderprogramm finder (DE SMB grants) | 65 | 30 | **55** | 4 | 2 | 5 | 4 | 4 | 4 | 3 | 3 | 2 | 4 | 4 |
+| 9 | HS/customs tariff code finder | 65 | 35 | **54** | 4 | 3 | 4 | 4 | 5 | 3 | 3 | 3 | 3 | 3 | 4 |
+| 10 | Contract version redline compare | 62 | 25 | **54** | 4 | 3 | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 |
+| 11 | CRM update from call notes | 62 | 25 | **54** | 3 | 5 | 4 | 5 | 3 | 1 | 3 | 4 | 3 | 3 | 2 |
+| 12 | Timesheet to invoice (freelancers) | 61 | 25 | **53** | 3 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 4 |
+| 13 | Nebenkosten-Check (DE utility-bill audit) | 63 | 35 | **52** | 5 | 2 | 5 | 4 | 4 | 2 | 1 | 4 | 2 | 5 | 5 |
 | 14 | Trade quote builder (Handwerker Angebot) | 59 | 25 | **52** | 4 | 4 | 4 | 2 | 3 | 4 | 2 | 3 | 4 | 3 | 6 |
 | 15 | Parcel rate comparer (DE/EU) | 58 | 20 | **52** | 3 | 4 | 4 | 4 | 4 | 2 | 2 | 4 | 3 | 3 | 3 |
 | 16 | CO2 cost split calculator (CO2KostAufG) | 58 | 20 | **52** | 3 | 2 | 3 | 5 | 4 | 3 | 3 | 5 | 2 | 3 | 1 |
@@ -115,18 +115,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium per invoice
 - **Score / Risk / EV:** 70 / 20 / 63
 
-### 4. Nebenkosten-Check (DE utility-bill audit) (`nk-check`)
-
-- **Target user:** German tenants (~21M rental households)
-- **Problem:** Annual service-charge statement is wrong in ~1 of 2 cases; tenants cannot check legality, deadlines, CO2 split, benchmarks
-- **Current workaround:** Ignore it, Mieterverein membership, Mineko (49-89 EUR), ask ChatGPT loosely
-- **Example prompt:** "Hier ist meine Nebenkostenabrechnung, ist die korrekt?"
-- **What the plugin adds beyond plain ChatGPT:** Deterministic BetrKV/§556 BGB/HeizkostenV/CO2KostAufG rule engine + Betriebskostenspiegel benchmarks + objection letter
-- **Existing alternatives:** Mineko, Mieterverein, lawyers, generic ChatGPT
-- **Monetization:** Free check, paid letter/report 9-19 EUR per use
-- **Score / Risk / EV:** 75 / 35 / 62
-
-### 5. E-Rechnung lesen & prüfen (DE SMB inbox) (`erech-inbox`)
+### 4. E-Rechnung lesen & prüfen (DE SMB inbox) (`erech-inbox`)
 
 - **Target user:** German SMBs/freelancers receiving XRechnung/ZUGFeRD
 - **Problem:** Mandatory receipt since 2025; XML is unreadable; invalid invoices risk input-VAT deduction
@@ -137,7 +126,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium, 5-9 EUR/mo
 - **Score / Risk / EV:** 64 / 15 / 59
 
-### 6. EU cross-border VAT treatment checker (`vat-xborder`)
+### 5. EU cross-border VAT treatment checker (`vat-xborder`)
 
 - **Target user:** EU freelancers/SMBs invoicing other EU countries
 - **Problem:** Reverse charge vs OSS vs local VAT; wrong invoice wording; VIES proof
@@ -148,7 +137,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Freemium, 5-10 EUR/mo
 - **Score / Risk / EV:** 67 / 30 / 57
 
-### 7. Nebenkostenabrechnung erstellen (small landlords) (`nk-landlord`)
+### 6. Nebenkostenabrechnung erstellen (small landlords) (`nk-landlord`)
 
 - **Target user:** Private landlords with 1-10 units
 - **Problem:** Building a legally correct annual statement with allocation keys is error-prone
@@ -159,7 +148,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per statement 15-29 EUR or subscription
 - **Score / Risk / EV:** 66 / 30 / 56
 
-### 8. BFSG/EAA website accessibility check (`accessibility`)
+### 7. BFSG/EAA website accessibility check (`accessibility`)
 
 - **Target user:** EU e-commerce SMBs (EAA since June 2025)
 - **Problem:** Legal accessibility obligation, audits expensive
@@ -170,7 +159,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per scan / subscription
 - **Score / Risk / EV:** 66 / 30 / 56
 
-### 9. Förderprogramm finder (DE SMB grants) (`grant-finder`)
+### 8. Förderprogramm finder (DE SMB grants) (`grant-finder`)
 
 - **Target user:** German SMBs/founders
 - **Problem:** Hundreds of federal/state programs, hard to find eligibility
@@ -181,7 +170,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Lead gen to consultants, B2B
 - **Score / Risk / EV:** 65 / 30 / 55
 
-### 10. HS/customs tariff code finder (`customs-hs`)
+### 9. HS/customs tariff code finder (`customs-hs`)
 
 - **Target user:** Exporters, Etsy sellers
 - **Problem:** Wrong HS codes cause delays/duty errors
@@ -192,7 +181,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per lookup credits
 - **Score / Risk / EV:** 65 / 35 / 54
 
-### 11. Contract version redline compare (`doc-compare`)
+### 10. Contract version redline compare (`doc-compare`)
 
 - **Target user:** Lawyers, procurement
 - **Problem:** Spotting changes between versions
@@ -203,7 +192,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Per doc / subscription
 - **Score / Risk / EV:** 62 / 25 / 54
 
-### 12. CRM update from call notes (`crm-update`)
+### 11. CRM update from call notes (`crm-update`)
 
 - **Target user:** Sales reps
 - **Problem:** Logging calls in CRM
@@ -214,7 +203,7 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 62 / 25 / 54
 
-### 13. Timesheet to invoice (freelancers) (`timesheet-invoice`)
+### 12. Timesheet to invoice (freelancers) (`timesheet-invoice`)
 
 - **Target user:** Freelancers
 - **Problem:** Monthly invoicing from tracked hours
@@ -224,6 +213,17 @@ All factor values are analyst judgements based on the evidence in MARKET_RESEARC
 - **Existing alternatives:** Toggl, Harvest, accounting suites
 - **Monetization:** Subscription
 - **Score / Risk / EV:** 61 / 25 / 53
+
+### 13. Nebenkosten-Check (DE utility-bill audit) (`nk-check`)
+
+- **Target user:** German tenants (~21M rental households)
+- **Problem:** Annual service-charge statement is wrong in ~1 of 2 cases; tenants cannot check legality, deadlines, CO2 split, benchmarks
+- **Current workaround:** Ignore it, Mieterverein membership, Mineko (49-89 EUR), ask ChatGPT loosely
+- **Example prompt:** "Hier ist meine Nebenkostenabrechnung, ist die korrekt?"
+- **What the plugin adds beyond plain ChatGPT:** Deterministic BetrKV/§556 BGB/HeizkostenV/CO2KostAufG rule engine + Betriebskostenspiegel benchmarks + objection letter
+- **Existing alternatives:** Mineko, Mieterverein, lawyers, generic ChatGPT
+- **Monetization:** Free check, paid letter/report 9-19 EUR per use
+- **Score / Risk / EV:** 63 / 35 / 52
 
 ### 14. Trade quote builder (Handwerker Angebot) (`trade-quote`)
 

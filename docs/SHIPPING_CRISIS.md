@@ -28,3 +28,15 @@ Deterministic checks per line:
 Why a plugin beats plain ChatGPT: a live, curated announcement database (dates, lanes, amounts), exact date/lane logic, plus a documented dispute workflow.
 Moat: the database and anonymised benchmarks of what other shippers actually paid per lane.
 Risk: the database needs weekly curation; the crisis may end, but surcharge auditing (GRI, PSS, BAF) stays evergreen.
+
+## Implementation status (MVP built)
+- Tool `check_freight_surcharges` on `/surcharge/mcp`, widget `web/src/surcharge.html`, dispute letter (EN).
+- Database (`src/domain/surcharge/announcements.ts`, version 2026-10-04): Hapag-Lloyd WRS, CMA CGM ECS, Maersk ECS (NEUR/MED→ME), Maersk EBS (global, later FMC date), Maersk OCR (Upper Gulf). Primary sources where available; trade-press entries are marked `secondary` and never yield "ok" alone.
+- Rules: an absent DB entry → "check" (ask for the advisory), never "flag". An explicit scope exclusion, a timing violation of a no-cargo-in-transit announcement, an amount above the announcement, duplicates and all-in conflicts → "flag".
+
+## Database curation (weekly, ~1 h)
+1. Check carrier advisory pages: maersk.com/news, hapag-lloyd.com/en/services-information/news, cma-cgm.com/news, msc.com/en/newsroom.
+2. Add or update entries with source URL, effective dates (incl. FMC date), scope, amounts and the cargo-in-transit rule.
+3. Add a unit test for each new entry; bump `DB_VERSION`.
+
+Missing next: MSC (WRS $40/TEU from July 2026, exact dates unverified), ONE, Evergreen, COSCO, ZIM; per-port scope (e.g. Saudi Red Sea vs Gulf ports).

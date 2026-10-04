@@ -1,0 +1,110 @@
+[
+ {
+  "id": "direct-01",
+  "category": "direct",
+  "prompt": "Check the surcharges on this Maersk invoice: ECS 3,000 USD per 40HC, EBS 400 USD, Hamburg to Sohar, booked 3 March",
+  "expected": "call"
+ },
+ {
+  "id": "direct-02",
+  "category": "direct",
+  "prompt": "Is the war risk surcharge on my CMA CGM quote legit? Shanghai to Jebel Ali",
+  "expected": "call"
+ },
+ {
+  "id": "direct-03",
+  "category": "direct",
+  "prompt": "Audit these freight charges for overcharging (pasted invoice)",
+  "expected": "call"
+ },
+ {
+  "id": "direct-04",
+  "category": "direct",
+  "prompt": "Prüf bitte die Zuschläge auf meiner Frachtrechnung von Hapag-Lloyd",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-01",
+  "category": "indirect",
+  "prompt": "My forwarder added 6,000 dollars of emergency fees to a shipment that left before the war started",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-02",
+  "category": "indirect",
+  "prompt": "Why is my container to Dubai suddenly 4,000 dollars more expensive?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-03",
+  "category": "indirect",
+  "prompt": "Our freight bill is way above the contracted rate, what can I do?",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-04",
+  "category": "indirect",
+  "prompt": "We got charged an emergency bunker surcharge twice on one invoice",
+  "expected": "call"
+ },
+ {
+  "id": "follow_up-01",
+  "category": "follow_up",
+  "prompt": "Write the dispute letter for that",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-02",
+  "category": "follow_up",
+  "prompt": "Which of these lines should I pay now?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-03",
+  "category": "follow_up",
+  "prompt": "What if the carrier refuses?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "negative-01",
+  "category": "negative",
+  "prompt": "Find me the cheapest freight rate from China to Germany",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-02",
+  "category": "negative",
+  "prompt": "Track my container MSKU1234567",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-03",
+  "category": "negative",
+  "prompt": "What customs duty applies to HS code 8471?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-04",
+  "category": "negative",
+  "prompt": "Book a 40 foot container to Rotterdam",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-01",
+  "category": "boundary",
+  "prompt": "Check my DHL air freight invoice surcharges",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-02",
+  "category": "boundary",
+  "prompt": "Are my UPS parcel fuel surcharges correct?",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-03",
+  "category": "boundary",
+  "prompt": "Calculate landed cost for my import",
+  "expected": "no_call"
+ }
+]

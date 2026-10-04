@@ -10,6 +10,7 @@ Free-tier note: the service sleeps after inactivity, so the first request then t
 ## Plugin endpoints
 - Trauerfall-Lotse: `https://<host>/mcp`
 - Geburts-Lotse: `https://<host>/geburt/mcp`
+- Surcharge Check: `https://<host>/surcharge/mcp`
 
 Each is connected/submitted as its own app.
 

@@ -9,7 +9,11 @@ It returns a personal, dated plan with the next critical deadline, responsible o
 
 ![Geburts-Lotse](assets/geburt-light.png)
 
-Endpoints: `/mcp` (Trauerfall, also `/trauerfall/mcp`) and `/geburt/mcp`, which are separate plugins on one server with a shared deadline core and widget.
+**Surcharge Check** (`/surcharge/mcp`, tool `check_freight_surcharges`, English): audits ocean freight surcharges from the 2026 Hormuz crisis (war risk, emergency conflict/contingency, emergency bunker, operational cost recovery) against a sourced carrier-announcement database: scope, amount, effective date, cargo-in-transit rule, later dates for US FMC-regulated trades, duplicates, all-in conflicts. It returns the disputable amount and a dispute letter.
+
+![Surcharge Check](assets/surcharge-light.png)
+
+Endpoints: `/mcp` (Trauerfall, also `/trauerfall/mcp`), `/geburt/mcp` and `/surcharge/mcp`, which are separate plugins on one server with a shared deadline core and widget.
 
 Why this product: [docs/DEMAND_ANALYSIS.md](docs/DEMAND_ANALYSIS.md) → [docs/BEHOERDEN_LOTSE_VARIANTS.md](docs/BEHOERDEN_LOTSE_VARIANTS.md).
 

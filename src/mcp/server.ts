@@ -1,13 +1,27 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerCheckSurcharges } from '../tools/checkSurcharges.js';
 import { registerDraftLetter } from '../tools/draftLetter.js';
 import { registerPlanAfterBirth } from '../tools/planAfterBirth.js';
 import { registerPlanAfterDeath } from '../tools/planAfterDeath.js';
 
-export type PluginKind = 'trauerfall' | 'geburt';
+export type PluginKind = 'trauerfall' | 'geburt' | 'surcharge';
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** One MCP server per plugin; all share the deadline core and the timeline widget. */
 export function createServer(kind: PluginKind = 'trauerfall', now: () => string = today): McpServer {
+  if (kind === 'surcharge') {
+    const server = new McpServer(
+      { name: 'surcharge-check', version: '0.1.0' },
+      {
+        instructions:
+          'Audits ocean freight surcharges for shippers. Extract every charge line from the quote or invoice the user shares, ask only for missing ' +
+          'carrier, countries, booking/sailing dates, then call check_freight_surcharges. Lead with the disputable amount and the flagged lines. ' +
+          'Mention that disputes must be raised in writing within the contract claim window. Not legal advice.',
+      },
+    );
+    registerCheckSurcharges(server, now);
+    return server;
+  }
   if (kind === 'geburt') {
     const server = new McpServer(
       { name: 'geburts-lotse', version: '0.1.0' },

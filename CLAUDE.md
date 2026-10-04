@@ -23,6 +23,7 @@ Goal: find a painful recurring workflow where ChatGPT is the right interface, bu
 - `src/discovery/` — opportunity dataset and scoring (seed of the `/discover` engine).
 - `src/domain/trauerfall/` — active product: pure deadline engine (calendar + plan). Bump `RULES_VERSION` and add tests for any legal change.
 - `src/domain/geburt/` — Geburts-Lotse (plugin on `/geburt/mcp`), reuses trauerfall calendar + Plan schema.
+- `src/domain/surcharge/` — Surcharge Check (`/surcharge/mcp`). `announcements.ts` is the curated DB: every entry needs a source URL and a confidence level; never add amounts or dates without a source. Absence from the DB must never produce a 'flag'.
 - `src/domain/nebenkosten/` — archived prototype, not registered.
 - `web/src/timeline.html` — MCP Apps widget (vanilla JS, text nodes only). Preview: `npx tsx scripts/preview-widget.ts out.html`.
 - `src/tools/`, `src/mcp/`, `src/http.ts` — MCP surface. One primary tool per plugin; plugins are routed by path in `src/http.ts`.

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#fbfbfa; --fg:#23262b; --muted:#6c717a; --line:#e3e5e8; --card:#f3f4f6; --ok:#2f7d4f; --check:#9a6a1f; --flag:#b03a2e; --accent:#2e5a88; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1b1d20; --fg:#e8eaed; --muted:#9aa0a8; --line:#33363b; --card:#25282c; --ok:#6cc08b; --check:#e0b26a; --flag:#f08a7e; --accent:#8db4e0; } }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:18px; background:var(--bg); color:var(--fg); font:14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  h1 { font-size:17px; font-weight:600; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 14px; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px; }
+  .kpi { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .kpi .v { font-size:20px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .kpi .l { color:var(--muted); font-size:12px; }
+  .kpi.flag .v { color:var(--flag); }
+  .row { display:grid; grid-template-columns:14px 1fr auto; gap:10px; align-items:start; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; margin-top:4px; }
+  .dot.ok { background:var(--ok); } .dot.check { background:var(--check); } .dot.flag { background:var(--flag); }
+  .t { font-weight:600; }
+  .amt { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .amt .exp { color:var(--muted); font-size:12px; }
+  .f { color:var(--fg); margin:4px 0 0; font-size:13px; }
+  .src { color:var(--muted); font-size:12px; margin-top:4px; word-break:break-all; }
+  .steps { margin:14px 0 0; padding-left:18px; }
+  .foot { margin-top:14px; padding-top:10px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+  .legend { display:flex; gap:14px; color:var(--muted); font-size:12px; margin:0 0 10px; }
+  .legend span::before { content:""; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:0; }
+  .legend .ok::before { background:var(--ok); } .legend .check::before { background:var(--check); } .legend .flag::before { background:var(--flag); }
+</style>
+</head>
+<body>
+<div id="root"><p class="sub">Checking surcharges …</p></div>
+<script>
+(function () {
+  var root = document.getElementById('root');
+  function el(tag, cls, children) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    (children || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function usd(n) { return 'USD ' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  var VERDICT = { dispute_recommended: 'Dispute recommended', clarify: 'Needs clarification', no_issues_found: 'No issues found' };
+
+  // Untrusted input: text nodes only.
+  function render(r) {
+    if (!r || !Array.isArray(r.lines)) return;
+    root.textContent = '';
+    root.appendChild(el('h1', null, ['Surcharge Check – ' + (VERDICT[r.verdict] || '')]));
+    root.appendChild(el('p', 'sub', ['Database ' + r.dbVersion + (r.usRegulatedTrade ? ' · US (FMC-regulated) trade' : '')]));
+    var flags = r.lines.filter(function (l) { return l.status === 'flag'; }).length;
+    root.appendChild(el('div', 'kpis', [
+      el('div', 'kpi', [el('div', 'v', [usd(r.totalCharged)]), el('div', 'l', ['Charges checked'])]),
+      el('div', 'kpi flag', [el('div', 'v', [usd(r.totalOverchargeUsd)]), el('div', 'l', ['Disputable amount'])]),
+      el('div', 'kpi', [el('div', 'v', [String(flags) + ' / ' + r.lines.length]), el('div', 'l', ['Lines flagged'])]),
+    ]));
+    root.appendChild(el('div', 'legend', [el('span', 'ok', ['matches announcement']), el('span', 'check', ['clarify']), el('span', 'flag', ['dispute'])]));
+    r.lines.forEach(function (l) {
+      root.appendChild(el('div', 'row', [
+        el('div', 'dot ' + l.status),
+        el('div', null, [
+          el('div', 't', [String(l.label) + (String(l.label).toUpperCase() === l.code ? '' : ' (' + l.code + ')')]),
+          el('div', null, l.findings.map(function (f) { return el('p', 'f', [String(f)]); })),
+          l.source ? el('div', 'src', ['Source' + (l.sourceConfidence === 'secondary' ? ' (trade press)' : '') + ': ' + String(l.source)]) : null,
+        ]),
+        el('div', 'amt', [usd(l.charged), l.expected !== undefined ? el('div', 'exp', ['announced ' + usd(l.expected)]) : null]),
+      ]));
+    });
+    if (Array.isArray(r.nextSteps)) root.appendChild(el('ol', 'steps', r.nextSteps.map(function (s) { return el('li', null, [String(s)]); })));
+    root.appendChild(el('div', 'foot', [String(r.disclaimer || '')]));
+    reportSize();
+  }
+
+  function send(m) { window.parent.postMessage(Object.assign({ jsonrpc: '2.0' }, m), '*'); }
+  function reportSize() { send({ method: 'ui/notifications/size-changed', params: { height: Math.ceil(document.documentElement.scrollHeight) } }); }
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
+    var m = e.data;
+    if (!m || m.jsonrpc !== '2.0') return;
+    if (m.id === 1 && m.result) send({ method: 'ui/notifications/initialized', params: {} });
+    if (m.method === 'ui/notifications/tool-result') render(m.params && m.params.structuredContent);
+  });
+  send({ id: 1, method: 'ui/initialize', params: { appInfo: { name: 'surcharge-check', version: '0.1.0' }, appCapabilities: {}, protocolVersion: '2026-01-26' } });
+  if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput);
+  window.addEventListener('openai:set_globals', function () { if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput); });
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(reportSize).observe(document.body);
+})();
+</script>
+</body>
+</html>

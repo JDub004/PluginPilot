@@ -4,7 +4,7 @@ import type { Env } from './config/env.js';
 import { createServer, type PluginKind } from './mcp/server.js';
 
 // One endpoint per plugin (each is listed separately in the plugin directory).
-const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt' };
+const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt', '/surcharge/mcp': 'surcharge' };
 
 
 function readJson(req: IncomingMessage, limit: number): Promise<unknown> {

@@ -90,6 +90,23 @@ describe('MCP over HTTP', () => {
     await c.close();
   });
 
+  it('serves Surcharge Check on /surcharge/mcp with widget and dispute letter', async () => {
+    const c = new Client({ name: 'test', version: '0' });
+    await c.connect(new StreamableHTTPClientTransport(new URL('/surcharge/mcp', url)));
+    const { tools } = await c.listTools();
+    expect(tools.map((t) => t.name)).toEqual(['check_freight_surcharges']);
+    const res = await c.callTool({
+      name: 'check_freight_surcharges',
+      arguments: { carrier: 'Hapag-Lloyd', originCountry: 'CN', destinationCountry: 'DE', bookingDate: '2026-04-01', lines: [{ label: 'War Risk Surcharge', amountUsd: 3000, containerType: '40HC' }] },
+    });
+    const sc = res.structuredContent as { verdict: string; disputeLetter?: string };
+    expect(sc.verdict).toBe('dispute_recommended');
+    expect(sc.disputeLetter).toContain('Disputed amount: USD 3000.00');
+    const w = await c.readResource({ uri: 'ui://surcharge-check/audit-v1.html' });
+    expect((w.contents[0] as { mimeType: string }).mimeType).toBe('text/html;profile=mcp-app');
+    await c.close();
+  });
+
   it('rejects oversized bodies with 413', async () => {
     const r = await fetch(url, {
       method: 'POST',

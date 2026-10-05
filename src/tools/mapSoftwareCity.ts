@@ -28,12 +28,16 @@ export const TOOL_DESCRIPTION = [
   'Before calling, collect from the user the programs, the department that mainly uses each one, and if known: users, paid licences,',
   'monthly cost, owner, whether it is business-critical, whether it was approved by IT, and which other programs it sends data to.',
   'The tool finds "quests": overlapping tools, unused licences with savings, critical data in spreadsheets, programs without owner,',
-  'shadow IT, data islands and unknown data targets. Do not use for source-code architecture, network diagrams or org charts.',
+  'shadow IT, data islands, unknown data targets and key persons without deputy. Building height grows with users and importance (1-5).',
+  'Optionally also ask for: key persons per department with role and business contact data (people walk through the town and can be',
+  'clicked), sites with their city (shown on a map; each site is its own town to jump into), and external partners such as suppliers,',
+  'tax advisors, IT service providers or key customers with the own apps used to exchange data with them. Only enter business contact',
+  'data people agreed to share. Do not use for source-code architecture, network diagrams or org charts.',
 ].join(' ');
 
 const Any = z.record(z.string(), z.unknown());
 export const CityOutputSchema = z.object({
-  company: z.string(), districts: z.array(Any), buildings: z.array(Any), roads: z.array(Any), quests: z.array(Any),
+  company: z.string(), districts: z.array(Any), buildings: z.array(Any), roads: z.array(Any), quests: z.array(Any), people: z.array(Any), sites: z.array(Any), partners: z.array(Any),
   report: z.string(), shareUrl: z.string(), comparison: Any.optional(),
   stats: z.object({ apps: z.number(), districts: z.number(), monthlyCostEur: z.number(), potentialSavingsEurYear: z.number(), healthScore: z.number() }),
   disclaimer: z.string(),

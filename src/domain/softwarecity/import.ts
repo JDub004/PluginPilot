@@ -49,6 +49,8 @@ const HEADERS: Record<keyof AppInput, string[]> = {
   owner: ['verantwortlich', 'owner', 'zuständig', 'ansprechpartner'],
   critical: ['kritisch', 'critical', 'geschäftskritisch'],
   approved: ['freigegeben', 'approved', 'genehmigt'],
+  importance: ['wichtigkeit', 'importance', 'priorität', 'prioritaet', 'priority'],
+  site: ['standort', 'site', 'location', 'niederlassung'],
   dataFlowsTo: ['daten an', 'datenfluss', 'data flows to', 'sendet an', 'schnittstellen'],
 };
 
@@ -126,6 +128,7 @@ export function importTable(text: string): ImportResult {
     const users = num('users');
     const licenses = num('licenses');
     const monthlyCostEur = num('monthlyCostEur');
+    const importance = num('importance');
     const crit = get('critical');
     const appr = get('approved');
     const candidate = {
@@ -134,6 +137,8 @@ export function importTable(text: string): ImportResult {
       ...(licenses !== undefined ? { licenses: Math.round(licenses) } : {}),
       ...(monthlyCostEur !== undefined ? { monthlyCostEur: Math.round(monthlyCostEur * 100) / 100 } : {}),
       ...(get('owner') ? { owner: get('owner') } : {}),
+      ...(importance !== undefined ? { importance: Math.min(5, Math.max(1, Math.round(importance))) } : {}),
+      ...(get('site') ? { site: get('site') } : {}),
       critical: yes(crit),
       approved: !no(appr),
       dataFlowsTo: get('dataFlowsTo').split(/[,/|+]/).map((s) => s.trim()).filter(Boolean).slice(0, 20),

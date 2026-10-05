@@ -1,4 +1,5 @@
-import type { AppInput, Building, CityInput, CityMap, District, Quest, Road } from './schema.js';
+import { locate } from './geo.js';
+import type { AppInput, Building, CityInput, CityMap, District, Partner, Person, Quest, Road, Site, SiteLayout } from './schema.js';
 
 const slug = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'app';
 const SHARED = /^(alle|all|company-wide|unternehmen|gesamt|everyone|firmenweit)$/i;
@@ -11,29 +12,17 @@ const LABEL: Record<string, string> = {
 // Categories where several tools usually mean real overlap (not e.g. "other" or "dev").
 const OVERLAP_CATEGORIES = new Set(['crm', 'erp', 'accounting', 'hr', 'communication', 'collaboration', 'storage', 'support', 'analytics']);
 
-export function buildCity(input: CityInput): CityMap {
-  // --- ids (unique, stable) ---------------------------------------------------------------
-  const used = new Set<string>();
-  const apps = input.apps.map((a) => {
-    let id = slug(a.name);
-    for (let i = 2; used.has(id); i++) id = `${slug(a.name)}-${i}`;
-    used.add(id);
-    return { ...a, id };
-  });
-  const byName = new Map(apps.map((a) => [a.name.toLowerCase(), a]));
+type Placed = AppInput & { id: string; district: string };
 
-  // --- districts: shared tools form the central "Marktplatz" -------------------------------
+/** Lays out districts in a grid and buildings inside them. Pure; used for the whole company and per site. */
+function layout(apps: Placed[], extraDistricts: string[] = []): SiteLayout {
   const order: string[] = [];
-  for (const a of apps) {
-    const d = SHARED.test(a.department) ? 'Marktplatz' : a.department;
-    (a as typeof a & { district: string }).district = d;
-    if (!order.includes(d)) order.push(d);
-  }
+  for (const a of apps) if (!order.includes(a.district)) order.push(a.district);
+  for (const d of extraDistricts) if (!order.includes(d)) order.push(d);
   order.sort((x, y) => (x === 'Marktplatz' ? -1 : y === 'Marktplatz' ? 1 : 0));
-
   const cols = Math.max(1, Math.ceil(Math.sqrt(order.length)));
   const districts: District[] = [];
-  const buildings: Building[] = [];
+  const positions: Record<string, [number, number]> = {};
   const CELL = 2; // tiles per building incl. street
   let rowY = 0;
   for (let r = 0; r * cols < order.length; r++) {
@@ -41,24 +30,14 @@ export function buildCity(input: CityInput): CityMap {
     let rowH = 0;
     for (let c = 0; c < cols && r * cols + c < order.length; c++) {
       const dName = order[r * cols + c] as string;
-      const members = apps.filter((a) => (a as typeof a & { district: string }).district === dName);
+      const members = apps.filter((a) => a.district === dName);
       const side = Math.max(2, Math.ceil(Math.sqrt(members.length)));
       const w = side * CELL + 1;
-      const h = Math.ceil(members.length / side) * CELL + 1;
-      const district: District = { name: dName, gx: colX, gy: rowY, w, h, buildingIds: [] };
+      const h = Math.max(3, Math.ceil(members.length / side) * CELL + 1);
+      const district: District = { name: dName, gx: colX, gy: rowY, w, h, buildingIds: [], personIds: [] };
       members.forEach((a, i) => {
-        const b: Building = {
-          id: a.id, name: a.name, category: a.category, district: dName,
-          gx: colX + 1 + (i % side) * CELL, gy: rowY + 1 + Math.floor(i / side) * CELL,
-          floors: floorsFor(a.users),
-          ...(a.users !== undefined ? { users: a.users } : {}),
-          ...(a.licenses !== undefined ? { licenses: a.licenses } : {}),
-          ...(a.monthlyCostEur !== undefined ? { monthlyCostEur: a.monthlyCostEur } : {}),
-          ...(a.owner ? { owner: a.owner } : {}),
-          critical: a.critical, approved: a.approved, questIds: [],
-        };
-        buildings.push(b);
-        district.buildingIds.push(b.id);
+        positions[a.id] = [colX + 1 + (i % side) * CELL, rowY + 1 + Math.floor(i / side) * CELL];
+        district.buildingIds.push(a.id);
       });
       districts.push(district);
       colX += w + 2; // avenue between districts
@@ -66,6 +45,88 @@ export function buildCity(input: CityInput): CityMap {
     }
     rowY += rowH + 2;
   }
+  return { districts, positions };
+}
+
+const lc = (s: string) => s.trim().toLowerCase();
+const districtOf = (department: string) => (SHARED.test(department) ? 'Marktplatz' : department);
+
+export function buildCity(input: CityInput): CityMap {
+  // --- ids (unique, stable) ---------------------------------------------------------------
+  const used = new Set<string>();
+  const uid = (base: string) => { let id = slug(base); for (let i = 2; used.has(id); i++) id = `${slug(base)}-${i}`; used.add(id); return id; };
+  const apps: Placed[] = input.apps.map((a) => ({ ...a, id: uid(a.name), district: districtOf(a.department) }));
+  const byName = new Map(apps.map((a) => [lc(a.name), a]));
+  const peopleIn = input.people ?? [];
+  const personIds = peopleIn.map((p) => uid(`person-${p.name}`));
+
+  // --- districts and buildings ---------------------------------------------------------------
+  const peopleDistricts = peopleIn.map((p) => districtOf(p.department));
+  const main = layout(apps, peopleDistricts);
+  const districts = main.districts;
+  const buildings: Building[] = apps.map((a) => {
+    const [gx, gy] = main.positions[a.id] as [number, number];
+    const importance = a.importance ?? (a.critical ? 4 : 3);
+    return {
+      id: a.id, name: a.name, category: a.category, district: a.district, gx, gy,
+      floors: floorsFor(a.users, importance), importance,
+      ...(a.site ? { site: a.site } : {}),
+      ...(a.users !== undefined ? { users: a.users } : {}),
+      ...(a.licenses !== undefined ? { licenses: a.licenses } : {}),
+      ...(a.monthlyCostEur !== undefined ? { monthlyCostEur: a.monthlyCostEur } : {}),
+      ...(a.owner ? { owner: a.owner } : {}),
+      critical: a.critical, approved: a.approved, questIds: [],
+    };
+  });
+
+  // --- people: key persons walk in their district ---------------------------------------------
+  const people: Person[] = peopleIn.map((p, i) => {
+    const id = personIds[i] as string;
+    const district = districtOf(p.department);
+    districts.find((d) => d.name === district)?.personIds.push(id);
+    const ids = new Set<string>();
+    for (const n of p.responsibleFor) { const a = byName.get(lc(n)); if (a) ids.add(a.id); }
+    for (const a of apps) if (a.owner && (lc(a.owner) === lc(p.name) || (p.role && lc(a.owner) === lc(p.role)))) ids.add(a.id);
+    return {
+      id, name: p.name, district, buildingIds: [...ids],
+      ...(p.role ? { role: p.role } : {}), ...(p.email ? { email: p.email } : {}), ...(p.phone ? { phone: p.phone } : {}), ...(p.note ? { note: p.note } : {}),
+    };
+  });
+
+  // --- sites: every site gets its own town ------------------------------------------------------
+  const sitesIn = input.sites ?? [];
+  const mainSite = sitesIn.find((s) => s.main) ?? sitesIn[0];
+  const siteIds = sitesIn.map((s) => uid(`site-${s.name}`));
+  const siteOfApp = (a: Placed) => sitesIn.find((s) => a.site && (lc(s.name) === lc(a.site) || (s.city && lc(s.city) === lc(a.site))));
+  const sites: Site[] = sitesIn.map((s, i) => {
+    const isMain = s === mainSite;
+    const members = apps.filter((a) => { const own = siteOfApp(a); return own ? own === s : a.district === 'Marktplatz' || isMain; });
+    const geo = s.lat !== undefined && s.lon !== undefined ? { lat: s.lat, lon: s.lon } : locate(s.city ?? s.name);
+    const lay = layout(members, isMain ? peopleDistricts : []);
+    for (const d of lay.districts) d.personIds = people.filter((p) => p.district === d.name && (isMain || d.buildingIds.length > 0)).map((p) => p.id);
+    return {
+      id: siteIds[i] as string, name: s.name, main: isMain, buildingIds: members.map((a) => a.id), layout: lay,
+      ...(s.city ? { city: s.city } : {}), ...(geo ?? {}), ...(s.employees !== undefined ? { employees: s.employees } : {}),
+    };
+  });
+
+  // --- external partners ------------------------------------------------------------------------
+  const partnerNames = new Set((input.partners ?? []).map((p) => lc(p.name)));
+  const partners: Partner[] = (input.partners ?? []).map((p) => {
+    const ids = new Set<string>();
+    for (const n of p.connectedApps) { const a = byName.get(lc(n)); if (a) ids.add(a.id); }
+    for (const a of apps) if (a.dataFlowsTo.some((t) => lc(t) === lc(p.name))) ids.add(a.id);
+    const geo = p.lat !== undefined && p.lon !== undefined ? { lat: p.lat, lon: p.lon } : locate(p.city);
+    const first = apps.find((a) => ids.has(a.id) && siteOfApp(a));
+    const site = first ? siteOfApp(first) : mainSite;
+    const siteId = site ? siteIds[sitesIn.indexOf(site)] : undefined;
+    return {
+      id: uid(`partner-${p.name}`), name: p.name, kind: p.kind, buildingIds: [...ids],
+      ...(p.city ? { city: p.city } : {}), ...(geo ?? {}), ...(p.contact ? { contact: p.contact } : {}),
+      ...(p.email ? { email: p.email } : {}), ...(p.phone ? { phone: p.phone } : {}), ...(p.note ? { note: p.note } : {}),
+      ...(siteId ? { siteId } : {}),
+    };
+  });
 
   // --- roads -------------------------------------------------------------------------------
   const roads: Road[] = [];
@@ -75,7 +136,7 @@ export function buildCity(input: CityInput): CityMap {
     for (const t of a.dataFlowsTo) {
       const target = byName.get(t.toLowerCase());
       if (target && target.id !== a.id) roads.push({ from: a.id, to: target.id });
-      else if (!target) unknownTargets.set(a.id, [...(unknownTargets.get(a.id) ?? []), t]);
+      else if (!target && !partnerNames.has(lc(t))) unknownTargets.set(a.id, [...(unknownTargets.get(a.id) ?? []), t]);
     }
   }
 
@@ -135,6 +196,18 @@ export function buildCity(input: CityInput): CityMap {
     }
   }
 
+  // One person holds several business-critical programs alone (bus factor).
+  for (const p of people) {
+    const held = apps.filter((a) => p.buildingIds.includes(a.id));
+    const crit = held.filter((a) => a.critical);
+    const note = peopleIn[people.indexOf(p)]?.note ?? '';
+    if (held.length >= 3 && crit.length >= 2 && !/vertret|deputy|backup|stellvertret/i.test(note)) {
+      add({ kind: 'key_person', severity: 'medium', title: `Wissensinsel: ${crit.length} kritische Programme hängen an ${p.name}`,
+        detail: `${p.name} ist zuständig für ${held.map((a) => a.name).join(', ')}. Eine Vertretung benennen und Zugänge dokumentieren (Notfallhandbuch), sonst steht bei Urlaub oder Ausfall vieles still.`,
+        buildingIds: crit.map((a) => a.id) });
+    }
+  }
+
   const sevOrder = { high: 0, medium: 1, low: 2 } as const;
   quests.sort((x, y) => sevOrder[x.severity] - sevOrder[y.severity] || (y.savingEurYear ?? 0) - (x.savingEurYear ?? 0));
   const potentialSavingsEurYear = quests.reduce((s, q) => s + (q.savingEurYear ?? 0), 0);
@@ -146,6 +219,9 @@ export function buildCity(input: CityInput): CityMap {
     buildings,
     roads,
     quests,
+    people,
+    sites,
+    partners,
     stats: {
       apps: apps.length,
       districts: districts.length,
@@ -158,9 +234,10 @@ export function buildCity(input: CityInput): CityMap {
   };
 }
 
-function floorsFor(users?: number): number {
-  if (!users) return 1;
-  return Math.max(1, Math.min(7, Math.round(1 + Math.log2(users))));
+/** Height = users (log scale) plus importance: core programs (5) get +2 floors, nice-to-haves (1) −2. */
+function floorsFor(users: number | undefined, importance: number): number {
+  const base = users ? Math.round(1 + Math.log2(users)) : 1;
+  return Math.max(1, Math.min(9, base + importance - 3));
 }
 function eur(n: number): string {
   return `${Math.round(n).toLocaleString('de-DE')} €`;

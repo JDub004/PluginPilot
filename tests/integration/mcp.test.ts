@@ -13,7 +13,7 @@ const events: unknown[] = [];
 
 beforeAll(async () => {
   setAnalyticsSink((e) => events.push(e));
-  server = createApp(loadEnv({ MAX_BODY_BYTES: '4096' }));
+  server = createApp(loadEnv({ MAX_BODY_BYTES: '16384' }));
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
   url = new URL(`http://127.0.0.1:${(server.address() as AddressInfo).port}/mcp`);
 });
@@ -147,7 +147,7 @@ describe('MCP over HTTP', () => {
     const r = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
-      body: JSON.stringify({ pad: 'x'.repeat(10_000) }),
+      body: JSON.stringify({ pad: 'x'.repeat(40_000) }),
     });
     expect(r.status).toBe(413);
   });

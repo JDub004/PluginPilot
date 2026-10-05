@@ -21,5 +21,23 @@ export const SAMPLE_COMPANY: CityInput = {
     { name: 'Zendesk', category: 'support', department: 'Kundenservice', users: 6, licenses: 8, monthlyCostEur: 440, owner: 'Teamleitung Service', critical: true, approved: true, dataFlowsTo: ['HubSpot'] },
     { name: 'Power BI', category: 'analytics', department: 'Geschäftsführung', users: 3, licenses: 3, monthlyCostEur: 30, critical: false, approved: true, dataFlowsTo: [] },
     { name: 'Bitwarden', category: 'security', department: 'Alle', users: 35, licenses: 40, monthlyCostEur: 160, owner: 'IT-Leitung', critical: true, approved: true, dataFlowsTo: [] },
+    { name: 'Lagerverwaltung', category: 'erp', department: 'Logistik', site: 'Lager Leipzig', users: 8, licenses: 8, monthlyCostEur: 260, owner: 'Lagerleitung', critical: true, approved: true, importance: 5, dataFlowsTo: ['Shopify', 'Spedition Nordlicht'] },
+  ],
+  people: [
+    { name: 'Mara Beispiel', role: 'IT-Leitung', department: 'Alle', email: 'it@beispiel.example', phone: '+49 40 000000-10', responsibleFor: [] },
+    { name: 'Tom Muster', role: 'Vertriebsleitung', department: 'Vertrieb', email: 'vertrieb@beispiel.example', responsibleFor: ['Kundenliste.xlsx'] },
+    { name: 'Lena Demo', role: 'Buchhaltung', department: 'Buchhaltung', phone: '+49 40 000000-30', note: 'Vertretung: Steuerkanzlei', responsibleFor: [] },
+    { name: 'Jonas Probe', role: 'Lagerleitung', department: 'Logistik', responsibleFor: [] },
+    { name: 'Ada Fiktiv', role: 'Geschäftsführung', department: 'Geschäftsführung', responsibleFor: ['Power BI'] },
+  ],
+  sites: [
+    { name: 'Zentrale Hamburg', city: 'Hamburg', employees: 38, main: true },
+    { name: 'Lager Leipzig', city: 'Leipzig', employees: 9, main: false },
+  ],
+  partners: [
+    { name: 'Steuerkanzlei Beispiel', kind: 'service_provider', city: 'Hamburg', connectedApps: ['DATEV'] },
+    { name: 'Spedition Nordlicht', kind: 'supplier', city: 'Bremen', connectedApps: ['Lagerverwaltung'] },
+    { name: 'Systemhaus Muster', kind: 'service_provider', city: 'Berlin', contact: 'Support-Hotline', connectedApps: ['Microsoft 365', 'Bitwarden'] },
+    { name: 'Großkunde Alpen AG', kind: 'customer', city: 'Wien', connectedApps: ['Shopify'] },
   ],
 };

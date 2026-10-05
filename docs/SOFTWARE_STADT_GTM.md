@@ -17,6 +17,13 @@ Software-Stadt's position: the understandable, playful picture for people who ar
 - **Report:** Markdown report in every result and as a download on the share page; `preparedBy` names the IT service provider (start of the partner tier).
 - **Not built, on purpose:** Microsoft 365/Google OAuth (needs app registration, admin consent, secret handling and a DPA; only after paying demand) and the paid partner account (checkout, multi-client storage). Build these when the first IT service provider asks to pay (see validation below).
 
+## Built 2026-10-05 (v1.2)
+- **Size = users + importance:** optional `importance` (1-5, default 4 if critical, else 3) adds or removes floors and widens the footprint; 5 gets a gold crown ring.
+- **Key persons:** `people` (name, role, department, business e-mail/phone, note, `responsibleFor`). They walk through their district as named figures and can be clicked. New quest `key_person`: one person holds ≥3 programs with ≥2 critical ones and has no deputy in the note.
+- **Sites:** `sites` with city or lat/lon. Built-in coordinates for ~150 cities (`geo.ts`, no geocoding call). Each site has its own town layout: apps with `site`, plus company-wide apps, plus unassigned apps at the main site.
+- **Partner network:** `partners` (supplier/customer/service provider/authority) with `connectedApps`. Partner names count as known data-flow targets. The ◎ view shows sites and partners on a real-coordinate map; clicking a site jumps into that town.
+- Contact data only lives in the tool call and in the share-link fragment. Nothing is stored.
+
 ## Optimise next (in this order)
 1. **Import instead of typing** (largest lever for activation):
    a) Paste or upload a tool list or invoice export (Excel/CSV). ChatGPT already extracts it into the tool input, so it works today; add a template and test prompts.

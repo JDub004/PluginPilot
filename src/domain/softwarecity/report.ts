@@ -59,6 +59,21 @@ export function renderReport(city: CityMap, opts: { preparedBy?: string; date?: 
     const names = d.buildingIds.map((id) => city.buildings.find((b) => b.id === id)?.name).filter(Boolean);
     lines.push(`- **${d.name}:** ${names.join(', ')}`);
   }
+  const nameOf = (ids: string[]) => ids.map((id) => city.buildings.find((b) => b.id === id)?.name).filter(Boolean).join(', ');
+  const cell = (v?: string) => (v ?? '–').replace(/\|/g, '/');
+  if (city.people.length) {
+    lines.push('', '## Ansprechpartner', '', '| Name | Rolle | Abteilung | Kontakt | Zuständig für |', '|---|---|---|---|---|');
+    for (const p of city.people) lines.push(`| ${cell(p.name)} | ${cell(p.role)} | ${cell(p.district)} | ${cell([p.email, p.phone].filter(Boolean).join(', ') || undefined)} | ${cell(nameOf(p.buildingIds) || undefined)} |`);
+  }
+  if (city.sites.length) {
+    lines.push('', '## Standorte', '');
+    for (const s of city.sites) lines.push(`- **${s.name}**${s.main ? ' (Zentrale)' : ''}${s.city ? `, ${s.city}` : ''}${s.employees !== undefined ? `, ${s.employees} Mitarbeitende` : ''}: ${s.buildingIds.length} Programme`);
+  }
+  if (city.partners.length) {
+    const KIND: Record<string, string> = { supplier: 'Lieferant', customer: 'Kunde', service_provider: 'Dienstleister', authority: 'Behörde', other: 'Partner' };
+    lines.push('', '## Externes Netzwerk', '', '| Partner | Art | Ort | Kontakt | Verbunden über |', '|---|---|---|---|---|');
+    for (const p of city.partners) lines.push(`| ${cell(p.name)} | ${KIND[p.kind]} | ${cell(p.city)} | ${cell([p.contact, p.email, p.phone].filter(Boolean).join(', ') || undefined)} | ${cell(nameOf(p.buildingIds) || undefined)} |`);
+  }
   lines.push('', `_${city.disclaimer}_`);
   return lines.join('\n');
 }

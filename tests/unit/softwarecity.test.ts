@@ -83,3 +83,26 @@ describe('regression: wording', () => {
     expect(c.quests[0]?.title).toBe('1 ungenutzte Lizenz in Asana');
   });
 });
+
+describe('people, sites and partners', () => {
+  it('builds key persons, site towns, partners and the key-person quest', async () => {
+    const { buildCity } = await import('../../src/domain/softwarecity/build.js');
+    const { SAMPLE_COMPANY } = await import('../../src/domain/softwarecity/sample.js');
+    const { CityInputSchema } = await import('../../src/domain/softwarecity/schema.js');
+    const city = buildCity(CityInputSchema.parse(SAMPLE_COMPANY));
+    expect(city.people.find((p) => p.name === 'Mara Beispiel')?.buildingIds.length).toBeGreaterThanOrEqual(3);
+    expect(city.quests.some((q) => q.kind === 'key_person' && q.title.includes('Mara Beispiel'))).toBe(true);
+    expect(city.quests.some((q) => q.kind === 'key_person' && q.title.includes('Lena Demo'))).toBe(false);
+    const leipzig = city.sites.find((s) => s.name === 'Lager Leipzig')!;
+    expect(leipzig.lat).toBeCloseTo(51.34, 1);
+    expect(leipzig.buildingIds).toContain('lagerverwaltung');
+    expect(leipzig.buildingIds).not.toContain('hubspot');
+    expect(leipzig.layout.districts.find((d) => d.name === 'Logistik')?.personIds).toHaveLength(1);
+    const spedition = city.partners.find((p) => p.name === 'Spedition Nordlicht')!;
+    expect(spedition.siteId).toBe(leipzig.id);
+    expect(city.quests.some((q) => q.kind === 'unknown_flow' && q.detail.includes('Spedition'))).toBe(false);
+    const lager = city.buildings.find((b) => b.id === 'lagerverwaltung')!;
+    expect(lager.importance).toBe(5);
+    expect(lager.floors).toBeGreaterThan(city.buildings.find((b) => b.id === 'pipedrive')!.floors);
+  });
+});

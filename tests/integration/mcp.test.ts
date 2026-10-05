@@ -112,13 +112,35 @@ describe('MCP over HTTP', () => {
     const c = new Client({ name: 'test', version: '0' });
     await c.connect(new StreamableHTTPClientTransport(new URL('/city/mcp', url)));
     const { tools } = await c.listTools();
-    expect(tools.map((t) => t.name)).toEqual(['map_software_city']);
+    expect(tools.map((t) => t.name)).toEqual(['map_software_city', 'import_software_list']);
     const res = await c.callTool({ name: 'map_software_city', arguments: SAMPLE_COMPANY as unknown as Record<string, unknown> });
     const sc = res.structuredContent as { buildings: unknown[]; stats: { healthScore: number } };
     expect(sc.buildings).toHaveLength(SAMPLE_COMPANY.apps.length);
+    const share = (res.structuredContent as { shareUrl: string }).shareUrl;
+    expect(share).toMatch(/\/city\/view#d=[A-Za-z0-9_-]+$/);
+    expect((res.structuredContent as { report: string }).report).toContain('# Software-Bericht');
+    const imp = await c.callTool({ name: 'import_software_list', arguments: { table: 'Programm;Abteilung;Nutzer\nSlack;Alle;12\nHubSpot;Vertrieb;4' } });
+    expect((imp.structuredContent as { apps: { name: string; category: string }[] }).apps.map((a) => a.category)).toEqual(['communication', 'crm']);
     const w = await c.readResource({ uri: 'ui://software-stadt/city-v1.html' });
     expect((w.contents[0] as { text: string }).text).toContain('Stadt-Gesundheit');
     await c.close();
+  });
+
+  it('share view: /city/view serves the loader, /city/api/build validates and builds without storing', async () => {
+    const { SAMPLE_COMPANY } = await import('../../src/domain/softwarecity/sample.js');
+    const tpl = await (await fetch(new URL('/city/vorlage.csv', url))).text();
+    const { importTable } = await import('../../src/domain/softwarecity/import.js');
+    expect(importTable(tpl).apps).toHaveLength(3); // the template must import cleanly
+    const v = await fetch(new URL('/city/view', url));
+    expect(v.status).toBe(200);
+    expect(await v.text()).toContain('/city/api/build');
+    const ok = await fetch(new URL('/city/api/build', url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ company: 'X', apps: SAMPLE_COMPANY.apps.slice(0, 3) }) });
+    expect(ok.status).toBe(200);
+    const j = (await ok.json()) as { city: { buildings: unknown[] }; report: string };
+    expect(j.city.buildings).toHaveLength(3);
+    expect(j.report).toContain('Software-Bericht: X');
+    const bad = await fetch(new URL('/city/api/build', url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ company: 'X', apps: [{ name: '<script>' }] }) });
+    expect(bad.status).toBe(400);
   });
 
   it('rejects oversized bodies with 413', async () => {

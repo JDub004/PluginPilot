@@ -33,3 +33,9 @@ Im Plugin-Portal von OpenAI:
 - **ChatGPT-Test:** Mit einem bezahlten Abo im Entwicklermodus `…/surcharge/mcp` verbinden und die Prompts aus `tests/evaluation/prompts.surcharge.json` testen. So sehen wir vor dem Review, ob ChatGPT das Plugin zuverlässig auswählt.
 - **Eigene Domain:** z. B. surchargecheck.com in Render hinzufügen; dann die URLs in `plugin.json` und `REVIEW.md` anpassen.
 - **Bezahlter Render-Tarif (~7 $/Monat):** kein Schlafmodus, damit die erste Antwort im Review nicht in einen Timeout läuft.
+
+## Software-Stadt v1.1 (2026-10-05): Import, Teilen, Vorher/Nachher, Bericht
+1. Bei Render erneut **Manual Deploy → Deploy latest commit** klicken.
+2. Testen: https://trauerfall-lotse.onrender.com/city/vorlage.csv herunterladen (Excel-Vorlage), Produktseite /city ansehen.
+3. In ChatGPT (sobald verbunden): Excel-Liste einfügen → „Mach daraus eine Software-Stadt“ → Teilen-Link öffnen → „Bericht herunterladen“.
+4. Vor dem Einreichen: Werkzeug-Liste im Portal neu scannen lassen (jetzt 2 Tools).

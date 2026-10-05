@@ -26,7 +26,7 @@ Expected results produced by running the tool on 2026-10-05.
 | 2 | Small firm with shadow IT and a critical spreadsheet | "Wir sind eine Steuerkanzlei: DATEV (Buchhaltung, 6 Nutzer, kritisch, verantwortlich Kanzleileitung), Outlook für alle (12), WhatsApp für alle (8, nicht freigegeben), Mandantenliste.xlsx im Sekretariat (3, kritisch). Zeig mir das als Stadt." | map_software_city | 4 buildings, quests include critical spreadsheet (Mandantenliste.xlsx), "2 Tools für Kommunikation" and "Schatten-IT: WhatsApp" |
 | 3 | Unused licences | "Figma im Design: 4 Nutzer, 10 Lizenzen, 150 € im Monat. Asana für alle: 9 Nutzer, 10 Lizenzen, 110 €. Wo verschwenden wir Geld?" | map_software_city | Quests "6 ungenutzte Lizenzen in Figma" and "1 ungenutzte Lizenz in Asana", savings potential 1,212 €/year |
 | 4 | Clean, connected landscape | "Shopware (Vertrieb, kritisch) schickt Daten an JTL-Wawi (Lager), JTL-Wawi an Lexware (Buchhaltung). Alle haben Verantwortliche. Bau die Stadt." | map_software_city | 3 buildings connected by 2 data-flow paths, health 100, no quests |
-| 5 | Follow-up after the first map | "Wir haben Slack gekündigt und nutzen nur noch Teams. Bau die Stadt neu." (after case 1) | map_software_city | Town without Slack; the quest "2 Tools für Kommunikation" is gone |
+| 5 | Follow-up after the first map | "Wir haben Slack gekündigt und nutzen nur noch Teams. Bau die Stadt neu und vergleiche mit vorher." (after case 1) | map_software_city (with `before`) | Town without Slack; comparison lists "2 Tools für Kommunikation" as solved, health rises |
 
 ## Negative test cases (exactly 3)
 | # | Scenario | User prompt | Why the plugin should not act |
@@ -36,7 +36,7 @@ Expected results produced by running the tool on 2026-10-05.
 | 3 | Buying advice | "Welches CRM soll ich kaufen?" | General product advice; ChatGPT answers without building a map |
 
 ## Release notes (1.0.0)
-First release. One read-only tool, `map_software_city`, with an MCP Apps widget (isometric town, plumb-bob status gems, needs bars, quests, pan/zoom, light/dark, reduced motion). Deterministic quest rules: overlapping tools, unused licences with savings, critical spreadsheets, no owner, shadow IT, data islands, unknown data targets.
+First release. Two read-only tools: `map_software_city` (returns the town, a management report in Markdown and a share link whose data lives only in the URL fragment; optional `before` list for a before/after comparison and `preparedBy` for IT service providers) and `import_software_list` (deterministic parser for pasted Excel/CSV lists and accounting/bank exports, no widget). The map tool has an MCP Apps widget (isometric town, plumb-bob status gems, needs bars, quests, pan/zoom, light/dark, reduced motion). Deterministic quest rules: overlapping tools, unused licences with savings, critical spreadsheets, no owner, shadow IT, data islands, unknown data targets.
 
 ## Demo video
 `assets/demo.webm` → upload as unlisted video and paste the link.

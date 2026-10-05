@@ -9,7 +9,7 @@ export type PluginKind = 'trauerfall' | 'geburt' | 'surcharge' | 'city';
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** One MCP server per plugin; all share the deadline core and the timeline widget. */
-export function createServer(kind: PluginKind = 'trauerfall', now: () => string = today): McpServer {
+export function createServer(kind: PluginKind = 'trauerfall', now: () => string = today, baseUrl = 'https://trauerfall-lotse.onrender.com'): McpServer {
   if (kind === 'city') {
     const server = new McpServer(
       { name: 'software-stadt', version: '0.1.0' },
@@ -17,10 +17,12 @@ export function createServer(kind: PluginKind = 'trauerfall', now: () => string 
         instructions:
           'Turns a company\'s software landscape into an interactive town map. Ask the user, conversationally and department by department, ' +
           'which programs they use and the facts you are missing (users, licences, cost, owner, critical, approved, data flows). ' +
-          'Then call map_software_city. Lead with the city health score, the savings potential and the top quests.',
+          'Then call map_software_city. Lead with the city health score, the savings potential and the top quests. ' +
+          'If the user pastes a spreadsheet or an accounting export, call import_software_list first and confirm the result. ' +
+          'For a before/after comparison pass the previous app list as "before". Offer the share link and the report.',
       },
     );
-    registerMapSoftwareCity(server);
+    registerMapSoftwareCity(server, baseUrl, now);
     return server;
   }
   if (kind === 'surcharge') {

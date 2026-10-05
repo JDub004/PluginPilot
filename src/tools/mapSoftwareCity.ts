@@ -2,10 +2,23 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { track } from '../analytics/events.js';
 import { buildCity } from '../domain/softwarecity/build.js';
-import { CityInputSchema } from '../domain/softwarecity/schema.js';
+import { importLedger, importTable, mergeApps } from '../domain/softwarecity/import.js';
+import { compareCities, encodeShare, renderReport } from '../domain/softwarecity/report.js';
+import { AppSchema, CityInputSchema } from '../domain/softwarecity/schema.js';
 import { loadWidget, RESOURCE_MIME_TYPE } from './widget.js';
 
 export const TOOL_NAME = 'map_software_city';
+export const IMPORT_TOOL_NAME = 'import_software_list';
+
+export const ToolInputSchema = CityInputSchema.extend({
+  preparedBy: z.string().trim().min(1).max(80).optional().describe('IT service provider or person preparing the map; shown in the report'),
+  before: z.array(AppSchema).min(1).max(120).optional().describe('Earlier app list of the same company, for a before/after comparison'),
+}).strict();
+
+export const ImportInputSchema = z.object({
+  table: z.string().max(200_000).optional().describe('Software list pasted from Excel/Google Sheets or a CSV file, including the header row'),
+  ledger: z.string().max(500_000).optional().describe('Accounting or bank export (CSV) with booking text/payee, amount and date columns'),
+}).strict();
 export const WIDGET_URI = 'ui://software-stadt/city-v1.html';
 const WIDGET = loadWidget('city.html');
 
@@ -21,11 +34,12 @@ export const TOOL_DESCRIPTION = [
 const Any = z.record(z.string(), z.unknown());
 export const CityOutputSchema = z.object({
   company: z.string(), districts: z.array(Any), buildings: z.array(Any), roads: z.array(Any), quests: z.array(Any),
+  report: z.string(), shareUrl: z.string(), comparison: Any.optional(),
   stats: z.object({ apps: z.number(), districts: z.number(), monthlyCostEur: z.number(), potentialSavingsEurYear: z.number(), healthScore: z.number() }),
   disclaimer: z.string(),
 });
 
-export function registerMapSoftwareCity(server: McpServer): void {
+export function registerMapSoftwareCity(server: McpServer, baseUrl: string, now: () => string): void {
   server.registerResource('Software-Stadt', WIDGET_URI, { mimeType: RESOURCE_MIME_TYPE }, async () => ({
     contents: [{ uri: WIDGET_URI, mimeType: RESOURCE_MIME_TYPE, text: WIDGET, _meta: { ui: { prefersBorder: false } } }],
   }));
@@ -34,7 +48,7 @@ export function registerMapSoftwareCity(server: McpServer): void {
     {
       title: 'Software-Stadt bauen',
       description: TOOL_DESCRIPTION,
-      inputSchema: CityInputSchema.shape,
+      inputSchema: ToolInputSchema.shape,
       outputSchema: CityOutputSchema.shape,
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: true },
       _meta: { ui: { resourceUri: WIDGET_URI }, 'openai/outputTemplate': WIDGET_URI },
@@ -42,16 +56,46 @@ export function registerMapSoftwareCity(server: McpServer): void {
     async (input) => {
       const started = Date.now();
       try {
-        const city = buildCity(CityInputSchema.parse(input));
+        const { preparedBy, before, ...cityInput } = ToolInputSchema.parse(input);
+        const city = buildCity(cityInput);
+        const comparison = before ? compareCities(buildCity({ company: cityInput.company, apps: before }), city) : undefined;
+        const report = renderReport(city, { date: now(), ...(preparedBy ? { preparedBy } : {}), ...(comparison ? { comparison } : {}) });
+        const shareUrl = `${baseUrl.replace(/\/$/, '')}/city/view#d=${encodeShare(cityInput)}`;
         track({ tool: TOOL_NAME, outcome: 'success', durationMs: Date.now() - started, findingCount: city.buildings.length, errorCount: city.quests.length });
         const top = city.quests.slice(0, 5).map((q) => `${q.severity}: ${q.title}${q.savingEurYear ? ` (spart ${q.savingEurYear} €/Jahr)` : ''}`).join('; ');
+        const delta = comparison ? ` Vergleich: Gesundheit ${comparison.healthBefore} → ${comparison.healthAfter}, ${comparison.solved.length} Aufgaben erledigt, ${comparison.added.length} neu.` : '';
         const text = `Software-Stadt von ${city.company}: ${city.stats.apps} Programme in ${city.stats.districts} Vierteln, ${city.stats.monthlyCostEur} €/Monat, ` +
-          `Stadt-Gesundheit ${city.stats.healthScore}/100, Sparpotenzial ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}`;
-        return { structuredContent: { ...city }, content: [{ type: 'text' as const, text }] };
+          `Stadt-Gesundheit ${city.stats.healthScore}/100, Sparpotenzial ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}${delta} Teilen-Link (Daten nur im Link, nichts gespeichert): ${shareUrl}`;
+        return { structuredContent: { ...city, report, shareUrl, ...(comparison ? { comparison: { ...comparison } } : {}) }, content: [{ type: 'text' as const, text }] };
       } catch (err) {
         track({ tool: TOOL_NAME, outcome: 'invalid_input', durationMs: Date.now() - started });
         return { isError: true, content: [{ type: 'text' as const, text: `Angaben ungültig: ${err instanceof Error ? err.message.slice(0, 300) : ''}. Bitte fehlende Programme oder Kategorien nachfragen.` }] };
       }
+    },
+  );
+
+  server.registerTool(
+    IMPORT_TOOL_NAME,
+    {
+      title: 'Software-Liste importieren',
+      description: [
+        'Use this when the user pastes a software list from Excel/Google Sheets/CSV, or an accounting/bank export, to turn it into the app list',
+        'for map_software_city. Recognises German and English headers and number formats, and detects ~40 common SaaS vendors in booking texts',
+        '(average monthly cost). Returns apps plus warnings; confirm missing departments/users with the user, then call map_software_city.',
+      ].join(' '),
+      inputSchema: ImportInputSchema.shape,
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: true },
+    },
+    async (input) => {
+      const { table, ledger } = ImportInputSchema.parse(input);
+      if (!table && !ledger) return { isError: true, content: [{ type: 'text' as const, text: 'Bitte eine Tabelle (table) oder einen Buchhaltungs-Export (ledger) übergeben.' }] };
+      const t = table ? importTable(table) : { apps: [], warnings: [] };
+      const l = ledger ? importLedger(ledger) : { apps: [], warnings: [] };
+      const apps = mergeApps(t.apps, l.apps);
+      const warnings = [...t.warnings, ...l.warnings];
+      track({ tool: IMPORT_TOOL_NAME, outcome: apps.length ? 'success' : 'invalid_input', durationMs: 0, findingCount: apps.length, errorCount: warnings.length });
+      const text = `${apps.length} Programme erkannt: ${apps.map((a) => a.name).join(', ') || 'keine'}.${warnings.length ? ` Hinweise: ${warnings.join(' ')}` : ''}`;
+      return { structuredContent: { apps, warnings }, content: [{ type: 'text' as const, text }] };
     },
   );
 }

@@ -10,6 +10,13 @@ Plugin is final for submission: tool `map_software_city` on `/city/mcp`; futuris
 
 Software-Stadt's position: the understandable, playful picture for people who are **not** IT (managing directors, office managers, new staff), inside ChatGPT, at SMB size.
 
+## Built 2026-10-05 (v1.1)
+- **Import:** `import_software_list` parses pasted Excel/CSV lists (German/English headers, `1.234,50`, ja/nein) and accounting/bank exports (~40 SaaS vendors detected in booking texts, cost averaged per month). Template at `/city/vorlage.csv`. Code: `src/domain/softwarecity/import.ts`.
+- **Share:** every result has a `shareUrl` (`/city/view#d=…`). The data is in the URL fragment, never stored; the page POSTs it once to `/city/api/build`. No accounts, no database.
+- **Before/after:** `before` app list in `map_software_city` → health, cost and solved/new quests.
+- **Report:** Markdown report in every result and as a download on the share page; `preparedBy` names the IT service provider (start of the partner tier).
+- **Not built, on purpose:** Microsoft 365/Google OAuth (needs app registration, admin consent, secret handling and a DPA; only after paying demand) and the paid partner account (checkout, multi-client storage). Build these when the first IT service provider asks to pay (see validation below).
+
 ## Optimise next (in this order)
 1. **Import instead of typing** (largest lever for activation):
    a) Paste or upload a tool list or invoice export (Excel/CSV). ChatGPT already extracts it into the tool input, so it works today; add a template and test prompts.

@@ -11,6 +11,8 @@ const EnvSchema = z.object({
   OPERATOR_COUNTRY: z.string().trim().max(60).default('Germany'),
   CONTACT_EMAIL: z.string().trim().max(120).default('[contact e-mail]'),
   // Token shown in the OpenAI plugin submission portal (domain verification).
+  // Public origin used in share links (Software-Stadt).
+  PUBLIC_BASE_URL: z.string().trim().url().default('https://trauerfall-lotse.onrender.com'),
   OPENAI_APPS_CHALLENGE: z.string().trim().max(512).optional(),
 });
 

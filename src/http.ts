@@ -1,3 +1,6 @@
+import { buildCity } from './domain/softwarecity/build.js';
+import { renderReport } from './domain/softwarecity/report.js';
+import { CityInputSchema } from './domain/softwarecity/schema.js';
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Env } from './config/env.js';
@@ -6,6 +9,8 @@ import { renderSite } from './site.js';
 import { loadWidget } from './tools/widget.js';
 
 const PLAYGROUND = loadWidget('playground.html');
+// Standalone share view: the city widget plus a loader that reads the URL fragment.
+const CITY_VIEW = loadWidget('city.html').replace('</body>', () => `<style>.report-btn{position:fixed;left:12px;bottom:12px;z-index:5;padding:8px 14px;border-radius:999px;background:#2F9E57;color:#fff;font:600 13px system-ui;text-decoration:none}</style><script>${loadWidget('city-view.js')}</script></body>`);
 
 // Static brand assets (logo files) from web/public, whitelisted by name.
 const ASSETS: Record<string, string> = {};
@@ -15,6 +20,7 @@ for (const f of ['surcharge-check.svg', 'surcharge-check-small.svg', 'software-s
     if (existsSync(u)) { ASSETS[f] = readFileSync(u, 'utf8'); break; }
   }
 }
+const TEMPLATE_CSV = ['../web/public/', '../../web/public/'].map((d) => new URL(`${d}software-stadt-vorlage.csv`, import.meta.url)).filter((u) => existsSync(u)).map((u) => readFileSync(u, 'utf8'))[0] ?? '';
 import { createServer, type PluginKind } from './mcp/server.js';
 
 // One endpoint per plugin (each is listed separately in the plugin directory).
@@ -63,7 +69,7 @@ function send(res: ServerResponse, status: number, body: unknown): void {
 async function handleMcp(env: Env, kind: PluginKind, req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== 'POST') return send(res, 405, { error: 'method not allowed' });
   const body = await readJson(req, env.MAX_BODY_BYTES);
-  const server = createServer(kind);
+  const server = createServer(kind, undefined, env.PUBLIC_BASE_URL);
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   res.on('close', () => {
     void transport.close();
@@ -95,6 +101,24 @@ export function createApp(env: Env): Server {
     }
     if ((path === '/' || path === '/playground') && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-src 'self'; connect-src 'self'" }).end(PLAYGROUND);
+      return;
+    }
+    if (path === '/city/vorlage.csv' && req.method === 'GET') {
+      // UTF-8 BOM so Excel opens umlauts correctly.
+      res.writeHead(200, { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="software-stadt-vorlage.csv"' }).end('\uFEFF' + TEMPLATE_CSV);
+      return;
+    }
+    if (path === '/city/view' && req.method === 'GET') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' blob:" }).end(CITY_VIEW);
+      return;
+    }
+    if (path === '/city/api/build' && req.method === 'POST') {
+      readJson(req, env.MAX_BODY_BYTES).then((body) => {
+        const parsed = CityInputSchema.safeParse(body);
+        if (!parsed.success) return send(res, 400, { error: 'Ungültige Stadt-Daten' });
+        const city = buildCity(parsed.data);
+        send(res, 200, { city, report: renderReport(city, { date: new Date().toISOString().slice(0, 10) }) });
+      }).catch((err: { status?: number }) => { if (!res.headersSent) send(res, err.status ?? 400, { error: 'bad request' }); });
       return;
     }
     const kind = ROUTES[path ?? ''];

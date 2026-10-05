@@ -55,10 +55,12 @@ export function renderSite(path: string, env: Env): string | undefined {
 <p>Jede Abteilung wird ein Stadtviertel, jedes Programm ein Gebäude: Häuser für selten genutzte Tools, Türme für die großen Systeme. Datenflüsse sind Wege, auf denen Pakete laufen. Ein Diamant über jedem Gebäude zeigt den Zustand: grün, gelb oder rot.</p>
 <p>Die Software-Stadt findet automatisch Aufgaben: doppelte Tools, ungenutzte Lizenzen mit Sparpotenzial, kritische Daten in Excel-Dateien, Programme ohne Verantwortlichen, Schatten-IT und Dateninseln. Ein Klick auf eine Aufgabe führt zum betroffenen Gebäude.</p>
 <div class="card"><b>So geht's:</b> Software-Stadt in ChatGPT verbinden und sagen: „Zeig mir unsere Software als Stadt.“ ChatGPT fragt Abteilung für Abteilung nach, welche Programme ihr nutzt. Eine Excel-Liste mit euren Tools funktioniert auch.</div>
+<h2>Funktionen</h2>
+<ul><li><b>Import:</b> Excel-Liste einfügen (<a href="/city/vorlage.csv">Vorlage herunterladen</a>) oder den Buchhaltungs-/Bank-Export: rund 40 bekannte Programme werden in den Buchungen erkannt, mit Kosten pro Monat.</li><li><b>Teilen:</b> Jede Stadt bekommt einen Link. Die Daten stecken nur im Link, nicht auf unserem Server.</li><li><b>Vorher / Nachher:</b> Nach dem Aufräumen zeigt die Stadt, welche Aufgaben erledigt sind und wie die Gesundheit gestiegen ist.</li><li><b>Bericht:</b> Kennzahlen, Aufgaben mit Ersparnis und Programme je Abteilung als Bericht für die Geschäftsführung, auf Wunsch mit dem Namen eures IT-Dienstleisters.</li></ul>
 <h2>Für wen?</h2>
 <ul><li>Geschäftsführung und Büroleitung in kleinen und mittleren Firmen, die den Überblick über ihre Tools und Kosten wollen</li><li>IT-Dienstleister, die die Landschaft ihrer Kunden verständlich zeigen wollen</li><li>Neue Mitarbeitende, die die Werkzeuge der Firma kennenlernen</li></ul>
 <h2>Datenschutz</h2>
-<p>Kein Konto, kein Login. Der Server berechnet die Stadt im Arbeitsspeicher und speichert keine Inhalte. <a href="/privacy">Datenschutzerklärung</a></p>
+<p>Kein Konto, kein Login. Der Server berechnet die Stadt im Arbeitsspeicher und speichert keine Inhalte, auch nicht beim Teilen-Link. <a href="/privacy">Datenschutzerklärung</a></p>
 <p><a href="/playground">Ausprobieren</a></p>`);
 
     case '/support':

@@ -1,0 +1,33 @@
+{
+  "name": "surcharge-check",
+  "version": "1.0.0",
+  "description": "Audits ocean freight surcharges (war risk, emergency conflict, emergency bunker, cost recovery) on quotes and invoices against a sourced database of carrier announcements and drafts dispute letters.",
+  "author": {
+    "name": "PluginPilot",
+    "url": "https://trauerfall-lotse.onrender.com/surcharge"
+  },
+  "homepage": "https://trauerfall-lotse.onrender.com/surcharge",
+  "license": "UNLICENSED",
+  "keywords": ["freight", "shipping", "surcharge", "logistics", "invoice audit", "war risk", "hormuz", "container", "import", "export"],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Surcharge Check",
+    "shortDescription": "Audit freight surcharges",
+    "longDescription": "Since the Strait of Hormuz closed in March 2026, ocean carriers have stacked war risk, emergency conflict, emergency bunker and operational cost recovery surcharges on top of base freight. Small importers, exporters and e-commerce sellers often pay surcharges that were announced for other lanes, other dates or lower amounts.\n\nPaste a freight quote or invoice and ask whether the charges are legitimate. Surcharge Check compares every line with a curated database of carrier announcements (Maersk, Hapag-Lloyd, CMA CGM, MSC, ONE): lane scope, effective date and pricing basis (booking or gate-in), whether cargo already in transit is covered, later dates for US FMC-regulated trades, and the announced amount per container type. It also flags duplicate surcharges and conflicts with all-in rates.\n\nYou get a traffic-light view of every line with the source for each finding, the total amount you can dispute, the next steps, and a ready-to-send dispute letter. Entries based on trade press are marked and never count as confirmed. A charge that is missing from the database is never treated as wrong: the tool asks you to request the carrier advisory instead.\n\nNo account or login. The server processes each request in memory and stores no request content. Not legal advice.",
+    "developerName": "PluginPilot",
+    "category": "Business & Operations",
+    "capabilities": ["Interactive"],
+    "websiteURL": "https://trauerfall-lotse.onrender.com/surcharge",
+    "privacyPolicyURL": "https://trauerfall-lotse.onrender.com/privacy",
+    "termsOfServiceURL": "https://trauerfall-lotse.onrender.com/terms",
+    "defaultPrompt": [
+      "Check the surcharges on this freight invoice: ECS 3,000 USD per 40HC, Maersk, Hamburg to Sohar, booked 3 March 2026",
+      "Is the war risk surcharge on my Hapag-Lloyd quote from Shanghai to Hamburg legitimate?",
+      "Draft a dispute letter for the surcharges on this ocean freight invoice"
+    ],
+    "composerIcon": "./assets/composer-icon.svg",
+    "logo": "./assets/logo.png",
+    "screenshots": ["./assets/screenshot-audit-light.png", "./assets/screenshot-audit-dark.png"],
+    "brandColor": "#1F5A73"
+  }
+}

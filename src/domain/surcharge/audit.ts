@@ -206,10 +206,14 @@ export function auditSurcharges(input: AuditInput): AuditResult {
     lines.push(r);
   }
 
+  const firstOfCode = new Set<string>();
   for (const r of lines) {
     if ((seen.get(r.code) ?? 0) > 1 && r.code !== 'OTHER' && r.code !== 'THC') {
       r.status = 'flag';
       r.findings.push(`Charged ${seen.get(r.code)} times as ${r.code}. Possible duplicate.`);
+      // The first occurrence may be legitimate; every repeat is disputable in full.
+      if (firstOfCode.has(r.code)) r.overchargeUsd = Math.max(r.overchargeUsd, r.charged);
+      firstOfCode.add(r.code);
     }
   }
 

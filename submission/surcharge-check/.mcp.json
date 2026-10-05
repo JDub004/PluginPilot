@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "surcharge-check": {
+      "type": "http",
+      "url": "https://trauerfall-lotse.onrender.com/surcharge/mcp",
+      "note": "Surcharge Check MCP server. No authentication. One read-only tool: check_freight_surcharges."
+    }
+  }
+}

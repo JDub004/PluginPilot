@@ -12,3 +12,15 @@ services:
         value: "on"
       - key: MAX_BODY_BYTES
         value: "65536"
+      # Operator details for /privacy, /terms, /imprint (set in the Render dashboard)
+      - key: OPERATOR_NAME
+        sync: false
+      - key: OPERATOR_ADDRESS
+        sync: false
+      - key: OPERATOR_COUNTRY
+        value: "Germany"
+      - key: CONTACT_EMAIL
+        sync: false
+      # Token from the OpenAI plugin portal (domain verification)
+      - key: OPENAI_APPS_CHALLENGE
+        sync: false

@@ -124,6 +124,21 @@ describe('MCP over HTTP', () => {
     }
   });
 
+  it('serves website, support, privacy, terms, imprint and the logo', async () => {
+    for (const p of ['/surcharge', '/support', '/privacy', '/terms', '/imprint']) {
+      const r = await fetch(new URL(p, url));
+      expect(r.status, p).toBe(200);
+      expect(await r.text(), p).toContain('<h1>');
+    }
+    const logo = await fetch(new URL('/assets/surcharge-check.svg', url));
+    expect(logo.headers.get('content-type')).toBe('image/svg+xml');
+    expect((await fetch(new URL('/assets/../package.json', url))).status).toBe(404);
+  });
+
+  it('domain verification route is 404 until the token is configured', async () => {
+    expect((await fetch(new URL('/.well-known/openai-apps-challenge', url))).status).toBe(404);
+  });
+
   it('health and 404', async () => {
     expect((await fetch(new URL('/health', url))).status).toBe(200);
     expect((await fetch(new URL('/nope', url))).status).toBe(404);

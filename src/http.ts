@@ -1,9 +1,20 @@
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Env } from './config/env.js';
+import { existsSync, readFileSync } from 'node:fs';
+import { renderSite } from './site.js';
 import { loadWidget } from './tools/widget.js';
 
 const PLAYGROUND = loadWidget('playground.html');
+
+// Static brand assets (logo files) from web/public, whitelisted by name.
+const ASSETS: Record<string, string> = {};
+for (const f of ['surcharge-check.svg', 'surcharge-check-small.svg']) {
+  for (const rel of [`../web/public/${f}`, `../../web/public/${f}`]) {
+    const u = new URL(rel, import.meta.url);
+    if (existsSync(u)) { ASSETS[f] = readFileSync(u, 'utf8'); break; }
+  }
+}
 import { createServer, type PluginKind } from './mcp/server.js';
 
 // One endpoint per plugin (each is listed separately in the plugin directory).
@@ -66,6 +77,22 @@ export function createApp(env: Env): Server {
   return createHttpServer((req, res) => {
     const path = (req.url ?? '/').split('?')[0];
     if (path === '/health') return send(res, 200, { ok: true });
+    if (req.method === 'GET' && path === '/.well-known/openai-apps-challenge') {
+      if (!env.OPENAI_APPS_CHALLENGE) return send(res, 404, { error: 'not configured' });
+      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }).end(env.OPENAI_APPS_CHALLENGE);
+      return;
+    }
+    if (req.method === 'GET' && path?.startsWith('/assets/')) {
+      const svg = ASSETS[path.slice('/assets/'.length)];
+      if (!svg) return send(res, 404, { error: 'not found' });
+      res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'public, max-age=86400' }).end(svg);
+      return;
+    }
+    const sitePage = req.method === 'GET' && path ? renderSite(path, env) : undefined;
+    if (sitePage) {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; img-src 'self'" }).end(sitePage);
+      return;
+    }
     if ((path === '/' || path === '/playground') && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-src 'self'; connect-src 'self'" }).end(PLAYGROUND);
       return;

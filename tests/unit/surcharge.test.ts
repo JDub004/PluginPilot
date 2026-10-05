@@ -132,3 +132,24 @@ describe('database extension 2026-10-04 (MSC, ONE, Hapag-Lloyd FMC date)', () =>
     expect(r.totalOverchargeUsd).toBe(0);
   });
 });
+
+describe('site', () => {
+  it('escapes operator details and serves the challenge token from env', async () => {
+    const { renderSite } = await import('../../src/site.js');
+    const { loadEnv } = await import('../../src/config/env.js');
+    const html = renderSite('/privacy', loadEnv({ OPERATOR_NAME: '<script>x</script>', CONTACT_EMAIL: 'a@b.de' }))!;
+    expect(html).not.toContain('<script>x</script>');
+    expect(html).toContain('a@b.de');
+    expect(renderSite('/nope', loadEnv({}))).toBeUndefined();
+  });
+});
+
+describe('regression: duplicates', () => {
+  it('a repeated surcharge counts in full as disputable, the first occurrence does not', () => {
+    const r = run({ carrier: 'Maersk', originCountry: 'DE', destinationCountry: 'OM', bookingDate: '2026-05-01',
+      lines: [{ label: 'ECS', amountUsd: 3000, containerType: '40HC' }, { label: 'Emergency Contingency Surcharge', amountUsd: 3000, containerType: '40HC' }] });
+    expect(r.totalOverchargeUsd).toBe(3000);
+    expect(r.lines[0]?.overchargeUsd).toBe(0);
+    expect(r.lines[1]?.overchargeUsd).toBe(3000);
+  });
+});

@@ -139,7 +139,7 @@ describe('MCP over HTTP', () => {
   });
 
   it('serves website, support, privacy, terms, imprint and the logo', async () => {
-    for (const p of ['/surcharge', '/support', '/privacy', '/terms', '/imprint']) {
+    for (const p of ['/city', '/surcharge', '/support', '/privacy', '/terms', '/imprint']) {
       const r = await fetch(new URL(p, url));
       expect(r.status, p).toBe(200);
       expect(await r.text(), p).toContain('<h1>');

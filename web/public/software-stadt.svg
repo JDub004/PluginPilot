@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#bfe6ff"/>
+  <path d="M256 300 L470 410 L256 520 L42 410 Z" fill="#8fd06a"/>
+  <path d="M256 330 L420 412 L256 494 L92 412 Z" fill="#e9e3d3"/>
+  <!-- tower -->
+  <path d="M200 230 L250 255 L250 400 L200 375 Z" fill="#3f78c4"/>
+  <path d="M250 255 L300 230 L300 375 L250 400 Z" fill="#2f5f9e"/>
+  <path d="M200 230 L250 205 L300 230 L250 255 Z" fill="#7fb0ec"/>
+  <g fill="#fff0b4"><rect x="212" y="270" width="10" height="12"/><rect x="230" y="279" width="10" height="12"/><rect x="212" y="300" width="10" height="12"/><rect x="230" y="309" width="10" height="12"/><rect x="212" y="330" width="10" height="12"/><rect x="230" y="339" width="10" height="12"/></g>
+  <!-- house -->
+  <path d="M300 345 L340 365 L340 420 L300 400 Z" fill="#e2685a"/>
+  <path d="M340 365 L380 345 L380 400 L340 420 Z" fill="#b84a3e"/>
+  <path d="M296 345 L340 300 L384 345 L340 367 Z" fill="#7a2f28"/>
+  <!-- plumb-bob -->
+  <path d="M250 70 L285 125 L250 195 L215 125 Z" fill="#2f9e57"/>
+  <path d="M250 70 L285 125 L250 132 Z" fill="#7fd59c"/>
+</svg>

@@ -9,7 +9,7 @@ const PLAYGROUND = loadWidget('playground.html');
 
 // Static brand assets (logo files) from web/public, whitelisted by name.
 const ASSETS: Record<string, string> = {};
-for (const f of ['surcharge-check.svg', 'surcharge-check-small.svg']) {
+for (const f of ['surcharge-check.svg', 'surcharge-check-small.svg', 'software-stadt.svg']) {
   for (const rel of [`../web/public/${f}`, `../../web/public/${f}`]) {
     const u = new URL(rel, import.meta.url);
     if (existsSync(u)) { ASSETS[f] = readFileSync(u, 'utf8'); break; }

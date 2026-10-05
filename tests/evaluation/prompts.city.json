@@ -1,0 +1,104 @@
+[
+ {
+  "id": "direct-01",
+  "category": "direct",
+  "prompt": "Zeig mir die Software unserer Firma als Stadt",
+  "expected": "call"
+ },
+ {
+  "id": "direct-02",
+  "category": "direct",
+  "prompt": "Mach aus unserer Tool-Liste eine Karte wie in einem Spiel",
+  "expected": "call"
+ },
+ {
+  "id": "direct-03",
+  "category": "direct",
+  "prompt": "Visualisiere unsere IT-Landschaft: Vertrieb nutzt HubSpot, Buchhaltung DATEV, alle Teams",
+  "expected": "call"
+ },
+ {
+  "id": "direct-04",
+  "category": "direct",
+  "prompt": "Baue eine Software-Stadt für unser Unternehmen",
+  "expected": "call"
+ },
+ {
+  "id": "indirect-01",
+  "category": "indirect",
+  "prompt": "Wir haben keinen Überblick mehr, welche Programme wir eigentlich alle nutzen",
+  "expected": "call_or_ask"
+ },
+ {
+  "id": "indirect-02",
+  "category": "indirect",
+  "prompt": "Wo verschwenden wir Geld bei Software-Lizenzen?",
+  "expected": "call_or_ask"
+ },
+ {
+  "id": "indirect-03",
+  "category": "indirect",
+  "prompt": "Welche unserer Tools machen dasselbe?",
+  "expected": "call_or_ask"
+ },
+ {
+  "id": "indirect-04",
+  "category": "indirect",
+  "prompt": "Neue Kollegen verstehen nie, welche Software wir wofür nutzen",
+  "expected": "call_or_ask"
+ },
+ {
+  "id": "follow_up-01",
+  "category": "follow_up",
+  "prompt": "Wir haben Slack gekündigt, bau die Stadt neu",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-02",
+  "category": "follow_up",
+  "prompt": "Wer sollte für Pipedrive verantwortlich sein?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "follow_up-03",
+  "category": "follow_up",
+  "prompt": "Was ist die dringendste Aufgabe?",
+  "expected": "call_or_answer"
+ },
+ {
+  "id": "negative-01",
+  "category": "negative",
+  "prompt": "Visualisiere die Architektur meines GitHub-Repositories",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-02",
+  "category": "negative",
+  "prompt": "Erstelle ein Organigramm unserer Firma",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-03",
+  "category": "negative",
+  "prompt": "Welches CRM soll ich kaufen?",
+  "expected": "no_call"
+ },
+ {
+  "id": "negative-04",
+  "category": "negative",
+  "prompt": "Zeichne einen Netzwerkplan unseres Büros",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-01",
+  "category": "boundary",
+  "prompt": "Liste mir alle Programme auf, die in Deutschland beliebt sind",
+  "expected": "no_call"
+ },
+ {
+  "id": "boundary-02",
+  "category": "boundary",
+  "prompt": "Spiel mit mir SimCity",
+  "expected": "no_call"
+ }
+]

@@ -108,7 +108,7 @@ export function buildCity(input: CityInput): CityMap {
     if (a.licenses !== undefined && a.users !== undefined && a.licenses > a.users && a.monthlyCostEur) {
       const unused = a.licenses - a.users;
       const saving = Math.round((a.monthlyCostEur / a.licenses) * unused * 12);
-      add({ kind: 'unused_licenses', severity: unused / a.licenses >= 0.3 ? 'medium' : 'low', title: `${unused} ungenutzte Lizenzen in ${a.name}`,
+      add({ kind: 'unused_licenses', severity: unused / a.licenses >= 0.3 ? 'medium' : 'low', title: `${unused} ungenutzte ${unused === 1 ? 'Lizenz' : 'Lizenzen'} in ${a.name}`,
         detail: `${a.licenses} Lizenzen, aber nur ${a.users} Nutzer. Kündigen spart rund ${eur(saving)} pro Jahr.`, buildingIds: [a.id], savingEurYear: saving });
     }
     if (a.critical && (a.category === 'spreadsheet' || SPREADSHEET_LIKE.test(a.name))) {

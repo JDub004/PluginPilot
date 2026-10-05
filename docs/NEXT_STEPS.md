@@ -20,7 +20,9 @@ Tipp: Wenn Render nicht automatisch neu baut, unter Settings → Build & Deploy 
 ## 3. Demo-Video hochladen (3 Min.)
 `submission/surcharge-check/assets/demo.webm` als **nicht gelistetes** Video hochladen (YouTube oder Loom) und den Link kopieren.
 
-## 4. Einreichen (15 Min.)
+## 4. Einreichen (15 Min. pro Plugin)
+Zwei Pakete sind fertig: `submission/surcharge-check-1.0.0.zip` und `submission/software-stadt-1.0.0.zip` (jeweils mit REVIEW.md und Demo-Video).
+
 Im Plugin-Portal von OpenAI:
 1. ZIP hochladen: `submission/surcharge-check-1.0.0.zip` (neu bauen mit `scripts/package-surcharge.sh`).
 2. Felder aus `submission/surcharge-check/REVIEW.md` übernehmen: URLs, 5 positive + 3 negative Testfälle, Release Notes, Video-Link.

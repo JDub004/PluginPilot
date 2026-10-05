@@ -76,3 +76,10 @@ describe('softwarecity quests', () => {
     expect(() => CityInputSchema.parse({ company: 'X', apps: Array.from({ length: 121 }, (_, i) => ({ name: `A${i}`, category: 'other', department: 'B' })) })).toThrow();
   });
 });
+
+describe('regression: wording', () => {
+  it('singular for one unused licence', () => {
+    const c = buildCity(CityInputSchema.parse({ company: 'X', apps: [{ name: 'Asana', category: 'collaboration', department: 'Alle', users: 9, licenses: 10, monthlyCostEur: 110, owner: 'COO' }] }));
+    expect(c.quests[0]?.title).toBe('1 ungenutzte Lizenz in Asana');
+  });
+});

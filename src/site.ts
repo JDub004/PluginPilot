@@ -23,7 +23,7 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: 14px; }`;
 function page(title: string, body: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title><link rel="icon" href="/assets/surcharge-check.svg"><style>${STYLE}</style></head><body><main>
-<nav><a href="/surcharge">Surcharge Check</a><a href="/support">Support</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/imprint">Imprint</a><a href="/playground">Try it</a></nav>
+<nav><a href="/city">Software-Stadt</a><a href="/surcharge">Surcharge Check</a><a href="/support">Support</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/imprint">Imprint</a><a href="/playground">Try it</a></nav>
 ${body}</main></body></html>`;
 }
 
@@ -47,6 +47,20 @@ export function renderSite(path: string, env: Env): string | undefined {
 <h2>What it is not</h2>
 <p>It does not quote freight, book shipments or give legal advice. Entries based on trade press are marked and must be confirmed with the carrier before you rely on them.</p>`);
 
+    case '/city':
+      return page('Software-Stadt', `
+<img class="logo" src="/assets/software-stadt.svg" alt="Software-Stadt Logo">
+<h1>Software-Stadt</h1>
+<p class="muted">Die Software deiner Firma als begehbare Stadt, direkt in ChatGPT.</p>
+<p>Jede Abteilung wird ein Stadtviertel, jedes Programm ein Gebäude: Häuser für selten genutzte Tools, Türme für die großen Systeme. Datenflüsse sind Wege, auf denen Pakete laufen. Ein Diamant über jedem Gebäude zeigt den Zustand: grün, gelb oder rot.</p>
+<p>Die Software-Stadt findet automatisch Aufgaben: doppelte Tools, ungenutzte Lizenzen mit Sparpotenzial, kritische Daten in Excel-Dateien, Programme ohne Verantwortlichen, Schatten-IT und Dateninseln. Ein Klick auf eine Aufgabe führt zum betroffenen Gebäude.</p>
+<div class="card"><b>So geht's:</b> Software-Stadt in ChatGPT verbinden und sagen: „Zeig mir unsere Software als Stadt.“ ChatGPT fragt Abteilung für Abteilung nach, welche Programme ihr nutzt. Eine Excel-Liste mit euren Tools funktioniert auch.</div>
+<h2>Für wen?</h2>
+<ul><li>Geschäftsführung und Büroleitung in kleinen und mittleren Firmen, die den Überblick über ihre Tools und Kosten wollen</li><li>IT-Dienstleister, die die Landschaft ihrer Kunden verständlich zeigen wollen</li><li>Neue Mitarbeitende, die die Werkzeuge der Firma kennenlernen</li></ul>
+<h2>Datenschutz</h2>
+<p>Kein Konto, kein Login. Der Server berechnet die Stadt im Arbeitsspeicher und speichert keine Inhalte. <a href="/privacy">Datenschutzerklärung</a></p>
+<p><a href="/playground">Ausprobieren</a></p>`);
+
     case '/support':
       return page('Support – Surcharge Check', `
 <h1>Support</h1>
@@ -54,16 +68,16 @@ export function renderSite(path: string, env: Env): string | undefined {
 <h2>Reporting a wrong result</h2>
 <p>Every result shows the database version and the source of each entry. Send us the version number and the charge line, and we correct the database, usually within a week.</p>
 <h2>Other plugins by the same operator</h2>
-<ul><li>Trauerfall-Lotse: official steps and deadlines after a death in Germany</li><li>Geburts-Lotse: applications and deadlines after a birth in Germany</li></ul>`);
+<ul><li>Software-Stadt: Firmen-Software als interaktive Stadt</li><li>Trauerfall-Lotse: official steps and deadlines after a death in Germany</li><li>Geburts-Lotse: applications and deadlines after a birth in Germany</li></ul>`);
 
     case '/privacy':
       return page('Privacy Policy', `
 <h1>Privacy Policy</h1>
-<p class="muted">Last updated ${UPDATED}. Applies to Surcharge Check, Trauerfall-Lotse and Geburts-Lotse (“the plugins”).</p>
+<p class="muted">Last updated ${UPDATED}. Applies to Software-Stadt, Surcharge Check, Trauerfall-Lotse and Geburts-Lotse (“the plugins”).</p>
 <h2>Controller</h2>
 <p>${name}, ${addr}, ${country}. Contact: ${email}.</p>
 <h2>What we process</h2>
-<p>When ChatGPT calls a plugin, our server receives only the structured values needed for the check: for Surcharge Check the carrier, origin and destination country codes, dates, container types, charge labels and amounts; for the Lotsen a date and yes/no facts. Names and addresses are optional in letter drafts and are not required for any check.</p>
+<p>When ChatGPT calls a plugin, our server receives only the structured values needed for the check: for Surcharge Check the carrier, origin and destination country codes, dates, container types, charge labels and amounts; for the Lotsen a date and yes/no facts; for Software-Stadt the company name and a list of programs with department, user and licence counts, costs, owner (a role or a name, as entered by the user) and data flows. Names and addresses are optional in letter drafts and are not required for any check.</p>
 <h2>What we do not do</h2>
 <ul><li>We do not create user accounts and do not use cookies or tracking.</li>
 <li>We do not store the content of requests. The server processes each request in memory and discards it.</li>
@@ -80,7 +94,7 @@ export function renderSite(path: string, env: Env): string | undefined {
 <h1>Terms of Service</h1>
 <p class="muted">Last updated ${UPDATED}. Provider: ${name}, ${addr}, ${country}. Contact: ${email}.</p>
 <h2>Service</h2>
-<p>The plugins provide automated, rule-based information: a surcharge audit against published carrier announcements, and deadline timelines based on German law. They are free of charge and provided as is.</p>
+<p>The plugins provide automated, rule-based information: a map of a company's software with improvement hints, a surcharge audit against published carrier announcements, and deadline timelines based on German law. They are free of charge and provided as is.</p>
 <h2>No legal or tax advice</h2>
 <p>Results are not legal, tax or customs advice and do not replace a review by a qualified professional. Carrier tariffs, contracts and national rules can differ from the announcements in our database. Check the cited sources and your contract before you dispute a charge or act on a deadline.</p>
 <h2>Liability</h2>

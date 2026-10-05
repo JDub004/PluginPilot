@@ -1,0 +1,33 @@
+{
+  "name": "software-stadt",
+  "version": "1.0.0",
+  "description": "Turns a company's software landscape into an interactive, Sims-style town map with automatic improvement quests (overlapping tools, unused licences, critical spreadsheets, missing owners, shadow IT).",
+  "author": {
+    "name": "PluginPilot",
+    "url": "https://trauerfall-lotse.onrender.com/city"
+  },
+  "homepage": "https://trauerfall-lotse.onrender.com/city",
+  "license": "UNLICENSED",
+  "keywords": ["software", "SaaS", "IT-Landschaft", "Lizenzen", "Kosten", "Schatten-IT", "Übersicht", "Onboarding", "Mittelstand", "map"],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Software-Stadt",
+    "shortDescription": "Firmen-Software als Stadt",
+    "longDescription": "Die Software-Stadt zeigt alle Programme eines Unternehmens als begehbare Stadt im Stil eines Aufbauspiels – direkt in ChatGPT.\n\nJede Abteilung wird ein Stadtviertel, jedes Programm ein Gebäude: kleine Häuser für selten genutzte Tools, Türme für die großen Systeme. Programme, die alle nutzen, stehen auf dem Marktplatz. Datenflüsse zwischen den Programmen werden zu Wegen, auf denen Pakete laufen. Ein Diamant über jedem Gebäude zeigt den Zustand: grün, gelb oder rot.\n\nBeim Bauen findet die Software-Stadt automatisch Aufgaben: mehrere Tools für denselben Zweck, ungenutzte Lizenzen mit Sparpotenzial, geschäftskritische Daten in Tabellendateien, Programme ohne Verantwortlichen, Schatten-IT ohne Freigabe und Dateninseln ohne Verbindung. Oben zeigt die Stadt die monatlichen Kosten, das Sparpotenzial pro Jahr und eine Stadt-Gesundheit von 0 bis 100. Ein Klick auf ein Gebäude öffnet eine Karte mit Auslastung, Pflege, Vernetzung und Sicherheit.\n\nSo funktioniert es: Sag in ChatGPT „Zeig mir unsere Software als Stadt“. ChatGPT fragt Abteilung für Abteilung nach, welche Programme ihr nutzt, oder liest eure vorhandene Tool-Liste. Kein Konto, kein Login; der Server speichert keine Inhalte.",
+    "developerName": "PluginPilot",
+    "category": "Business & Operations",
+    "capabilities": ["Interactive"],
+    "websiteURL": "https://trauerfall-lotse.onrender.com/city",
+    "privacyPolicyURL": "https://trauerfall-lotse.onrender.com/privacy",
+    "termsOfServiceURL": "https://trauerfall-lotse.onrender.com/terms",
+    "defaultPrompt": [
+      "Zeig mir die Software unserer Firma als Stadt",
+      "Wo verschwenden wir Geld bei unseren Software-Lizenzen?",
+      "Baue aus dieser Tool-Liste eine Software-Stadt und zeig mir die wichtigsten Aufgaben"
+    ],
+    "composerIcon": "./assets/composer-icon.png",
+    "logo": "./assets/logo.png",
+    "screenshots": ["./assets/screenshot-overview.png", "./assets/screenshot-building.png"],
+    "brandColor": "#2F9E57"
+  }
+}

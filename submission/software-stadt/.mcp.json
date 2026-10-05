@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "software-stadt": {
+      "type": "http",
+      "url": "https://trauerfall-lotse.onrender.com/city/mcp",
+      "note": "Software-Stadt MCP server. No authentication. One read-only tool: map_software_city."
+    }
+  }
+}

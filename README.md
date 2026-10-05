@@ -15,7 +15,11 @@ It returns a personal, dated plan with the next critical deadline, responsible o
 
 ![Surcharge Check](assets/surcharge-light.png)
 
-Endpoints: `/mcp` (Trauerfall, also `/trauerfall/mcp`), `/geburt/mcp` and `/surcharge/mcp`, which are separate plugins on one server with a shared deadline core and widget.
+**Software-Stadt** (`/city/mcp`, tool `map_software_city`): a company's software landscape as a Sims-style town. Departments become districts, programs become buildings (height = users), data flows become paths. It finds quests: overlapping tools, unused licences (with savings), critical spreadsheets, missing owners, shadow IT and data islands.
+
+![Software-Stadt](assets/software-stadt.png)
+
+Endpoints: `/mcp` (Trauerfall, also `/trauerfall/mcp`), `/geburt/mcp` `/surcharge/mcp` and `/city/mcp`, which are separate plugins on one server with a shared deadline core and widget.
 
 Why this product: [docs/DEMAND_ANALYSIS.md](docs/DEMAND_ANALYSIS.md) → [docs/BEHOERDEN_LOTSE_VARIANTS.md](docs/BEHOERDEN_LOTSE_VARIANTS.md).
 

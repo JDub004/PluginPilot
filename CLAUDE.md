@@ -24,6 +24,7 @@ Goal: find a painful recurring workflow where ChatGPT is the right interface, bu
 - `src/domain/trauerfall/` — active product: pure deadline engine (calendar + plan). Bump `RULES_VERSION` and add tests for any legal change.
 - `src/domain/geburt/` — Geburts-Lotse (plugin on `/geburt/mcp`), reuses trauerfall calendar + Plan schema.
 - `src/domain/surcharge/` — Surcharge Check (`/surcharge/mcp`). `announcements.ts` is the curated DB: every entry needs a source URL and a confidence level; never add amounts or dates without a source. Absence from the DB must never produce a 'flag'.
+- `src/domain/softwarecity/` — Software-Stadt (`/city/mcp`, tool `map_software_city`): deterministic town layout + quest rules; widget `web/src/city.html` (canvas, Sims-style). Preview: `npx tsx scripts/preview-city.ts out.html`.
 - `src/site.ts` — public pages (/surcharge, /support, /privacy, /terms, /imprint) rendered from env (OPERATOR_*, CONTACT_EMAIL); `/.well-known/openai-apps-challenge` from OPENAI_APPS_CHALLENGE.
 - `submission/` — plugin package + REVIEW.md for the OpenAI portal; rebuild ZIP with `scripts/package-surcharge.sh`.
 - `src/domain/nebenkosten/` — archived prototype, not registered.

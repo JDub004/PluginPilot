@@ -1,14 +1,28 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerCheckSurcharges } from '../tools/checkSurcharges.js';
 import { registerDraftLetter } from '../tools/draftLetter.js';
+import { registerMapSoftwareCity } from '../tools/mapSoftwareCity.js';
 import { registerPlanAfterBirth } from '../tools/planAfterBirth.js';
 import { registerPlanAfterDeath } from '../tools/planAfterDeath.js';
 
-export type PluginKind = 'trauerfall' | 'geburt' | 'surcharge';
+export type PluginKind = 'trauerfall' | 'geburt' | 'surcharge' | 'city';
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** One MCP server per plugin; all share the deadline core and the timeline widget. */
 export function createServer(kind: PluginKind = 'trauerfall', now: () => string = today): McpServer {
+  if (kind === 'city') {
+    const server = new McpServer(
+      { name: 'software-stadt', version: '0.1.0' },
+      {
+        instructions:
+          'Turns a company\'s software landscape into an interactive town map. Ask the user, conversationally and department by department, ' +
+          'which programs they use and the facts you are missing (users, licences, cost, owner, critical, approved, data flows). ' +
+          'Then call map_software_city. Lead with the city health score, the savings potential and the top quests.',
+      },
+    );
+    registerMapSoftwareCity(server);
+    return server;
+  }
   if (kind === 'surcharge') {
     const server = new McpServer(
       { name: 'surcharge-check', version: '0.1.0' },

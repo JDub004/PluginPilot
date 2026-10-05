@@ -107,6 +107,20 @@ describe('MCP over HTTP', () => {
     await c.close();
   });
 
+  it('serves the Software-Stadt on /city/mcp with its widget', async () => {
+    const { SAMPLE_COMPANY } = await import('../../src/domain/softwarecity/sample.js');
+    const c = new Client({ name: 'test', version: '0' });
+    await c.connect(new StreamableHTTPClientTransport(new URL('/city/mcp', url)));
+    const { tools } = await c.listTools();
+    expect(tools.map((t) => t.name)).toEqual(['map_software_city']);
+    const res = await c.callTool({ name: 'map_software_city', arguments: SAMPLE_COMPANY as unknown as Record<string, unknown> });
+    const sc = res.structuredContent as { buildings: unknown[]; stats: { healthScore: number } };
+    expect(sc.buildings).toHaveLength(SAMPLE_COMPANY.apps.length);
+    const w = await c.readResource({ uri: 'ui://software-stadt/city-v1.html' });
+    expect((w.contents[0] as { text: string }).text).toContain('Stadt-Gesundheit');
+    await c.close();
+  });
+
   it('rejects oversized bodies with 413', async () => {
     const r = await fetch(url, {
       method: 'POST',

@@ -1,5 +1,5 @@
 import { buildCity } from './domain/softwarecity/build.js';
-import { renderReport } from './domain/softwarecity/report.js';
+import { inventoryCsv, renderReport } from './domain/softwarecity/report.js';
 import { CityInputSchema } from './domain/softwarecity/schema.js';
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -116,8 +116,9 @@ export function createApp(env: Env): Server {
       readJson(req, env.MAX_BODY_BYTES).then((body) => {
         const parsed = CityInputSchema.safeParse(body);
         if (!parsed.success) return send(res, 400, { error: 'Ungültige Stadt-Daten' });
-        const city = buildCity(parsed.data);
-        send(res, 200, { city, report: renderReport(city, { date: new Date().toISOString().slice(0, 10) }) });
+        const today = new Date().toISOString().slice(0, 10);
+        const city = buildCity(parsed.data, { today });
+        send(res, 200, { city: { ...city, inventoryCsv: inventoryCsv(city) }, report: renderReport(city, { date: today }) });
       }).catch((err: { status?: number }) => { if (!res.headersSent) send(res, err.status ?? 400, { error: 'bad request' }); });
       return;
     }

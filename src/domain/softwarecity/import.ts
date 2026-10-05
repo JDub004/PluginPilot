@@ -50,6 +50,8 @@ const HEADERS: Record<keyof AppInput, string[]> = {
   critical: ['kritisch', 'critical', 'geschäftskritisch'],
   approved: ['freigegeben', 'approved', 'genehmigt'],
   importance: ['wichtigkeit', 'importance', 'priorität', 'prioritaet', 'priority'],
+  renewalDate: ['vertragsende', 'laufzeit bis', 'verlängerung', 'verlaengerung', 'renewal', 'renewal date', 'kündbar zum', 'vertrag bis'],
+  noticePeriodDays: ['kündigungsfrist', 'kuendigungsfrist', 'notice period', 'frist'],
   site: ['standort', 'site', 'location', 'niederlassung'],
   dataFlowsTo: ['daten an', 'datenfluss', 'data flows to', 'sendet an', 'schnittstellen'],
 };
@@ -129,6 +131,10 @@ export function importTable(text: string): ImportResult {
     const licenses = num('licenses');
     const monthlyCostEur = num('monthlyCostEur');
     const importance = num('importance');
+    const renewalDate = toIsoDate(get('renewalDate'));
+    const noticeRaw = get('noticePeriodDays').toLowerCase();
+    const noticeN = noticeRaw ? parseNumber(noticeRaw.replace(/[^0-9.,]/g, '')) : undefined;
+    const noticePeriodDays = noticeN === undefined ? undefined : Math.round(noticeN * (/monat|month/.test(noticeRaw) ? 30 : /woche|week/.test(noticeRaw) ? 7 : 1));
     const crit = get('critical');
     const appr = get('approved');
     const candidate = {
@@ -139,6 +145,8 @@ export function importTable(text: string): ImportResult {
       ...(get('owner') ? { owner: get('owner') } : {}),
       ...(importance !== undefined ? { importance: Math.min(5, Math.max(1, Math.round(importance))) } : {}),
       ...(get('site') ? { site: get('site') } : {}),
+      ...(renewalDate ? { renewalDate } : {}),
+      ...(noticePeriodDays !== undefined ? { noticePeriodDays } : {}),
       critical: yes(crit),
       approved: !no(appr),
       dataFlowsTo: get('dataFlowsTo').split(/[,/|+]/).map((s) => s.trim()).filter(Boolean).slice(0, 20),
@@ -217,4 +225,14 @@ export function mergeApps(...lists: AppInput[][]): AppInput[] {
     byName.set(k, prev ? { ...a, ...Object.fromEntries(Object.entries(prev).filter(([, v]) => v !== undefined)) } as AppInput : a);
   }
   return [...byName.values()].slice(0, 120);
+}
+
+/** "31.12.2026", "31.12.26" or "2026-12-31" → "2026-12-31"; anything else → undefined. */
+export function toIsoDate(v: string): string | undefined {
+  const t = v.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  const m = t.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/);
+  if (!m) return undefined;
+  const y = m[3]!.length === 2 ? `20${m[3]}` : m[3]!;
+  return `${y}-${m[2]!.padStart(2, '0')}-${m[1]!.padStart(2, '0')}`;
 }

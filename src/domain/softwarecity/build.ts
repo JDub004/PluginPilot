@@ -1,3 +1,4 @@
+import { actionFor, de } from './actions.js';
 import { locate } from './geo.js';
 import type { AppInput, Building, CityInput, CityMap, District, Partner, Person, Quest, Road, Site, SiteLayout } from './schema.js';
 
@@ -51,7 +52,8 @@ function layout(apps: Placed[], extraDistricts: string[] = []): SiteLayout {
 const lc = (s: string) => s.trim().toLowerCase();
 const districtOf = (department: string) => (SHARED.test(department) ? 'Marktplatz' : department);
 
-export function buildCity(input: CityInput): CityMap {
+/** `today` (YYYY-MM-DD) enables contract-deadline quests; without it the result is independent of the date. */
+export function buildCity(input: CityInput, opts: { today?: string } = {}): CityMap {
   // --- ids (unique, stable) ---------------------------------------------------------------
   const used = new Set<string>();
   const uid = (base: string) => { let id = slug(base); for (let i = 2; used.has(id); i++) id = `${slug(base)}-${i}`; used.add(id); return id; };
@@ -75,6 +77,7 @@ export function buildCity(input: CityInput): CityMap {
       ...(a.licenses !== undefined ? { licenses: a.licenses } : {}),
       ...(a.monthlyCostEur !== undefined ? { monthlyCostEur: a.monthlyCostEur } : {}),
       ...(a.owner ? { owner: a.owner } : {}),
+      ...(a.renewalDate ? { renewalDate: a.renewalDate, noticeDeadline: addDays(a.renewalDate, -(a.noticePeriodDays ?? 30)) } : {}),
       critical: a.critical, approved: a.approved, questIds: [],
     };
   });
@@ -208,6 +211,24 @@ export function buildCity(input: CityInput): CityMap {
     }
   }
 
+  // Contract deadlines: notice period ends within 90 days.
+  if (opts.today) {
+    for (const a of apps) {
+      if (!a.renewalDate) continue;
+      const deadline = addDays(a.renewalDate, -(a.noticePeriodDays ?? 30));
+      const days = daysBetween(opts.today, deadline);
+      if (days >= 0 && days <= 90) {
+        add({ kind: 'renewal', severity: days <= 30 ? 'high' : 'medium', title: `Kündigungsfrist ${a.name}: noch ${days} ${days === 1 ? 'Tag' : 'Tage'} (bis ${de(deadline)})`,
+          detail: `Der Vertrag verlängert sich am ${de(a.renewalDate)}. Jetzt entscheiden: behalten, Lizenzen anpassen, nachverhandeln oder kündigen.${a.monthlyCostEur ? ` Es geht um ${eur(a.monthlyCostEur * 12)} pro Jahr.` : ''}`,
+          buildingIds: [a.id], deadline });
+      } else if (days < 0 && daysBetween(opts.today, a.renewalDate) >= 0) {
+        add({ kind: 'renewal', severity: 'low', title: `Kündigungsfrist ${a.name} verpasst`,
+          detail: `Die Frist endete am ${de(deadline)}; der Vertrag verlängert sich am ${de(a.renewalDate)}. Für die nächste Laufzeit eine Erinnerung setzen oder beim Anbieter nach Kulanz fragen.`, buildingIds: [a.id], deadline });
+      }
+    }
+  }
+  for (const q of quests) q.action = actionFor(q, apps, people, input.company);
+
   const sevOrder = { high: 0, medium: 1, low: 2 } as const;
   quests.sort((x, y) => sevOrder[x.severity] - sevOrder[y.severity] || (y.savingEurYear ?? 0) - (x.savingEurYear ?? 0));
   const potentialSavingsEurYear = quests.reduce((s, q) => s + (q.savingEurYear ?? 0), 0);
@@ -238,6 +259,14 @@ export function buildCity(input: CityInput): CityMap {
 function floorsFor(users: number | undefined, importance: number): number {
   const base = users ? Math.round(1 + Math.log2(users)) : 1;
   return Math.max(1, Math.min(9, base + importance - 3));
+}
+function addDays(iso: string, n: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
 function eur(n: number): string {
   return `${Math.round(n).toLocaleString('de-DE')} €`;

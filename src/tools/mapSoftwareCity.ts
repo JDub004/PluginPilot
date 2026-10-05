@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { track } from '../analytics/events.js';
 import { buildCity } from '../domain/softwarecity/build.js';
 import { importLedger, importTable, mergeApps } from '../domain/softwarecity/import.js';
-import { compareCities, encodeShare, renderReport } from '../domain/softwarecity/report.js';
+import { compareCities, encodeShare, inventoryCsv, renderReport } from '../domain/softwarecity/report.js';
 import { AppSchema, CityInputSchema } from '../domain/softwarecity/schema.js';
 import { loadWidget, RESOURCE_MIME_TYPE } from './widget.js';
 
@@ -26,9 +26,9 @@ export const TOOL_DESCRIPTION = [
   'Use this when someone wants an overview of the software their company uses: an interactive, Sims-style town map where departments are',
   'districts, each program (SaaS tool, ERP, spreadsheet) is a building sized by its users, and data flows are paths between buildings.',
   'Before calling, collect from the user the programs, the department that mainly uses each one, and if known: users, paid licences,',
-  'monthly cost, owner, whether it is business-critical, whether it was approved by IT, and which other programs it sends data to.',
+  'monthly cost, contract end date and notice period, owner, whether it is business-critical, whether it was approved by IT, and which other programs it sends data to.',
   'The tool finds "quests": overlapping tools, unused licences with savings, critical data in spreadsheets, programs without owner,',
-  'shadow IT, data islands, unknown data targets and key persons without deputy. Building height grows with users and importance (1-5).',
+  'shadow IT, data islands, unknown data targets, key persons without deputy and notice periods ending within 90 days. Every quest has a ready-to-copy e-mail or checklist (action.draft). Building height grows with users and importance (1-5).',
   'Optionally also ask for: key persons per department with role and business contact data (people walk through the town and can be',
   'clicked), sites with their city (shown on a map; each site is its own town to jump into), and external partners such as suppliers,',
   'tax advisors, IT service providers or key customers with the own apps used to exchange data with them. Only enter business contact',
@@ -38,7 +38,7 @@ export const TOOL_DESCRIPTION = [
 const Any = z.record(z.string(), z.unknown());
 export const CityOutputSchema = z.object({
   company: z.string(), districts: z.array(Any), buildings: z.array(Any), roads: z.array(Any), quests: z.array(Any), people: z.array(Any), sites: z.array(Any), partners: z.array(Any),
-  report: z.string(), shareUrl: z.string(), comparison: Any.optional(),
+  report: z.string(), inventoryCsv: z.string(), shareUrl: z.string(), comparison: Any.optional(),
   stats: z.object({ apps: z.number(), districts: z.number(), monthlyCostEur: z.number(), potentialSavingsEurYear: z.number(), healthScore: z.number() }),
   disclaimer: z.string(),
 });
@@ -61,16 +61,17 @@ export function registerMapSoftwareCity(server: McpServer, baseUrl: string, now:
       const started = Date.now();
       try {
         const { preparedBy, before, ...cityInput } = ToolInputSchema.parse(input);
-        const city = buildCity(cityInput);
-        const comparison = before ? compareCities(buildCity({ company: cityInput.company, apps: before }), city) : undefined;
-        const report = renderReport(city, { date: now(), ...(preparedBy ? { preparedBy } : {}), ...(comparison ? { comparison } : {}) });
+        const today = now();
+        const city = buildCity(cityInput, { today });
+        const comparison = before ? compareCities(buildCity({ company: cityInput.company, apps: before }, { today }), city) : undefined;
+        const report = renderReport(city, { date: today, ...(preparedBy ? { preparedBy } : {}), ...(comparison ? { comparison } : {}) });
         const shareUrl = `${baseUrl.replace(/\/$/, '')}/city/view#d=${encodeShare(cityInput)}`;
         track({ tool: TOOL_NAME, outcome: 'success', durationMs: Date.now() - started, findingCount: city.buildings.length, errorCount: city.quests.length });
         const top = city.quests.slice(0, 5).map((q) => `${q.severity}: ${q.title}${q.savingEurYear ? ` (spart ${q.savingEurYear} €/Jahr)` : ''}`).join('; ');
         const delta = comparison ? ` Vergleich: Gesundheit ${comparison.healthBefore} → ${comparison.healthAfter}, ${comparison.solved.length} Aufgaben erledigt, ${comparison.added.length} neu.` : '';
         const text = `Software-Stadt von ${city.company}: ${city.stats.apps} Programme in ${city.stats.districts} Vierteln, ${city.stats.monthlyCostEur} €/Monat, ` +
           `Stadt-Gesundheit ${city.stats.healthScore}/100, Sparpotenzial ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}${delta} Teilen-Link (Daten nur im Link, nichts gespeichert): ${shareUrl}`;
-        return { structuredContent: { ...city, report, shareUrl, ...(comparison ? { comparison: { ...comparison } } : {}) }, content: [{ type: 'text' as const, text }] };
+        return { structuredContent: { ...city, report, inventoryCsv: inventoryCsv(city), shareUrl, ...(comparison ? { comparison: { ...comparison } } : {}) }, content: [{ type: 'text' as const, text }] };
       } catch (err) {
         track({ tool: TOOL_NAME, outcome: 'invalid_input', durationMs: Date.now() - started });
         return { isError: true, content: [{ type: 'text' as const, text: `Angaben ungültig: ${err instanceof Error ? err.message.slice(0, 300) : ''}. Bitte fehlende Programme oder Kategorien nachfragen.` }] };

@@ -24,6 +24,13 @@ Software-Stadt's position: the understandable, playful picture for people who ar
 - **Partner network:** `partners` (supplier/customer/service provider/authority) with `connectedApps`. Partner names count as known data-flow targets. The ◎ view shows sites and partners on a real-coordinate map; clicking a site jumps into that town.
 - Contact data only lives in the tool call and in the share-link fragment. Nothing is stored.
 
+## Built 2026-10-05 (v1.3): work savers
+- **Contract deadlines:** `renewalDate` + `noticePeriodDays` (import recognises "Vertragsende", "Kündigungsfrist", German dates, "3 Monate"). The quest `renewal` appears when the notice deadline is ≤90 days away (high if ≤30) or was just missed. It needs `today`, which the tool passes; pure calls without `today` stay date-independent.
+- **Ready-to-copy drafts:** every quest has `action {label, draft}` (`actions.ts`): consolidation e-mail, licence reduction request, notice/renegotiation letter, AVV/approval questions, owner nomination, spreadsheet checklist, deputy plan.
+- **Werkzeuge tab:** deadline list, software inventory CSV (`inventoryCsv`, also in tool output), emergency contacts, report, all drafts at once. Person panel: offboarding checklist.
+- **Report:** new sections Vertragsfristen and Notfall-Kontakte.
+- **Surroundings:** ring roads with traffic, street lamps, parks with trees, bushes, benches, pocket parks with fountains in free plots, and a canal.
+
 ## Optimise next (in this order)
 1. **Import instead of typing** (largest lever for activation):
    a) Paste or upload a tool list or invoice export (Excel/CSV). ChatGPT already extracts it into the tool input, so it works today; add a template and test prompts.

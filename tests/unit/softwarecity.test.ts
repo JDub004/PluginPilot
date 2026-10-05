@@ -106,3 +106,31 @@ describe('people, sites and partners', () => {
     expect(lager.floors).toBeGreaterThan(city.buildings.find((b) => b.id === 'pipedrive')!.floors);
   });
 });
+
+describe('work savers', () => {
+  it('flags notice periods, attaches drafts and exports an inventory', async () => {
+    const { buildCity } = await import('../../src/domain/softwarecity/build.js');
+    const { inventoryCsv, renderReport } = await import('../../src/domain/softwarecity/report.js');
+    const { toIsoDate } = await import('../../src/domain/softwarecity/import.js');
+    const { SAMPLE_COMPANY } = await import('../../src/domain/softwarecity/sample.js');
+    const { CityInputSchema } = await import('../../src/domain/softwarecity/schema.js');
+    const input = CityInputSchema.parse(SAMPLE_COMPANY);
+    const c = buildCity(input, { today: '2026-10-05' });
+    const r = c.quests.find((q) => q.kind === 'renewal' && q.title.includes('HubSpot'))!;
+    expect(r.deadline).toBe('2026-11-01');
+    expect(r.severity).toBe('high');
+    expect(r.title).toContain('noch 27 Tage');
+    expect(c.quests.find((q) => q.kind === 'renewal' && q.title.includes('Zendesk'))?.severity).toBe('medium');
+    expect(c.quests.every((q) => q.action && q.action.draft.length > 40)).toBe(true);
+    expect(buildCity(input).quests.some((q) => q.kind === 'renewal')).toBe(false);
+    const csv = inventoryCsv(c).split('\n');
+    expect(csv[0]).toMatch(/^Programm;Kategorie/);
+    expect(csv).toHaveLength(c.buildings.length + 1);
+    const md = renderReport(c);
+    expect(md).toContain('## Vertragsfristen');
+    expect(md).toContain('## Notfall-Kontakte');
+    expect(toIsoDate('31.12.26')).toBe('2026-12-31');
+    expect(toIsoDate('1.2.2027')).toBe('2027-02-01');
+    expect(toIsoDate('bald')).toBeUndefined();
+  });
+});

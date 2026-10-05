@@ -1,3 +1,4 @@
+import { de } from './actions.js';
 import type { CityInput, CityMap, Quest } from './schema.js';
 
 /** Before/after comparison of two cities built from the same company. Quests are matched by kind + title. */
@@ -61,6 +62,20 @@ export function renderReport(city: CityMap, opts: { preparedBy?: string; date?: 
   }
   const nameOf = (ids: string[]) => ids.map((id) => city.buildings.find((b) => b.id === id)?.name).filter(Boolean).join(', ');
   const cell = (v?: string) => (v ?? '–').replace(/\|/g, '/');
+  const deadlines = city.buildings.filter((b) => b.noticeDeadline).sort((x, y) => (x.noticeDeadline! < y.noticeDeadline! ? -1 : 1));
+  if (deadlines.length) {
+    lines.push('', '## Vertragsfristen', '', '| Programm | Kündigen bis | Vertragsende | Kosten/Jahr |', '|---|---|---|---|');
+    for (const b of deadlines) lines.push(`| ${cell(b.name)} | ${de(b.noticeDeadline!)} | ${de(b.renewalDate!)} | ${b.monthlyCostEur ? eur(b.monthlyCostEur * 12) : '–'} |`);
+  }
+  const critical = city.buildings.filter((b) => b.critical);
+  if (critical.length) {
+    lines.push('', '## Notfall-Kontakte (kritische Programme)', '', '| Programm | Verantwortlich | Kontakt | Externer Partner |', '|---|---|---|---|');
+    for (const b of critical) {
+      const p = city.people.find((x) => x.buildingIds.includes(b.id));
+      const ext = city.partners.filter((x) => x.buildingIds.includes(b.id)).map((x) => [x.name, x.phone ?? x.email].filter(Boolean).join(' ')).join('; ');
+      lines.push(`| ${cell(b.name)} | ${cell(p?.name ?? b.owner ?? 'niemand')} | ${cell([p?.phone, p?.email].filter(Boolean).join(', ') || undefined)} | ${cell(ext || undefined)} |`);
+    }
+  }
   if (city.people.length) {
     lines.push('', '## Ansprechpartner', '', '| Name | Rolle | Abteilung | Kontakt | Zuständig für |', '|---|---|---|---|---|');
     for (const p of city.people) lines.push(`| ${cell(p.name)} | ${cell(p.role)} | ${cell(p.district)} | ${cell([p.email, p.phone].filter(Boolean).join(', ') || undefined)} | ${cell(nameOf(p.buildingIds) || undefined)} |`);
@@ -90,4 +105,12 @@ export function encodeShare(input: CityInput): string {
 export function decodeShare(data: string): unknown {
   if (data.length > 60_000 || !/^[A-Za-z0-9_-]+$/.test(data)) throw new Error('invalid share data');
   return JSON.parse(Buffer.from(data, 'base64url').toString('utf8'));
+}
+
+/** Software inventory as CSV (semicolon, German Excel), e.g. for the Verzeichnis von Verarbeitungstätigkeiten or audits. */
+export function inventoryCsv(city: CityMap): string {
+  const q = (v: unknown) => { const t = v === undefined || v === null ? '' : String(v); return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const head = ['Programm', 'Kategorie', 'Abteilung', 'Standort', 'Nutzer', 'Lizenzen', 'Kosten/Monat', 'Verantwortlich', 'Kritisch', 'Freigegeben', 'Wichtigkeit', 'Kündigen bis', 'Vertragsende', 'Offene Aufgaben'];
+  const rows = city.buildings.map((b) => [b.name, b.category, b.district === 'Marktplatz' ? 'Alle' : b.district, b.site ?? '', b.users, b.licenses, b.monthlyCostEur, b.owner ?? '', b.critical ? 'ja' : 'nein', b.approved ? 'ja' : 'nein', b.importance, b.noticeDeadline ?? '', b.renewalDate ?? '', b.questIds.length]);
+  return [head, ...rows].map((r) => r.map(q).join(';')).join('\n');
 }

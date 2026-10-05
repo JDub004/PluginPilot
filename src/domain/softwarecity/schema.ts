@@ -22,6 +22,8 @@ export const AppSchema = z
     dataFlowsTo: z.array(name(60)).max(20).default([]).describe('Names of other apps (or partners) this app sends data to'),
     importance: z.number().int().min(1).max(5).optional().describe('Importance for the business, 1 = nice to have … 5 = core of the business. Default: 4 if critical, else 3'),
     site: name(60).optional().describe('Name of the site/location where it is used; omit if used at all sites'),
+    renewalDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Next contract end/renewal date (YYYY-MM-DD)'),
+    noticePeriodDays: z.number().int().min(0).max(730).optional().describe('Notice period in days before renewalDate (default 30)'),
   })
   .strict();
 
@@ -102,6 +104,8 @@ export interface Building {
   critical: boolean;
   approved: boolean;
   questIds: string[];
+  renewalDate?: string;
+  noticeDeadline?: string;
 }
 export interface District { name: string; gx: number; gy: number; w: number; h: number; buildingIds: string[]; personIds: string[] }
 export interface Contact { email?: string; phone?: string; note?: string }
@@ -114,11 +118,15 @@ export interface Road { from: string; to: string }
 export interface Quest {
   id: string;
   severity: Severity;
-  kind: 'duplicate' | 'unused_licenses' | 'critical_spreadsheet' | 'no_owner' | 'shadow_it' | 'data_island' | 'unknown_flow' | 'key_person';
+  kind: 'duplicate' | 'unused_licenses' | 'critical_spreadsheet' | 'no_owner' | 'shadow_it' | 'data_island' | 'unknown_flow' | 'key_person' | 'renewal';
   title: string;
   detail: string;
   buildingIds: string[];
   savingEurYear?: number;
+  /** Ready-to-copy e-mail or checklist for the next step. */
+  action?: { label: string; draft: string };
+  /** For renewal quests: last day to give notice (YYYY-MM-DD). */
+  deadline?: string;
 }
 export interface CityMap {
   company: string;

@@ -743,7 +743,7 @@
       try { if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { if (document.execCommand('copy')) done(); }); else if (document.execCommand('copy')) done(); } catch (e) { /* text stays selected for manual copy */ }
     });
     row.appendChild(copy);
-    if (filename) { var a = el('a', 'pill', ['Herunterladen']); a.download = filename; a.href = URL.createObjectURL(new Blob(['\ufeff' + text], { type: mime || 'text/plain' })); row.appendChild(a); }
+    if (filename && !window.__NO_DOWNLOAD) { var a = el('a', 'pill', ['Herunterladen']); a.download = filename; a.href = URL.createObjectURL(new Blob(['\ufeff' + text], { type: mime || 'text/plain' })); row.appendChild(a); }
     return el('div', 'draft', [ta, row]);
   }
   function toggleDraft(label, getText, filename, mime) {

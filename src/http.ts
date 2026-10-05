@@ -10,7 +10,7 @@ import { loadWidget } from './tools/widget.js';
 
 const PLAYGROUND = loadWidget('playground.html');
 // Standalone share view: the city widget plus a loader that reads the URL fragment.
-const CITY_VIEW = loadWidget('city.html').replace('</body>', () => `<style>.report-btn{position:fixed;left:12px;bottom:12px;z-index:5;padding:8px 14px;border-radius:999px;background:#2F9E57;color:#fff;font:600 13px system-ui;text-decoration:none}</style><script>${loadWidget('city-view.js')}</script></body>`);
+const CITY_VIEW = loadWidget('city.html').replace('</body>', () => `<style>.report-btn{position:fixed;left:12px;bottom:12px;z-index:5;padding:8px 14px;background:#3dffa8;color:#04121a;font:600 11px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border-radius:2px;box-shadow:0 0 18px rgba(61,255,168,.4)}</style><script>${loadWidget('city-view.js')}</script></body>`);
 
 // Static brand assets (logo files) from web/public, whitelisted by name.
 const ASSETS: Record<string, string> = {};

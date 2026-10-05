@@ -116,6 +116,14 @@ describe('MCP over HTTP', () => {
     expect(r.status).toBe(413);
   });
 
+  it('serves the browser test page on / and /playground', async () => {
+    for (const p of ['/', '/playground']) {
+      const r = await fetch(new URL(p, url));
+      expect(r.status).toBe(200);
+      expect(await r.text()).toContain('PluginPilot – Testseite');
+    }
+  });
+
   it('health and 404', async () => {
     expect((await fetch(new URL('/health', url))).status).toBe(200);
     expect((await fetch(new URL('/nope', url))).status).toBe(404);

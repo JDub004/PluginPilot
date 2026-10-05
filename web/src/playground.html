@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PluginPilot Testseite</title>
+<style>
+  :root { --bg:#f7f7f8; --fg:#1f2328; --muted:#6b7078; --line:#dfe1e5; --card:#fff; --accent:#2e5a88; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#17181a; --fg:#e8eaed; --muted:#9aa0a8; --line:#33363b; --card:#202225; --accent:#8db4e0; } }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width:900px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
+  label { display:block; font-weight:600; margin:0 0 6px; }
+  select, textarea, button { font:inherit; }
+  select { width:100%; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--fg); }
+  textarea { width:100%; min-height:200px; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--fg); font-family:ui-monospace, Menlo, monospace; font-size:13px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  button { padding:9px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  button.sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  #status { color:var(--muted); margin-top:8px; min-height:1.2em; }
+  iframe { width:100%; border:1px solid var(--line); border-radius:12px; background:#fff; min-height:300px; }
+  pre { white-space:pre-wrap; word-break:break-word; font-size:12px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px; max-height:320px; overflow:auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>PluginPilot – Testseite</h1>
+  <p class="sub">Testet die echten Plugins auf diesem Server, so wie ChatGPT sie aufrufen würde. Kein Login, keine Installation.</p>
+
+  <div class="card">
+    <label for="example">Beispiel wählen</label>
+    <select id="example"></select>
+    <label for="args" style="margin-top:12px">Eingabe (JSON, darf angepasst werden)</label>
+    <textarea id="args" spellcheck="false"></textarea>
+    <div class="row">
+      <button id="run">Plugin ausführen</button>
+      <button id="raw" class="sec">Rohdaten anzeigen</button>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <iframe id="view" title="Plugin-Ansicht" sandbox="allow-scripts"></iframe>
+  <pre id="out" hidden></pre>
+</main>
+<script>
+(function () {
+  var EXAMPLES = [
+    { name: 'Surcharge Check – Maersk Hamburg → Oman (erwartet: 6.900 USD anfechtbar)', path: '/surcharge/mcp', tool: 'check_freight_surcharges', widget: 'ui://surcharge-check/audit-v1.html',
+      args: { carrier: 'Maersk', originCountry: 'DE', destinationCountry: 'OM', bookingDate: '2026-03-03', sailingDate: '2026-03-05',
+        lines: [ { label: 'Emergency Contingency Surcharge', amountUsd: 6000, containerType: '40HC', quantity: 2 },
+                 { label: 'Emergency Bunker Surcharge', amountUsd: 900, containerType: '40HC', quantity: 2 },
+                 { label: 'War Risk Surcharge', amountUsd: 3000, containerType: '40HC', quantity: 2 },
+                 { label: 'BAF', amountUsd: 1240, containerType: '40HC', quantity: 2 } ] } },
+    { name: 'Surcharge Check – Hapag-Lloyd China → Hamburg (Strecke nicht betroffen)', path: '/surcharge/mcp', tool: 'check_freight_surcharges', widget: 'ui://surcharge-check/audit-v1.html',
+      args: { carrier: 'Hapag-Lloyd', originCountry: 'CN', destinationCountry: 'DE', bookingDate: '2026-04-01', lines: [ { label: 'War Risk Surcharge', amountUsd: 3000, containerType: '40HC' } ] } },
+    { name: 'Trauerfall-Lotse – Witwe, Rente, Mietwohnung', path: '/mcp', tool: 'plan_after_death', widget: 'ui://trauerfall-lotse/timeline-v1.html',
+      args: { dateOfDeath: '2026-09-28', survivingSpouse: true, deceasedReceivedPension: true, rentedApartment: true, livedTogether: true } },
+    { name: 'Geburts-Lotse – unverheiratet, Mutter berufstätig, Kita', path: '/geburt/mcp', tool: 'plan_after_birth', widget: 'ui://geburts-lotse/timeline-v1.html',
+      args: { birthDate: '2026-09-15', motherEmployed: true, parentsMarried: false, needsChildcare: true } }
+  ];
+  var sel = document.getElementById('example'), ta = document.getElementById('args'), status = document.getElementById('status');
+  var view = document.getElementById('view'), out = document.getElementById('out');
+  EXAMPLES.forEach(function (e, i) { var o = document.createElement('option'); o.value = String(i); o.textContent = e.name; sel.appendChild(o); });
+  function load() { ta.value = JSON.stringify(EXAMPLES[Number(sel.value)].args, null, 2); }
+  sel.addEventListener('change', load); load();
+
+  var id = 0;
+  function rpc(path, method, params) {
+    return fetch(path, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method: method, params: params }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (d.error) throw new Error(d.error.message); return d.result; });
+  }
+
+  document.getElementById('raw').addEventListener('click', function () { out.hidden = !out.hidden; });
+  document.getElementById('run').addEventListener('click', function () {
+    var ex = EXAMPLES[Number(sel.value)], args;
+    try { args = JSON.parse(ta.value); } catch (e) { status.textContent = 'Die Eingabe ist kein gültiges JSON: ' + e.message; return; }
+    status.textContent = 'Läuft … (beim ersten Aufruf kann der Gratis-Server bis zu einer Minute zum Aufwachen brauchen)';
+    Promise.all([rpc(ex.path, 'tools/call', { name: ex.tool, arguments: args }), rpc(ex.path, 'resources/read', { uri: ex.widget })])
+      .then(function (res) {
+        var result = res[0], html = res[1].contents[0].text;
+        out.textContent = JSON.stringify(result, null, 2);
+        if (result.isError) { status.textContent = 'Fehler: ' + (result.content && result.content[0] ? result.content[0].text : ''); view.srcdoc = ''; return; }
+        var data = JSON.stringify(result.structuredContent).replace(/</g, '\\u003c');
+        view.srcdoc = html.replace('<script>', '<script>window.openai = { toolOutput: ' + data + ' };<\/script>\n<script>');
+        status.textContent = 'Fertig. So würde das Ergebnis in ChatGPT aussehen:';
+      })
+      .catch(function (e) { status.textContent = 'Fehler: ' + e.message; });
+  });
+  // Grow the iframe with its content (the widget reports its height).
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (e.source === view.contentWindow && m && m.method === 'ui/notifications/size-changed' && m.params && m.params.height) view.style.height = (m.params.height + 4) + 'px';
+  });
+})();
+</script>
+</body>
+</html>

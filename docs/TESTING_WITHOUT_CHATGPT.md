@@ -2,7 +2,10 @@
 
 The MCP Inspector is the official, free test tool for MCP servers. It runs on your own computer and talks to the live server on Render. Verified on 2026-10-05 with Inspector 2.9.0 against `https://trauerfall-lotse.onrender.com`.
 
-## One-time setup (5 minutes)
+## Easiest: browser test page (no install)
+Open https://trauerfall-lotse.onrender.com/playground, pick an example, click "Plugin ausführen". It calls the real tools and shows the widget as ChatGPT would.
+
+## One-time setup for the Inspector (5 minutes)
 1. Install **Node.js LTS** (free) from https://nodejs.org: download, click through the installer. Check: open a terminal (Windows: "PowerShell", Mac: "Terminal") and type `node -v`. A version number (≥ 20) must appear.
 2. Wake the server (free tier sleeps): open https://trauerfall-lotse.onrender.com/health in your browser and wait for `{"ok":true}`. That can take up to a minute.
 

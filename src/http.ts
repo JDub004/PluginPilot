@@ -1,6 +1,9 @@
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Env } from './config/env.js';
+import { loadWidget } from './tools/widget.js';
+
+const PLAYGROUND = loadWidget('playground.html');
 import { createServer, type PluginKind } from './mcp/server.js';
 
 // One endpoint per plugin (each is listed separately in the plugin directory).
@@ -63,6 +66,10 @@ export function createApp(env: Env): Server {
   return createHttpServer((req, res) => {
     const path = (req.url ?? '/').split('?')[0];
     if (path === '/health') return send(res, 200, { ok: true });
+    if ((path === '/' || path === '/playground') && req.method === 'GET') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-src 'self'; connect-src 'self'" }).end(PLAYGROUND);
+      return;
+    }
     const kind = ROUTES[path ?? ''];
     if (kind) {
       handleMcp(env, kind, req, res).catch((err: { status?: number }) => {

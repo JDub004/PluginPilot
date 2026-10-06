@@ -70,8 +70,23 @@
   .act .pill { font-size:9.5px; padding:4px 8px; }
   .due { display:flex; justify-content:space-between; gap:8px; font:12px var(--mono); padding:5px 0; border-bottom:1px solid var(--line); }
   .due b { font-weight:600; } .due .hot { color:var(--bad); } .due .soon { color:var(--warn); }
+  .chip.brand { box-shadow:inset 3px 0 0 var(--brand, var(--cyan)); flex-direction:row; align-items:center; gap:10px; }
+  .chip.brand > div { display:flex; flex-direction:column; }
+  .mono { width:30px; height:30px; display:grid; place-items:center; font:700 12px var(--mono); color:#04121a; background:var(--brand, var(--cyan)); border-radius:2px; flex:none; }
+  .table { background:rgba(10,14,36,.97) !important; position:absolute; left:324px; right:60px; top:84px; bottom:12px; overflow:auto; padding:12px 14px; z-index:2; scrollbar-width:thin; }
+  .table[hidden] { display:none; }
+  .table table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  .table th { text-align:left; font:500 9.5px var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); padding:6px 8px; border-bottom:1px solid var(--line-2); position:sticky; top:0; background:rgba(10,14,36,.97); }
+  .table td { padding:7px 8px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  .table tr { cursor:pointer; } .table tbody tr:hover td { background:rgba(120,200,255,.06); }
+  .table tr.sel td { background:rgba(61,245,255,.1); }
+  .table .num { text-align:right; font-family:var(--mono); }
+  .amp { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:8px; vertical-align:middle; }
+  .sum { display:flex; flex-wrap:wrap; gap:18px; margin:0 0 10px; font-size:13px; }
+  .sum b { font:600 18px var(--mono); display:block; }
   .foot { font-size:10.5px; color:var(--muted); margin-top:10px; opacity:.8; }
   .empty { padding:24px; color:var(--muted); font:500 11px var(--mono); letter-spacing:.14em; text-transform:uppercase; }
+  @media (max-width: 640px) { .table { left:12px; right:12px; top:12px; bottom:calc(40% + 20px); z-index:3; } }
   @media (max-width: 520px) { .stage { height:720px; } .panel { width:calc(100% - 24px); max-height:40%; } .zoom { bottom:auto; top:140px; } .chip { min-width:0; padding:4px 10px; } .chip b { font-size:14px; } }
 </style>
 </head>
@@ -79,7 +94,8 @@
 <div class="stage" id="stage">
   <canvas id="c" aria-label="Software-Stadt: Abteilungen als Viertel, Programme als Gebäude"></canvas>
   <div class="hud" id="hud"></div>
-  <div class="zoom"><button class="glass" id="zin" type="button" aria-label="Hineinzoomen">+</button><button class="glass" id="zout" type="button" aria-label="Herauszoomen">−</button><button class="glass" id="zfit" type="button" aria-label="Ganze Stadt zeigen">⌂</button><button class="glass" id="znet" type="button" aria-label="Netzwerk und Standorte" title="Netzwerk und Standorte" hidden>◎</button></div>
+  <div class="zoom"><button class="glass" id="zin" type="button" aria-label="Hineinzoomen">+</button><button class="glass" id="zout" type="button" aria-label="Herauszoomen">−</button><button class="glass" id="zfit" type="button" aria-label="Ganze Stadt zeigen">⌂</button><button class="glass" id="ztab" type="button" aria-label="Tabellenansicht" title="Nüchterne Tabellenansicht" aria-pressed="false">☰</button><button class="glass" id="znet" type="button" aria-label="Netzwerk und Standorte" title="Netzwerk und Standorte" hidden>◎</button></div>
+  <div class="table glass" id="table" hidden></div>
   <div class="panel glass" id="panel"><div class="empty">Stadt wird gebaut …</div></div>
 </div>
 <script>
@@ -903,12 +919,47 @@
     var s = city.stats, site = (city.sites || [])[siteIdx];
     function chip(cls, value, label) { hud.appendChild(el('div', 'chip glass ' + cls, [el('b', null, [value]), el('small', null, [label])])); }
     if (mode === 'net') { chip('', String((city.sites || []).length || 1), 'Standorte'); chip('health', String((city.partners || []).length), 'Partner'); chip('', String(s.apps), 'Programme'); return; }
+    if (city.brand) {
+      var mono = el('span', 'mono', [city.brand.name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase()]);
+      var bc = el('div', 'chip glass brand', [mono, el('div', null, [el('b', null, [city.brand.name]), el('small', null, ['erstellt von'])])]);
+      if (city.brand.color) bc.style.setProperty('--brand', city.brand.color);
+      hud.appendChild(bc);
+    }
     if (site) chip('health', site.name, 'Standort · ' + site.buildingIds.length + ' Programme');
-    chip('', String(s.apps), 'Programme');
-    chip('', eur(s.monthlyCostEur), 'pro Monat');
-    chip('money', eur(s.potentialSavingsEurYear), 'Sparpotenzial / Jahr');
-    chip('health', s.healthScore + ' / 100', 'Stadt-Gesundheit');
+    chip('', eur(s.monthlyCostEur * 12), 'Software / Jahr');
+    chip('money', eur(s.potentialSavingsEurYear), 'vermeidbar / Jahr');
+    chip('health', String(urgentCount()), 'Dringende Risiken');
+    var dl = deadlineCount(); if (dl) chip('health', String(dl), 'Fristen < 90 Tage');
   }
+  function urgentCount() { return city.stats.urgent != null ? city.stats.urgent : city.quests.filter(function (q) { return q.severity === 'high'; }).length; }
+  function deadlineCount() { return city.stats.deadlines != null ? city.stats.deadlines : 0; }
+  // ---- sober table view (for auditors, CFOs, print) --------------------------------------------
+  var tableEl = document.getElementById('table'), tabBtn = document.getElementById('ztab'), tableOn = false;
+  function renderTable() {
+    tableEl.hidden = !tableOn; tabBtn.setAttribute('aria-pressed', String(tableOn));
+    if (!tableOn) return;
+    tableEl.textContent = '';
+    var s = city.stats, sum = el('div', 'sum');
+    [[eur(s.monthlyCostEur * 12), 'Software pro Jahr'], [eur(s.potentialSavingsEurYear), 'davon vermeidbar'], [String(urgentCount()), 'dringende Risiken'], [String(deadlineCount()), 'Fristen < 90 Tage'], [String(city.quests.length), 'offene Aufgaben']]
+      .forEach(function (k) { sum.appendChild(el('div', null, [el('b', null, [k[0]]), el('small', 'sub', [k[1]])])); });
+    tableEl.appendChild(sum);
+    var rank = { bad: 0, warn: 1, ok: 2 }, rows = city.buildings.slice().sort(function (a, b) { return rank[mood(a)] - rank[mood(b)] || (b.monthlyCostEur || 0) - (a.monthlyCostEur || 0); });
+    var t = el('table'), head = el('tr');
+    ['Programm', 'Abteilung', 'Kosten/Monat', 'Nutzer / Lizenzen', 'Verantwortlich', 'Kündigen bis', 'Aufgaben'].forEach(function (h, i) { var th = el('th', i === 2 || i === 3 || i === 6 ? 'num' : null, [h]); head.appendChild(th); });
+    t.appendChild(el('thead', null, [head]));
+    var body = el('tbody');
+    rows.forEach(function (b) {
+      var m = mood(b), dot = el('span', 'amp'); dot.style.background = m === 'bad' ? css('--bad') : m === 'warn' ? css('--warn') : css('--accent');
+      dot.setAttribute('aria-label', m === 'bad' ? 'dringend' : m === 'warn' ? 'Hinweis' : 'ok');
+      var tr = el('tr', selected === b.id ? 'sel' : null, [el('td', null, [dot, b.name]), el('td', null, [b.district === 'Marktplatz' ? 'alle' : b.district]),
+        el('td', 'num', [b.monthlyCostEur != null ? eur(b.monthlyCostEur) : '–']), el('td', 'num', [(b.users != null ? b.users : '–') + ' / ' + (b.licenses != null ? b.licenses : '–')]),
+        el('td', null, [b.owner || 'niemand']), el('td', null, [b.noticeDeadline ? deDate(b.noticeDeadline) : '–']), el('td', 'num', [String(b.questIds.length)])]);
+      tr.addEventListener('click', function () { selected = b.id; selPerson = null; selPartner = null; renderPanel(); renderTable(); });
+      body.appendChild(tr);
+    });
+    t.appendChild(body); tableEl.appendChild(t);
+  }
+  tabBtn.addEventListener('click', function () { tableOn = !tableOn; renderTable(); });
   function redraw() { if (reduce) draw(performance.now()); }
   function centerOn(x, y) {
     var W = canvas.width / dpr, H = canvas.height / dpr, narrow = W <= 640;
@@ -990,7 +1041,7 @@
     if (!data || !Array.isArray(data.buildings)) return;
     var first = !city; city = data; scenes = {}; mode = 'city'; siteIdx = mainSiteIdx(); selPerson = null; selPartner = null;
     netBtn.hidden = !((city.sites || []).length || (city.partners || []).length);
-    resize(); fit(); renderHud(); renderPanel();
+    resize(); fit(); renderHud(); renderPanel(); renderTable();
     if (first || reduce) requestAnimationFrame(draw);
     reportSize();
   }

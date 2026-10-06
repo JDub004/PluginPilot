@@ -122,7 +122,7 @@ describe('MCP over HTTP', () => {
     const imp = await c.callTool({ name: 'import_software_list', arguments: { table: 'Programm;Abteilung;Nutzer\nSlack;Alle;12\nHubSpot;Vertrieb;4' } });
     expect((imp.structuredContent as { apps: { name: string; category: string }[] }).apps.map((a) => a.category)).toEqual(['communication', 'crm']);
     const w = await c.readResource({ uri: 'ui://software-stadt/city-v1.html' });
-    expect((w.contents[0] as { text: string }).text).toContain('Stadt-Gesundheit');
+    expect((w.contents[0] as { text: string }).text).toContain('Dringende Risiken');
     await c.close();
   });
 

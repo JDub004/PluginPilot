@@ -75,6 +75,8 @@ export const CityInputSchema = z
     people: z.array(PersonSchema).max(60).optional().describe('Key persons and contacts (business contact data only, with their consent)'),
     sites: z.array(SiteSchema).max(20).optional().describe('Company sites/locations'),
     partners: z.array(PartnerSchema).max(40).optional().describe('External network: suppliers, customers, service providers, authorities'),
+    preparedBy: z.string().trim().min(1).max(80).optional().describe('IT service provider preparing the map; shown as badge on the city and in the report'),
+    brandColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe('Accent colour of the IT service provider, e.g. "#0057b8"'),
   })
   .strict();
 export type CityInput = z.infer<typeof CityInputSchema>;
@@ -105,7 +107,10 @@ export interface Building {
   approved: boolean;
   questIds: string[];
   renewalDate?: string;
+  noticePeriodDays?: number;
   noticeDeadline?: string;
+  /** As entered (apps or partners), so exports can be re-imported without loss. */
+  dataFlowsTo: string[];
 }
 export interface District { name: string; gx: number; gy: number; w: number; h: number; buildingIds: string[]; personIds: string[] }
 export interface Contact { email?: string; phone?: string; note?: string }
@@ -137,6 +142,7 @@ export interface CityMap {
   people: Person[];
   sites: Site[];
   partners: Partner[];
-  stats: { apps: number; districts: number; monthlyCostEur: number; potentialSavingsEurYear: number; healthScore: number };
+  stats: { apps: number; districts: number; monthlyCostEur: number; potentialSavingsEurYear: number; healthScore: number; urgent: number; deadlines: number };
+  brand?: { name: string; color?: string };
   disclaimer: string;
 }

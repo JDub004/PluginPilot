@@ -31,6 +31,13 @@ Software-Stadt's position: the understandable, playful picture for people who ar
 - **Report:** new sections Vertragsfristen and Notfall-Kontakte.
 - **Surroundings:** ring roads with traffic, street lamps, parks with trees, bushes, benches, pocket parks with fountains in free plots, and a canal.
 
+## Built 2026-10-06 (v1.4): after the Systemhaus simulation (`docs/sim/ERGEBNIS_SIMULATION.md`)
+- **Sober table view** (☰): traffic-light table sorted by urgency, totals in euros; for auditors, CFOs and print.
+- **Euros instead of a score:** the HUD and report lead with software cost per year, avoidable cost, urgent risks and deadlines; `stats.urgent` and `stats.deadlines`. The health score stays in the data only.
+- **Partner branding:** `preparedBy` and `brandColor` are part of the city input (so they survive share links); badge with monogram on the city, "erstellt von" in the report.
+- **Excel round trip:** inventory export headers match the import aliases (incl. Vertragsende, Kündigungsfrist, Daten an); tested for loss-free re-import.
+- **Privacy:** share links never contain e-mail, phone, notes or partner contacts (`shareSafe`). Draft one-pager and AVV outline in `docs/legal/` (not legally reviewed).
+
 ## Optimise next (in this order)
 1. **Import instead of typing** (largest lever for activation):
    a) Paste or upload a tool list or invoice export (Excel/CSV). ChatGPT already extracts it into the tool input, so it works today; add a template and test prompts.

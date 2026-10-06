@@ -11,7 +11,6 @@ export const TOOL_NAME = 'map_software_city';
 export const IMPORT_TOOL_NAME = 'import_software_list';
 
 export const ToolInputSchema = CityInputSchema.extend({
-  preparedBy: z.string().trim().min(1).max(80).optional().describe('IT service provider or person preparing the map; shown in the report'),
   before: z.array(AppSchema).min(1).max(120).optional().describe('Earlier app list of the same company, for a before/after comparison'),
 }).strict();
 
@@ -39,7 +38,8 @@ const Any = z.record(z.string(), z.unknown());
 export const CityOutputSchema = z.object({
   company: z.string(), districts: z.array(Any), buildings: z.array(Any), roads: z.array(Any), quests: z.array(Any), people: z.array(Any), sites: z.array(Any), partners: z.array(Any),
   report: z.string(), inventoryCsv: z.string(), shareUrl: z.string(), comparison: Any.optional(),
-  stats: z.object({ apps: z.number(), districts: z.number(), monthlyCostEur: z.number(), potentialSavingsEurYear: z.number(), healthScore: z.number() }),
+  stats: z.object({ apps: z.number(), districts: z.number(), monthlyCostEur: z.number(), potentialSavingsEurYear: z.number(), healthScore: z.number(), urgent: z.number(), deadlines: z.number() }),
+  brand: z.object({ name: z.string(), color: z.string().optional() }).optional(),
   disclaimer: z.string(),
 });
 
@@ -60,7 +60,8 @@ export function registerMapSoftwareCity(server: McpServer, baseUrl: string, now:
     async (input) => {
       const started = Date.now();
       try {
-        const { preparedBy, before, ...cityInput } = ToolInputSchema.parse(input);
+        const { before, ...cityInput } = ToolInputSchema.parse(input);
+        const preparedBy = cityInput.preparedBy;
         const today = now();
         const city = buildCity(cityInput, { today });
         const comparison = before ? compareCities(buildCity({ company: cityInput.company, apps: before }, { today }), city) : undefined;
@@ -70,7 +71,7 @@ export function registerMapSoftwareCity(server: McpServer, baseUrl: string, now:
         const top = city.quests.slice(0, 5).map((q) => `${q.severity}: ${q.title}${q.savingEurYear ? ` (spart ${q.savingEurYear} €/Jahr)` : ''}`).join('; ');
         const delta = comparison ? ` Vergleich: Gesundheit ${comparison.healthBefore} → ${comparison.healthAfter}, ${comparison.solved.length} Aufgaben erledigt, ${comparison.added.length} neu.` : '';
         const text = `Software-Stadt von ${city.company}: ${city.stats.apps} Programme in ${city.stats.districts} Vierteln, ${city.stats.monthlyCostEur} €/Monat, ` +
-          `Stadt-Gesundheit ${city.stats.healthScore}/100, Sparpotenzial ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}${delta} Teilen-Link (Daten nur im Link, nichts gespeichert, ohne Kontaktdaten): ${shareUrl}`;
+          `${city.stats.urgent} dringende Risiken, ${city.stats.deadlines} Kündigungsfristen in den nächsten 90 Tagen, vermeidbare Kosten ca. ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}${delta} Teilen-Link (Daten nur im Link, nichts gespeichert, ohne Kontaktdaten): ${shareUrl}`;
         return { structuredContent: { ...city, report, inventoryCsv: inventoryCsv(city), shareUrl, ...(comparison ? { comparison: { ...comparison } } : {}) }, content: [{ type: 'text' as const, text }] };
       } catch (err) {
         track({ tool: TOOL_NAME, outcome: 'invalid_input', durationMs: Date.now() - started });

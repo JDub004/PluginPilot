@@ -19,7 +19,7 @@ export function createServer(kind: PluginKind = 'trauerfall', now: () => string 
           'which programs they use and the facts you are missing (users, licences, cost, owner, critical, importance 1-5, approved, data flows). ' +
           'Before building, offer to add key persons per department (role, business e-mail/phone, which programs they look after), the ' +
           'company sites with their city, and external partners (suppliers, customers, service providers) with the programs used to exchange data. ' +
-          'Then call map_software_city. Lead with the city health score, the savings potential and the top quests. ' +
+          'Then call map_software_city. Lead with the avoidable cost in euros, urgent risks, upcoming notice deadlines and the top quests (each has a ready-to-copy draft). If an IT service provider prepares the map, pass its name as preparedBy. ' +
           'If the user pastes a spreadsheet or an accounting export, call import_software_list first and confirm the result. ' +
           'For a before/after comparison pass the previous app list as "before". Offer the share link and the report.',
       },

@@ -91,3 +91,22 @@ describe('report, comparison, share link', () => {
     expect(() => decodeShare('../etc')).toThrow();
   });
 });
+
+describe('excel round trip', () => {
+  it('re-imports the inventory export without losing app data', async () => {
+    const { buildCity } = await import('../../src/domain/softwarecity/build.js');
+    const { inventoryCsv } = await import('../../src/domain/softwarecity/report.js');
+    const { SAMPLE_COMPANY } = await import('../../src/domain/softwarecity/sample.js');
+    const { CityInputSchema } = await import('../../src/domain/softwarecity/schema.js');
+    const input = CityInputSchema.parse(SAMPLE_COMPANY);
+    const back = importTable(inventoryCsv(buildCity(input)));
+    expect(back.warnings).toEqual([]);
+    const keys = ['name', 'category', 'users', 'licenses', 'monthlyCostEur', 'owner', 'critical', 'approved', 'site', 'renewalDate', 'noticePeriodDays', 'dataFlowsTo'] as const;
+    for (const a of input.apps) {
+      const b = back.apps.find((x) => x.name === a.name)!;
+      for (const k of keys) expect([a.name, k, b[k]]).toEqual([a.name, k, a[k]]);
+      expect(b.department).toBe(/^alle$/i.test(a.department) ? 'Alle' : a.department);
+      expect(b.importance).toBe(a.importance ?? (a.critical ? 4 : 3));
+    }
+  });
+});

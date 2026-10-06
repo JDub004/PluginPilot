@@ -78,6 +78,8 @@ export function buildCity(input: CityInput, opts: { today?: string } = {}): City
       ...(a.monthlyCostEur !== undefined ? { monthlyCostEur: a.monthlyCostEur } : {}),
       ...(a.owner ? { owner: a.owner } : {}),
       ...(a.renewalDate ? { renewalDate: a.renewalDate, noticeDeadline: addDays(a.renewalDate, -(a.noticePeriodDays ?? 30)) } : {}),
+      ...(a.noticePeriodDays !== undefined ? { noticePeriodDays: a.noticePeriodDays } : {}),
+      dataFlowsTo: a.dataFlowsTo,
       critical: a.critical, approved: a.approved, questIds: [],
     };
   });
@@ -250,7 +252,10 @@ export function buildCity(input: CityInput, opts: { today?: string } = {}): City
       potentialSavingsEurYear,
       // Penalty relative to city size: one high issue per app would mean 0.
       healthScore: Math.max(0, Math.round(100 - (penalty / (apps.length * 12)) * 100)),
+      urgent: quests.filter((q) => q.severity === 'high').length,
+      deadlines: quests.filter((q) => q.kind === 'renewal' && q.severity !== 'low').length,
     },
+    ...(input.preparedBy ? { brand: { name: input.preparedBy, ...(input.brandColor ? { color: input.brandColor } : {}) } } : {}),
     disclaimer: 'Karte und Hinweise beruhen nur auf den angegebenen Daten. Ersparnisse sind Schätzungen vor Kündigungsfristen und Umstellungskosten.',
   };
 }

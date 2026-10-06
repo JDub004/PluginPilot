@@ -34,17 +34,18 @@ export function renderReport(city: CityMap, opts: { preparedBy?: string; date?: 
   const lines: string[] = [];
   lines.push(`# Software-Bericht: ${city.company}`);
   lines.push('');
-  const meta = [opts.date ? `Stand ${opts.date}` : '', opts.preparedBy ? `erstellt von ${opts.preparedBy}` : ''].filter(Boolean).join(' · ');
+  const by = opts.preparedBy ?? city.brand?.name;
+  const meta = [opts.date ? `Stand ${opts.date}` : '', by ? `erstellt von ${by}` : ''].filter(Boolean).join(' · ');
   if (meta) lines.push(`_${meta}_`, '');
   lines.push('## Überblick', '');
   lines.push('| Kennzahl | Wert |', '|---|---|');
-  lines.push(`| Programme | ${s.apps} |`, `| Abteilungen | ${s.districts} |`, `| Kosten pro Monat | ${eur(s.monthlyCostEur)} |`);
-  lines.push(`| Sparpotenzial pro Jahr | ${eur(s.potentialSavingsEurYear)} |`, `| Stadt-Gesundheit | ${s.healthScore}/100 |`, '');
+  lines.push(`| Softwarekosten pro Jahr | ${eur(s.monthlyCostEur * 12)} |`, `| Davon vermeidbar (geschätzt) | ${eur(s.potentialSavingsEurYear)} pro Jahr |`);
+  lines.push(`| Dringende Risiken | ${s.urgent} |`, `| Kündigungsfristen in den nächsten 90 Tagen | ${s.deadlines} |`, `| Programme / Abteilungen | ${s.apps} / ${s.districts} |`, '');
   if (opts.comparison) {
     const c = opts.comparison;
     lines.push('## Vorher / Nachher', '');
     lines.push('| | Vorher | Nachher |', '|---|---|---|');
-    lines.push(`| Stadt-Gesundheit | ${c.healthBefore} | ${c.healthAfter} |`, `| Programme | ${c.appsBefore} | ${c.appsAfter} |`);
+    lines.push(`| Offene Aufgaben (gewichtet, 0–100 = keine) | ${c.healthBefore} | ${c.healthAfter} |`, `| Programme | ${c.appsBefore} | ${c.appsAfter} |`);
     lines.push(`| Kosten pro Monat | ${eur(c.costBefore)} | ${eur(c.costAfter)} |`, `| Offenes Sparpotenzial/Jahr | ${eur(c.savingsBefore)} | ${eur(c.savingsAfter)} |`, '');
     if (c.solved.length) lines.push(`**Erledigt (${c.solved.length}):** ${c.solved.join('; ')}`, '');
     if (c.added.length) lines.push(`**Neu (${c.added.length}):** ${c.added.join('; ')}`, '');
@@ -120,7 +121,8 @@ export function decodeShare(data: string): unknown {
 /** Software inventory as CSV (semicolon, German Excel), e.g. for the Verzeichnis von Verarbeitungstätigkeiten or audits. */
 export function inventoryCsv(city: CityMap): string {
   const q = (v: unknown) => { const t = v === undefined || v === null ? '' : String(v); return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
-  const head = ['Programm', 'Kategorie', 'Abteilung', 'Standort', 'Nutzer', 'Lizenzen', 'Kosten/Monat', 'Verantwortlich', 'Kritisch', 'Freigegeben', 'Wichtigkeit', 'Kündigen bis', 'Vertragsende', 'Offene Aufgaben'];
-  const rows = city.buildings.map((b) => [b.name, b.category, b.district === 'Marktplatz' ? 'Alle' : b.district, b.site ?? '', b.users, b.licenses, b.monthlyCostEur, b.owner ?? '', b.critical ? 'ja' : 'nein', b.approved ? 'ja' : 'nein', b.importance, b.noticeDeadline ?? '', b.renewalDate ?? '', b.questIds.length]);
+  // Headers match the import aliases, so the file can be edited in Excel and pasted back (round trip).
+  const head = ['Programm', 'Kategorie', 'Abteilung', 'Standort', 'Nutzer', 'Lizenzen', 'Kosten/Monat', 'Verantwortlich', 'Kritisch', 'Freigegeben', 'Wichtigkeit', 'Vertragsende', 'Kündigungsfrist (Tage)', 'Daten an', 'Kündigen bis', 'Offene Aufgaben'];
+  const rows = city.buildings.map((b) => [b.name, b.category, b.district === 'Marktplatz' ? 'Alle' : b.district, b.site ?? '', b.users, b.licenses, b.monthlyCostEur, b.owner ?? '', b.critical ? 'ja' : 'nein', b.approved ? 'ja' : 'nein', b.importance, b.renewalDate ?? '', b.noticePeriodDays, b.dataFlowsTo.join(', '), b.noticeDeadline ?? '', b.questIds.length]);
   return [head, ...rows].map((r) => r.map(q).join(';')).join('\n');
 }

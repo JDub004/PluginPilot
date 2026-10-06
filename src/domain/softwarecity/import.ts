@@ -110,7 +110,7 @@ export function importTable(text: string): ImportResult {
   const warnings: string[] = [];
   if (rows.length < 2) return { apps: [], warnings: ['Tabelle braucht eine Kopfzeile und mindestens eine Zeile mit einem Programm.'] };
   if (rows.length > MAX_ROWS) warnings.push(`Nur die ersten ${MAX_ROWS} Zeilen wurden gelesen.`);
-  const header = (rows[0] as string[]).map((h) => h.toLowerCase().replace(/\s+/g, ' ').trim());
+  const header = (rows[0] as string[]).map((h) => h.toLowerCase().replace(/\s+/g, ' ').replace(/\s*\(.*\)\s*$/, '').trim());
   const col = {} as Partial<Record<keyof AppInput, number>>;
   for (const key of Object.keys(HEADERS) as (keyof AppInput)[]) {
     const idx = header.findIndex((h) => HEADERS[key].includes(h));

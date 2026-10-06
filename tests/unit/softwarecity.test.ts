@@ -149,3 +149,24 @@ describe('share link privacy', () => {
     expect(CityInputSchema.safeParse(JSON.parse(raw)).success).toBe(true);
   });
 });
+
+describe('branches, alliance and customers', () => {
+  it('assigns customers to the named branch and keeps branch contacts out of share links', async () => {
+    const { buildCity } = await import('../../src/domain/softwarecity/build.js');
+    const { encodeShare, decodeShare, shareSafe } = await import('../../src/domain/softwarecity/report.js');
+    const { CityInputSchema } = await import('../../src/domain/softwarecity/schema.js');
+    const input = CityInputSchema.parse({
+      company: 'Makler AG', apps: [{ name: 'Microsoft 365', category: 'collaboration', department: 'Alle', users: 50 }],
+      sites: [{ name: 'Zentrale', city: 'Hamburg', main: true }, { name: 'NL München', city: 'München', contact: 'Frau Beispiel', phone: '+49 89 000' }],
+      partners: [{ name: 'Kunde A', kind: 'customer', site: 'NL München' }, { name: 'Partner Wien', kind: 'alliance', city: 'Wien' }, { name: 'Kunde B', kind: 'customer', site: 'München' }],
+    });
+    const c = buildCity(input);
+    const muc = c.sites.find((s) => s.name === 'NL München')!;
+    expect(muc.contact).toBe('Frau Beispiel');
+    expect(c.partners.filter((p) => p.siteId === muc.id).map((p) => p.name)).toEqual(['Kunde A', 'Kunde B']);
+    expect(c.partners.find((p) => p.kind === 'alliance')?.lat).toBeCloseTo(48.2, 1);
+    const raw = JSON.stringify(decodeShare(encodeShare(shareSafe(input))));
+    expect(raw).not.toContain('Frau Beispiel');
+    expect(raw).not.toContain('+49 89');
+  });
+});

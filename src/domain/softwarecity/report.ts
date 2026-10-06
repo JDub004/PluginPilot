@@ -98,6 +98,16 @@ export function renderReport(city: CityMap, opts: { preparedBy?: string; date?: 
 // server. Nothing is stored server-side.
 // ---------------------------------------------------------------------------------------------
 
+/** Share links can be forwarded freely, so personal contact details (e-mail, phone, notes) never go into them. */
+export function shareSafe(input: CityInput): CityInput {
+  const strip = <T extends { email?: string; phone?: string; note?: string }>({ email: _e, phone: _p, note: _n, ...rest }: T) => rest;
+  return {
+    ...input,
+    ...(input.people ? { people: input.people.map((p) => strip(p) as typeof p) } : {}),
+    ...(input.partners ? { partners: input.partners.map((p) => { const { contact: _c, ...r } = strip(p) as typeof p; return r as typeof p; }) } : {}),
+  };
+}
+
 export function encodeShare(input: CityInput): string {
   return Buffer.from(JSON.stringify(input), 'utf8').toString('base64url');
 }

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { track } from '../analytics/events.js';
 import { buildCity } from '../domain/softwarecity/build.js';
 import { importLedger, importTable, mergeApps } from '../domain/softwarecity/import.js';
-import { compareCities, encodeShare, inventoryCsv, renderReport } from '../domain/softwarecity/report.js';
+import { compareCities, encodeShare, inventoryCsv, renderReport, shareSafe } from '../domain/softwarecity/report.js';
 import { AppSchema, CityInputSchema } from '../domain/softwarecity/schema.js';
 import { loadWidget, RESOURCE_MIME_TYPE } from './widget.js';
 
@@ -65,12 +65,12 @@ export function registerMapSoftwareCity(server: McpServer, baseUrl: string, now:
         const city = buildCity(cityInput, { today });
         const comparison = before ? compareCities(buildCity({ company: cityInput.company, apps: before }, { today }), city) : undefined;
         const report = renderReport(city, { date: today, ...(preparedBy ? { preparedBy } : {}), ...(comparison ? { comparison } : {}) });
-        const shareUrl = `${baseUrl.replace(/\/$/, '')}/city/view#d=${encodeShare(cityInput)}`;
+        const shareUrl = `${baseUrl.replace(/\/$/, '')}/city/view#d=${encodeShare(shareSafe(cityInput))}`;
         track({ tool: TOOL_NAME, outcome: 'success', durationMs: Date.now() - started, findingCount: city.buildings.length, errorCount: city.quests.length });
         const top = city.quests.slice(0, 5).map((q) => `${q.severity}: ${q.title}${q.savingEurYear ? ` (spart ${q.savingEurYear} €/Jahr)` : ''}`).join('; ');
         const delta = comparison ? ` Vergleich: Gesundheit ${comparison.healthBefore} → ${comparison.healthAfter}, ${comparison.solved.length} Aufgaben erledigt, ${comparison.added.length} neu.` : '';
         const text = `Software-Stadt von ${city.company}: ${city.stats.apps} Programme in ${city.stats.districts} Vierteln, ${city.stats.monthlyCostEur} €/Monat, ` +
-          `Stadt-Gesundheit ${city.stats.healthScore}/100, Sparpotenzial ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}${delta} Teilen-Link (Daten nur im Link, nichts gespeichert): ${shareUrl}`;
+          `Stadt-Gesundheit ${city.stats.healthScore}/100, Sparpotenzial ${city.stats.potentialSavingsEurYear} €/Jahr. Wichtigste Aufgaben: ${top || 'keine'}. ${city.disclaimer}${delta} Teilen-Link (Daten nur im Link, nichts gespeichert, ohne Kontaktdaten): ${shareUrl}`;
         return { structuredContent: { ...city, report, inventoryCsv: inventoryCsv(city), shareUrl, ...(comparison ? { comparison: { ...comparison } } : {}) }, content: [{ type: 'text' as const, text }] };
       } catch (err) {
         track({ tool: TOOL_NAME, outcome: 'invalid_input', durationMs: Date.now() - started });

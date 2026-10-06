@@ -134,3 +134,18 @@ describe('work savers', () => {
     expect(toIsoDate('bald')).toBeUndefined();
   });
 });
+
+describe('share link privacy', () => {
+  it('never puts contact details into the share link', async () => {
+    const { encodeShare, decodeShare, shareSafe } = await import('../../src/domain/softwarecity/report.js');
+    const { SAMPLE_COMPANY } = await import('../../src/domain/softwarecity/sample.js');
+    const { CityInputSchema } = await import('../../src/domain/softwarecity/schema.js');
+    const input = CityInputSchema.parse(SAMPLE_COMPANY);
+    const raw = JSON.stringify(decodeShare(encodeShare(shareSafe(input))));
+    expect(raw).not.toContain('@beispiel.example');
+    expect(raw).not.toContain('+49 40');
+    expect(raw).not.toContain('Support-Hotline');
+    expect(raw).toContain('Mara Beispiel');
+    expect(CityInputSchema.safeParse(JSON.parse(raw)).success).toBe(true);
+  });
+});

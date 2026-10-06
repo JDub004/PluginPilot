@@ -21,7 +21,7 @@
 - **Server:** [Render Services Inc.], Rechenzentrum **Frankfurt am Main (EU)**.
   Unterauftragsverarbeiter, siehe Abschnitt 5.
 - **Protokolle:** nur technische Ereignisse (Werkzeugname, Dauer, Anzahl Funde). **Keine Inhalte, keine Namen, keine Beträge.**
-- **Teilen-Link:** Die Programmliste steht kodiert (nicht verschlüsselt) im Link-Teil nach `#`. Diesen Teil schicken Browser nie an Server.
+- **Teilen-Link:** Die Programmliste steht kodiert (nicht verschlüsselt) im Link-Teil nach `#`. Beim Öffnen schickt die Seite die Liste einmal zur Berechnung an den Server; dort wird sie nicht gespeichert und nicht protokolliert.
   **Kontaktdaten (E-Mail, Telefon, Notizen) werden nie in Links übernommen.** Wer den Link hat, sieht die Programmliste. Deshalb nur gezielt teilen.
 - **Ausgaben** wie Bericht, Software-Verzeichnis, Notfall-Kontakte und Vorlagen entstehen im Browser und werden kopiert oder heruntergeladen. Sie liegen danach bei Ihnen.
 

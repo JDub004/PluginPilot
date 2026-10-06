@@ -38,6 +38,12 @@ Software-Stadt's position: the understandable, playful picture for people who ar
 - **Excel round trip:** inventory export headers match the import aliases (incl. Vertragsende, Kündigungsfrist, Daten an); tested for loss-free re-import.
 - **Privacy:** share links never contain e-mail, phone, notes or partner contacts (`shareSafe`). Draft one-pager and AVV outline in `docs/legal/` (not legally reviewed).
 
+## Built 2026-10-06 (v1.5): zoom levels for larger groups
+- Network map has semantic levels: **world** (alliance partners `kind: 'alliance'` + foreign sites; domestic sites collapse into one node), **country** (own sites with main contact, suppliers), **site** (customers `kind: 'customer'` assigned via `partner.site`). Zooming out at minimum scale climbs a level; city → network → world.
+- Sites carry `contact`, `role`, `country` and contact details (stripped from share links). Up to 40 sites and 400 partners.
+- **Department focus:** each district can be opened on its own for large HQs.
+- ~70 more world cities in `geo.ts`.
+
 ## Optimise next (in this order)
 1. **Import instead of typing** (largest lever for activation):
    a) Paste or upload a tool list or invoice export (Excel/CSV). ChatGPT already extracts it into the tool input, so it works today; add a template and test prompts.

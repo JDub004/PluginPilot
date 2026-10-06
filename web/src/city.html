@@ -58,6 +58,8 @@
   .tabs button[aria-pressed="true"] { background:var(--cyan); color:#04121a; border-color:var(--cyan); box-shadow:0 0 14px rgba(61,245,255,.35); }
   .row { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px; }
   .pill { background:rgba(120,200,255,.06); border:1px solid var(--line); color:var(--ink); font:500 10px var(--mono); letter-spacing:.12em; text-transform:uppercase; padding:6px 9px; cursor:pointer; border-radius:2px; }
+  select.pill { background:rgba(6,8,22,.9); color:var(--ink); max-width:100%; }
+  select.pill option { background:#0a0e24; color:#e8f1ff; }
   .pill:hover { border-color:var(--cyan); color:var(--cyan); }
   .pill.on { border-color:var(--mag); color:var(--mag); box-shadow:0 0 12px rgba(255,61,187,.3); }
   .person { border-left-color:var(--cyan); } .partner { border-left-color:var(--mag); }
@@ -110,6 +112,7 @@
   var hud = document.getElementById('hud'), panel = document.getElementById('panel');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var city = null, view = { x: 0, y: 0, s: 1 }, selected = null, tab = 'quests', t0 = performance.now(), dpr = 1;
+  var netLevel = 'country', netSite = -1, selSite = -1, focusD = null;
   var mode = 'city', siteIdx = -1, selPerson = null, selPartner = null, flash = -1e9, scenes = {}, netBtn = document.getElementById('znet');
 
   function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -391,6 +394,15 @@
 
   // ---- scene: whole company or one site's own town --------------------------------------------
   function scene() {
+    var base = baseScene();
+    if (!focusD) return base;
+    var d = base.districts.filter(function (x) { return x.name === focusD; })[0];
+    if (!d) return base;
+    var k = base.key + '|' + focusD;
+    if (!scenes[k]) scenes[k] = { districts: [d], buildings: base.buildings.filter(function (b) { return d.buildingIds.indexOf(b.id) >= 0; }), key: k };
+    return scenes[k];
+  }
+  function baseScene() {
     var sites = city.sites || [];
     if (siteIdx < 0 || !sites[siteIdx]) return { districts: city.districts, buildings: city.buildings, key: 'all' };
     if (scenes[siteIdx]) return scenes[siteIdx];
@@ -648,34 +660,59 @@
   }
 
   // ---- network: own sites on a real map, partners around them -------------------------------
-  var KIND = { supplier: ['Lieferant', '#ffb547', 'L'], customer: ['Kunde', '#3dffa8', 'K'], service_provider: ['Dienstleister', '#9d7bff', 'D'], authority: ['Behörde', '#b8c4ff', 'B'], other: ['Partner', '#9aa5c8', 'P'] };
+  var KIND = { supplier: ['Lieferant', '#ffb547', 'L'], customer: ['Kunde', '#3dffa8', 'K'], service_provider: ['Dienstleister', '#9d7bff', 'D'], authority: ['Behörde', '#b8c4ff', 'B'], alliance: ['Netzwerkpartner', '#4da3ff', 'A'], other: ['Partner', '#9aa5c8', 'P'] };
+  function domestic(s, main) {
+    if (!main || s === main) return true;
+    if (s.country && main.country) return s.country === main.country;
+    if (s.lat == null || main.lat == null) return true;
+    return Math.hypot(s.lat - main.lat, (s.lon - main.lon) * 0.65) < 6;
+  }
+  function levels() {
+    var sites = city.sites || [], partners = city.partners || [], main = sites[mainSiteIdx()];
+    return {
+      world: partners.some(function (p) { return p.kind === 'alliance'; }) || sites.some(function (x) { return !domestic(x, main); }),
+      customers: partners.filter(function (p) { return p.kind === 'customer'; }).length > 8,
+    };
+  }
   function net() {
-    if (city._net) return city._net;
-    var sites = city.sites || [], partners = city.partners || [], nodes = [];
-    if (sites.length) sites.forEach(function (s, i) { nodes.push({ type: 'site', i: i, ref: s, lat: s.lat, lon: s.lon }); });
-    else nodes.push({ type: 'home', i: -1, ref: { id: 'home', name: city.company, buildingIds: city.buildings.map(function (b) { return b.id; }) } });
-    partners.forEach(function (p) { nodes.push({ type: 'partner', ref: p, lat: p.lat, lon: p.lon }); });
+    var key = netLevel + ':' + netSite; city._nets = city._nets || {};
+    if (city._nets[key]) return city._nets[key];
+    var sites = city.sites || [], partners = city.partners || [], nodes = [], main = sites[mainSiteIdx()], lv = levels();
+    if (netLevel === 'world') {
+      var dom = sites.filter(function (x) { return domestic(x, main); });
+      nodes.push({ type: 'group', ref: { id: 'group', name: main ? (main.country || 'Inland') : city.company, main: true, buildingIds: city.buildings.map(function (b) { return b.id; }), count: Math.max(1, dom.length) }, lat: main && main.lat, lon: main && main.lon });
+      sites.forEach(function (x, i) { if (!domestic(x, main)) nodes.push({ type: 'site', i: i, ref: x, lat: x.lat, lon: x.lon, small: true }); });
+      partners.forEach(function (p) { if (p.kind === 'alliance') nodes.push({ type: 'partner', ref: p, lat: p.lat, lon: p.lon, small: true }); });
+    } else if (netLevel === 'site' && sites[netSite]) {
+      var st = sites[netSite]; nodes.push({ type: 'site', i: netSite, ref: st, lat: st.lat, lon: st.lon });
+      partners.forEach(function (p) { if (p.kind === 'customer' && p.siteId === st.id) nodes.push({ type: 'partner', ref: p, lat: p.lat, lon: p.lon, small: true }); });
+    } else {
+      if (sites.length) sites.forEach(function (x, i) { if (!lv.world || domestic(x, main)) nodes.push({ type: 'site', i: i, ref: x, lat: x.lat, lon: x.lon, small: sites.length > 8 && !x.main }); });
+      else nodes.push({ type: 'home', i: -1, ref: { id: 'home', name: city.company, buildingIds: city.buildings.map(function (b) { return b.id; }) } });
+      partners.forEach(function (p) { if (p.kind !== 'alliance' && !(p.kind === 'customer' && lv.customers)) nodes.push({ type: 'partner', ref: p, lat: p.lat, lon: p.lon }); });
+    }
     var geo = nodes.filter(function (n) { return n.lat != null && n.lon != null; }), lat0 = 0, lon0 = 0;
     geo.forEach(function (n) { lat0 += n.lat / geo.length; lon0 += n.lon / geo.length; });
     var cos = Math.cos(lat0 * Math.PI / 180), span = 0;
     geo.forEach(function (n) { span = Math.max(span, Math.abs(n.lat - lat0), Math.abs(n.lon - lon0) * cos); });
-    var K = Math.max(6, Math.min(400, 340 / Math.max(span, 0.3)));
+    var K = Math.max(2, Math.min(400, (nodes.length > 20 ? 520 : 340) / Math.max(span, 0.3)));
     geo.forEach(function (n) { n.x = (n.lon - lon0) * cos * K; n.y = -(n.lat - lat0) * K; });
     var R = 0; geo.forEach(function (n) { R = Math.max(R, Math.hypot(n.x, n.y)); });
     if (nodes[0].x == null) { nodes[0].x = 0; nodes[0].y = 0; }
     var rest = nodes.filter(function (n) { return n.x == null; });
     R = Math.max(R + 150, 220);
-    rest.forEach(function (n, k) { var a = -Math.PI / 2 + 2 * Math.PI * k / rest.length + 0.4; n.x = R * Math.cos(a); n.y = R * Math.sin(a) * 0.7; n.floating = true; });
-    for (var it = 0; it < 60; it++) for (var a = 0; a < nodes.length; a++) for (var b = a + 1; b < nodes.length; b++) {
-      var A = nodes[a], B = nodes[b], dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy) || 0.01, min = 110;
+    rest.forEach(function (n, k) { var a = -Math.PI / 2 + 2 * Math.PI * k / rest.length + 0.4; n.x = nodes[0].x + R * Math.cos(a); n.y = nodes[0].y + R * Math.sin(a) * 0.7; n.floating = true; });
+    for (var it = 0; it < 80; it++) for (var a = 0; a < nodes.length; a++) for (var b = a + 1; b < nodes.length; b++) {
+      var A = nodes[a], B = nodes[b], dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy) || 0.01, min = (A.small ? 26 : 58) + (B.small ? 26 : 58);
       if (d < min) { var push = (min - d) / 2, ux = d > 0.02 ? dx / d : Math.cos(a + b), uy = d > 0.02 ? dy / d : Math.sin(a + b); A.x -= ux * push; A.y -= uy * push; B.x += ux * push; B.y += uy * push; }
     }
-    var mainNode = nodes.filter(function (n) { return n.type !== 'partner' && (n.type === 'home' || n.ref.main); })[0] || nodes[0], edges = [];
+    var mainNode = nodes.filter(function (n) { return n.type === 'group' || n.type === 'home' || (n.type === 'site' && (n.ref.main || netLevel === 'site')); })[0] || nodes[0], edges = [];
     nodes.forEach(function (n) {
-      if (n.type === 'site' && n !== mainNode) edges.push({ a: mainNode, b: n, col: '#ff3dbb' });
-      if (n.type === 'partner') { var to = nodes.filter(function (m) { return m.type === 'site' && m.ref.id === n.ref.siteId; })[0] || mainNode; edges.push({ a: to, b: n, col: KIND[n.ref.kind][1] }); }
+      if (n === mainNode) return;
+      if (n.type === 'site') edges.push({ a: mainNode, b: n, col: '#ff3dbb' });
+      if (n.type === 'partner') { var to = nodes.filter(function (m) { return m.type === 'site' && m.ref.id === n.ref.siteId; })[0] || mainNode; edges.push({ a: to, b: n, col: (KIND[n.ref.kind] || KIND.other)[1], thin: n.small }); }
     });
-    return (city._net = { nodes: nodes, edges: edges, K: K, lat0: lat0, lon0: lon0, cos: cos, mapped: geo.length > 0 });
+    return (city._nets[key] = { nodes: nodes, edges: edges, K: K, lat0: lat0, lon0: lon0, cos: cos, mapped: geo.length > 0 });
   }
   function prism(x, y, w, hgt, col) {
     ctx.fillStyle = 'rgba(12,16,40,.95)'; ctx.beginPath(); ctx.moveTo(x - w, y - hgt); ctx.lineTo(x, y + w / 2 - hgt); ctx.lineTo(x + w, y - hgt); ctx.lineTo(x + w, y); ctx.lineTo(x, y + w / 2); ctx.lineTo(x - w, y); ctx.closePath(); ctx.fill();
@@ -706,9 +743,22 @@
     var hq = N.edges.length ? N.edges[0].a : N.nodes[0], sweep = reduce ? 0 : t / 2200;
     for (var r = 1; r <= 4; r++) { ctx.strokeStyle = 'rgba(61,245,255,' + (0.13 - r * 0.02).toFixed(3) + ')'; ctx.beginPath(); ctx.ellipse(hq.x, hq.y, r * 110, r * 110, 0, 0, Math.PI * 2); ctx.stroke(); }
     if (!reduce) { var rg = ctx.createConicGradient ? ctx.createConicGradient(sweep, hq.x, hq.y) : null; if (rg) { rg.addColorStop(0, 'rgba(61,245,255,.18)'); rg.addColorStop(0.08, 'rgba(61,245,255,0)'); rg.addColorStop(1, 'rgba(61,245,255,0)'); ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(hq.x, hq.y, 440, 0, Math.PI * 2); ctx.fill(); } }
-    N.edges.forEach(function (e, i) { var d = Math.hypot(e.b.x - e.a.x, e.b.y - e.a.y); flow({ x: e.a.x, y: e.a.y - 10 }, { x: e.b.x, y: e.b.y - 6 }, Math.min(120, d * 0.25), e.col, selPartner && e.b.ref.id === selPartner, t, i); });
+    N.edges.forEach(function (e, i) {
+      if (e.thin && !(selPartner && e.b.ref.id === selPartner)) {
+        ctx.strokeStyle = rgba(e.col, 0.28); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
+        var u = reduce ? 0.5 : ((t / 3000 + i * 0.13) % 1); ctx.fillStyle = rgba(e.col, 0.9); ctx.beginPath(); ctx.arc(e.a.x + (e.b.x - e.a.x) * u, e.a.y + (e.b.y - e.a.y) * u, 1.6, 0, Math.PI * 2); ctx.fill();
+        return;
+      }
+      var d = Math.hypot(e.b.x - e.a.x, e.b.y - e.a.y); flow({ x: e.a.x, y: e.a.y - 10 }, { x: e.b.x, y: e.b.y - 6 }, Math.min(120, d * 0.25), e.col, selPartner && e.b.ref.id === selPartner, t, i); });
     N.nodes.slice().sort(function (a, b) { return a.y - b.y; }).forEach(function (n, k) {
-      if (n.type === 'partner') {
+      if (n.type === 'partner' && n.small) {
+        var kd0 = KIND[n.ref.kind] || KIND.other, sel0 = selPartner === n.ref.id, rr = sel0 ? 9 : 6;
+        ctx.save(); ctx.fillStyle = rgba(kd0[1], 0.3); ctx.strokeStyle = sel0 ? '#fff' : kd0[1]; ctx.lineWidth = 1.2; ctx.shadowColor = kd0[1]; ctx.shadowBlur = 8;
+        ctx.beginPath(); for (var h0 = 0; h0 < 6; h0++) { var an0 = Math.PI / 6 + h0 * Math.PI / 3; ctx.lineTo(n.x + Math.cos(an0) * rr, n.y + Math.sin(an0) * rr); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+        ctx.font = (sel0 ? '600 9.5px ' : '500 8px ') + css('--mono'); ctx.textAlign = 'center'; ctx.fillStyle = sel0 ? '#fff' : 'rgba(200,215,245,.85)';
+        var nm0 = n.ref.city || n.ref.name; ctx.fillText((nm0.length > 16 ? nm0.slice(0, 15) + '…' : nm0).toUpperCase(), n.x, n.y + 17);
+        n.r = 14;
+      } else if (n.type === 'partner') {
         var kd = KIND[n.ref.kind] || KIND.other, sel = selPartner === n.ref.id, r0 = sel ? 16 : 13;
         ctx.save(); ctx.fillStyle = rgba(kd[1], 0.16); ctx.strokeStyle = sel ? '#fff' : kd[1]; ctx.lineWidth = sel ? 2 : 1.4; ctx.shadowColor = kd[1]; ctx.shadowBlur = 12;
         ctx.beginPath(); for (var h = 0; h < 6; h++) { var an = Math.PI / 6 + h * Math.PI / 3; ctx.lineTo(n.x + Math.cos(an) * r0, n.y + Math.sin(an) * r0); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
@@ -716,15 +766,22 @@
         label(n.x, n.y + 20, n.ref.name.length > 22 ? n.ref.name.slice(0, 21) + '…' : n.ref.name, (kd[0] + (n.ref.city ? ' · ' + n.ref.city : '')).toUpperCase(), kd[1]);
         n.r = 24;
       } else {
-        var cnt = n.ref.buildingIds.length, here = mode === 'net' && false, pulse = reduce ? 0.5 : (Math.sin(t / 700 + k) + 1) / 2;
+        var cnt = n.ref.buildingIds.length, pulse = reduce ? 0.5 : (Math.sin(t / 700 + k) + 1) / 2, isSel = n.type === 'site' && selSite === n.i;
+        if (n.small) {
+          ctx.save(); ctx.translate(n.x, n.y); ctx.scale(0.5, 0.5); ctx.translate(-n.x, -n.y);
+        }
         ctx.strokeStyle = rgba('#3df5ff', 0.25 + pulse * 0.25); ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(n.x, n.y, 46 + pulse * 8, 23 + pulse * 4, 0, 0, Math.PI * 2); ctx.stroke();
         ctx.fillStyle = 'rgba(18,24,62,.95)'; ctx.beginPath(); ctx.moveTo(n.x - 40, n.y); ctx.lineTo(n.x, n.y - 20); ctx.lineTo(n.x + 40, n.y); ctx.lineTo(n.x, n.y + 20); ctx.closePath(); ctx.fill();
         ctx.save(); ctx.strokeStyle = 'rgba(61,245,255,.8)'; ctx.shadowColor = '#3df5ff'; ctx.shadowBlur = 10; ctx.stroke(); ctx.restore();
         var m = Math.max(2, Math.min(7, Math.ceil(cnt / 2))), spots = [[0, -6], [-14, 1], [14, 1], [0, 8], [-8, -12], [9, -11], [-22, -4]];
         var ids = n.ref.buildingIds, cols = ids.map(function (id) { var b = city.buildings.filter(function (x) { return x.id === id; })[0]; return b ? (COLORS[b.category] || COLORS.other) : '#3df5ff'; });
         spots.slice(0, m).sort(function (a, b) { return a[1] - b[1]; }).forEach(function (sp, q) { prism(n.x + sp[0], n.y + sp[1], 6, 10 + hash(q + k, 3) * 26, cols[q % cols.length] || '#3df5ff'); });
-        label(n.x, n.y + 26, n.ref.name, ((n.ref.city ? n.ref.city + ' · ' : '') + cnt + ' Programme' + (n.ref.main ? ' · Zentrale' : '')).toUpperCase(), n.ref.main || n.type === 'home' ? '#ff3dbb' : '#3df5ff');
-        ctx.font = '600 8.5px ' + css('--mono'); ctx.fillStyle = 'rgba(61,245,255,' + (0.6 + pulse * 0.4).toFixed(2) + ')'; ctx.textAlign = 'center'; ctx.fillText('▸ STADT BETRETEN', n.x, n.y - 44);
+        if (isSel) { ctx.save(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.shadowColor = '#fff'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.ellipse(n.x, n.y, 52, 26, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+        if (n.small) { ctx.restore(); label(n.x, n.y + 14, n.ref.name.length > 20 ? n.ref.name.slice(0, 19) + '…' : n.ref.name, n.ref.contact ? n.ref.contact.toUpperCase() : null, '#3df5ff'); n.r = 26; return; }
+        var sub = n.type === 'group' ? n.ref.count + ' Standorte · ' + cnt + ' Programme' : (n.ref.city ? n.ref.city + ' · ' : '') + (n.ref.contact ? n.ref.contact : cnt + ' Programme') + (n.ref.main ? ' · Zentrale' : '');
+        label(n.x, n.y + 26, n.ref.name, sub.toUpperCase(), n.ref.main || n.type === 'home' || n.type === 'group' ? '#ff3dbb' : '#3df5ff');
+        ctx.font = '600 8.5px ' + css('--mono'); ctx.fillStyle = 'rgba(61,245,255,' + (0.6 + pulse * 0.4).toFixed(2) + ')'; ctx.textAlign = 'center';
+        ctx.fillText(n.type === 'group' ? '▸ HINEINZOOMEN' : netLevel === 'site' ? '▸ STADT BETRETEN' : '▸ ANTIPPEN', n.x, n.y - 44);
         n.r = 48;
       }
     });
@@ -832,7 +889,7 @@
       panel.appendChild(el('p', 'kicker', ['Extern · ' + kd[0]]));
       var dot = el('span', 'gem'); dot.style.background = kd[1]; dot.style.boxShadow = '0 0 10px ' + kd[1];
       panel.appendChild(el('h2', null, [dot, pa.name]));
-      panel.appendChild(contactFacts(pa, [['Ort', pa.city || null], ['Kontakt', pa.contact || null]]));
+      panel.appendChild(contactFacts(pa, [['Ort', [pa.city, pa.country].filter(Boolean).join(', ') || null], ['Branche', pa.industry || null], ['Kontakt', pa.contact || null], ['Betreut von', (sites.filter(function (x) { return x.id === pa.siteId; })[0] || {}).name || null]]));
       if (pa.buildingIds.length) { panel.appendChild(el('span', 'section', ['Verbunden über'])); buildingList(pa.buildingIds); }
       else panel.appendChild(el('p', 'sub', ['Noch keine Programme für den Datenaustausch angegeben.']));
       return;
@@ -866,21 +923,41 @@
       return;
     }
     if (mode === 'net') {
-      panel.appendChild(el('p', 'kicker', ['Netzwerk · Standorte & Partner']));
-      panel.appendChild(el('h2', null, [city.company]));
-      panel.appendChild(el('p', 'sub', ['Klicke einen Standort, um seine Stadt zu betreten, oder einen Partner für Kontakt und Schnittstellen.']));
-      panel.appendChild(el('span', 'section', ['Eigene Städte']));
-      var row = el('div', 'row');
-      if (sites.length) sites.forEach(function (s, i) { row.appendChild(button('pill' + (s.main ? ' on' : ''), ['▸ ' + s.name], function () { goCity(i, true); })); });
-      else row.appendChild(button('pill on', ['▸ ' + city.company], function () { goCity(-1, true); }));
-      if (sites.length > 1) row.appendChild(button('pill', ['▸ Alle zusammen'], function () { goCity(-1, true); }));
-      panel.appendChild(row);
-      if (partners.length) {
-        panel.appendChild(el('span', 'section', ['Externe Partner (' + partners.length + ')']));
-        partners.forEach(function (x) { var kd2 = KIND[x.kind] || KIND.other, d2 = el('span', 'dot'); d2.style.background = kd2[1]; panel.appendChild(button('quest partner', [el('b', null, [d2, x.name]), el('span', null, [kd2[0] + (x.city ? ' · ' + x.city : '') + (x.buildingIds.length ? ' · ' + x.buildingIds.length + ' Schnittstellen' : '')])], function () { selPartner = x.id; renderPanel(); redraw(); })); });
+      var lv = levels(), crumbs = el('div', 'row');
+      if (lv.world) crumbs.appendChild(button('pill' + (netLevel === 'world' ? ' on' : ''), ['🌐 Welt'], function () { setLevel('world'); }));
+      crumbs.appendChild(button('pill' + (netLevel === 'country' ? ' on' : ''), [lv.world ? 'Inland' : 'Standorte'], function () { setLevel('country'); }));
+      if (netLevel === 'site' && sites[netSite]) crumbs.appendChild(button('pill on', ['Kunden ' + sites[netSite].name], function () {}));
+      panel.appendChild(crumbs);
+      if (selSite >= 0 && sites[selSite] && netLevel === 'country') {
+        var ss = sites[selSite], cust = partners.filter(function (x) { return x.kind === 'customer' && x.siteId === ss.id; });
+        panel.appendChild(el('p', 'kicker', [(ss.main ? 'Zentrale' : 'Niederlassung') + (ss.city ? ' · ' + ss.city : '')]));
+        panel.appendChild(el('h2', null, [ss.name]));
+        panel.appendChild(contactFacts(ss, [['Ansprechpartner', ss.contact ? ss.contact + (ss.role ? ' (' + ss.role + ')' : '') : null], ['Mitarbeitende', ss.employees != null ? String(ss.employees) : null], ['Programme', String(ss.buildingIds.length)], ['Betreute Kunden', cust.length ? String(cust.length) : null]]));
+        var act = el('div', 'row');
+        act.appendChild(button('pill on', ['▸ Stadt betreten'], function () { goCity(selSite, true); }));
+        if (cust.length) act.appendChild(button('pill', ['◉ Kunden anzeigen (' + cust.length + ')'], function () { setLevel('site', selSite); }));
+        panel.appendChild(act);
+        return;
       }
-      var unplaced = net().nodes.filter(function (n) { return n.floating; }).length;
-      panel.appendChild(el('div', 'foot', [unplaced ? unplaced + ' Einträge ohne bekannten Ort schweben am Rand. Mit Ort oder Koordinaten landen sie auf der Karte.' : 'Positionen nach echten Koordinaten der Orte.']));
+      var kick = netLevel === 'world' ? 'Welt · Netzwerk und Auslandsstandorte' : netLevel === 'site' ? 'Kunden der Niederlassung' : 'Standorte & Partner';
+      panel.appendChild(el('p', 'kicker', [kick]));
+      panel.appendChild(el('h2', null, [netLevel === 'site' && sites[netSite] ? sites[netSite].name : city.company]));
+      panel.appendChild(el('p', 'sub', [netLevel === 'world' ? 'Klicke den Inlands-Knoten zum Hineinzoomen oder einen Partner für Details.' : netLevel === 'site' ? 'Klicke einen Kunden für Kontakt und Schnittstellen, den Standort zum Betreten. Herauszoomen führt zurück.' : 'Klicke einen Standort für Ansprechpartner, Stadt und Kunden. Weit herauszoomen zeigt das internationale Netzwerk.']));
+      var shown = net().nodes;
+      var siteNodes = shown.filter(function (n) { return n.type === 'site'; });
+      if (siteNodes.length) {
+        panel.appendChild(el('span', 'section', [netLevel === 'world' ? 'Auslandsstandorte (' + siteNodes.length + ')' : 'Eigene Standorte (' + siteNodes.length + ')']));
+        var row = el('div', 'row');
+        siteNodes.forEach(function (n) { row.appendChild(button('pill' + (n.ref.main ? ' on' : ''), ['▸ ' + n.ref.name], function () { if (netLevel === 'country') { selSite = n.i; renderPanel(); redraw(); } else goCity(n.i, true); })); });
+        panel.appendChild(row);
+      }
+      var pn = shown.filter(function (n) { return n.type === 'partner'; }).map(function (n) { return n.ref; });
+      if (pn.length) {
+        panel.appendChild(el('span', 'section', [(netLevel === 'world' ? 'Netzwerkpartner' : netLevel === 'site' ? 'Betreute Kunden' : 'Externe Partner') + ' (' + pn.length + ')']));
+        pn.forEach(function (x) { var kd2 = KIND[x.kind] || KIND.other, d2 = el('span', 'dot'); d2.style.background = kd2[1]; panel.appendChild(button('quest partner', [el('b', null, [d2, x.name]), el('span', null, [kd2[0] + (x.industry ? ' · ' + x.industry : '') + (x.city ? ' · ' + x.city : x.country ? ' · ' + x.country : '') + (x.buildingIds.length ? ' · ' + x.buildingIds.length + ' Schnittstellen' : '')])], function () { selPartner = x.id; renderPanel(); redraw(); })); });
+      }
+      var unplaced = shown.filter(function (n) { return n.floating; }).length;
+      panel.appendChild(el('div', 'foot', [unplaced ? unplaced + ' Einträge ohne bekannten Ort schweben am Rand.' : 'Positionen nach echten Koordinaten der Orte.']));
       return;
     }
     var site = sites[siteIdx];
@@ -889,9 +966,23 @@
     panel.appendChild(el('p', 'sub', ['Klicke ein Gebäude, eine Person oder wähle eine Aufgabe.']));
     if (sites.length > 1 || partners.length) {
       var nav = el('div', 'row');
-      if (sites.length > 1) { sites.forEach(function (s, i) { nav.appendChild(button('pill' + (i === siteIdx ? ' on' : ''), [s.name], function () { goCity(i, true); })); }); nav.appendChild(button('pill' + (siteIdx < 0 ? ' on' : ''), ['Alle'], function () { goCity(-1, true); })); }
+      if (sites.length > 6) {
+        var sel = el('select', 'pill'); sel.setAttribute('aria-label', 'Standort wechseln');
+        sites.forEach(function (s, i) { var o = el('option', null, [s.name]); o.value = String(i); if (i === siteIdx) o.selected = true; sel.appendChild(o); });
+        var oa = el('option', null, ['Alle Standorte zusammen']); oa.value = '-1'; if (siteIdx < 0) oa.selected = true; sel.appendChild(oa);
+        sel.addEventListener('change', function () { goCity(Number(sel.value), true); });
+        nav.appendChild(sel);
+      } else if (sites.length > 1) { sites.forEach(function (s, i) { nav.appendChild(button('pill' + (i === siteIdx ? ' on' : ''), [s.name], function () { goCity(i, true); })); }); nav.appendChild(button('pill' + (siteIdx < 0 ? ' on' : ''), ['Alle'], function () { goCity(-1, true); })); }
       nav.appendChild(button('pill', ['◎ Netzwerk'], goNet));
       panel.appendChild(nav);
+    }
+    var ds = scene().districts;
+    if (focusD) panel.appendChild(button('quest back', ['◂ Alle Abteilungen'], function () { focusD = null; flash = performance.now(); fit(); renderPanel(); }));
+    else if (ds.length > 2) {
+      panel.appendChild(el('span', 'section', ['Abteilung einzeln ansehen']));
+      var drow = el('div', 'row');
+      ds.forEach(function (d) { drow.appendChild(button('pill', [d.name === 'Marktplatz' ? 'Alle (gemeinsam)' : d.name], function () { focusD = d.name; selected = null; flash = performance.now(); fit(); renderPanel(); })); });
+      panel.appendChild(drow);
     }
     var tabs = el('div', 'tabs'), tl = [['quests', 'Aufgaben (' + city.quests.length + ')']];
     if (people.length) tl.push(['people', 'Personen (' + people.length + ')']);
@@ -918,7 +1009,13 @@
     hud.textContent = '';
     var s = city.stats, site = (city.sites || [])[siteIdx];
     function chip(cls, value, label) { hud.appendChild(el('div', 'chip glass ' + cls, [el('b', null, [value]), el('small', null, [label])])); }
-    if (mode === 'net') { chip('', String((city.sites || []).length || 1), 'Standorte'); chip('health', String((city.partners || []).length), 'Partner'); chip('', String(s.apps), 'Programme'); return; }
+    if (mode === 'net') {
+      var ps = city.partners || [];
+      chip('', String((city.sites || []).length || 1), 'Standorte');
+      var al = ps.filter(function (p) { return p.kind === 'alliance'; }).length, cu = ps.filter(function (p) { return p.kind === 'customer'; }).length;
+      if (al) chip('health', String(al), 'Netzwerkpartner'); if (cu) chip('money', String(cu), 'Kunden');
+      chip('', String(ps.length - al - cu), 'weitere Partner'); return;
+    }
     if (city.brand) {
       var mono = el('span', 'mono', [city.brand.name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase()]);
       var bc = el('div', 'chip glass brand', [mono, el('div', null, [el('b', null, [city.brand.name]), el('small', null, ['erstellt von'])])]);
@@ -926,8 +1023,8 @@
       hud.appendChild(bc);
     }
     if (site) chip('health', site.name, 'Standort · ' + site.buildingIds.length + ' Programme');
-    chip('', eur(s.monthlyCostEur * 12), 'Software / Jahr');
-    chip('money', eur(s.potentialSavingsEurYear), 'vermeidbar / Jahr');
+    if (s.monthlyCostEur > 0) { chip('', eur(s.monthlyCostEur * 12), 'Software / Jahr'); chip('money', eur(s.potentialSavingsEurYear), 'vermeidbar / Jahr'); }
+    else chip('', String(s.apps), 'Programme');
     chip('health', String(urgentCount()), 'Dringende Risiken');
     var dl = deadlineCount(); if (dl) chip('health', String(dl), 'Fristen < 90 Tage');
   }
@@ -974,6 +1071,7 @@
   }
   function select(id, center) {
     selected = id; selPerson = null; selPartner = null;
+    if (focusD && !scene().buildings.some(function (b) { return b.id === id; })) { focusD = null; fit(); }
     if (mode === 'net' || !scene().buildings.some(function (b) { return b.id === id; })) goCity(siteOfBuilding(id), false);
     renderPanel();
     if (center) { var b = scene().buildings.filter(function (x) { return x.id === id; })[0]; if (b) { var p = iso(b.gx + 0.5, b.gy + 0.5); centerOn(p.x, p.y); } }
@@ -989,6 +1087,7 @@
   }
   function goCity(i, fresh) {
     var changed = mode !== 'city' || siteIdx !== i;
+    if (changed) focusD = null;
     mode = 'city'; siteIdx = i;
     if (fresh) { selected = null; selPerson = null; selPartner = null; tab = 'quests'; }
     if (changed) { flash = performance.now(); fit(); renderHud(); if (reduce) requestAnimationFrame(draw); }
@@ -996,7 +1095,8 @@
     renderPanel(); redraw();
   }
   function goNet() {
-    mode = 'net'; selected = null; selPerson = null; flash = performance.now();
+    mode = 'net'; selected = null; selPerson = null; flash = performance.now(); focusD = null;
+    if (netLevel === 'site' && !(city.sites || [])[netSite]) netLevel = 'country';
     netBtn.textContent = '▦'; netBtn.setAttribute('aria-label', 'Zurück zur Stadt');
     fit(); renderHud(); renderPanel(); if (reduce) requestAnimationFrame(draw);
   }
@@ -1016,7 +1116,10 @@
     if (mode === 'net') {
       var node = net().nodes.filter(function (n) { return Math.hypot(n.x - wx, n.y - wy) < (n.r || 30); })[0];
       if (!node) { if (selPartner) { selPartner = null; renderPanel(); redraw(); } return; }
-      if (node.type === 'partner') { selPartner = node.ref.id; renderPanel(); redraw(); } else goCity(node.i, true);
+      if (node.type === 'partner') { selPartner = node.ref.id; selSite = -1; renderPanel(); redraw(); }
+      else if (node.type === 'group') setLevel('country');
+      else if (node.type === 'home' || netLevel === 'site' || !(city.sites || []).length) goCity(node.i, true);
+      else { selSite = node.i; selPartner = null; renderPanel(); redraw(); }
       return;
     }
     var ph = walkers(scene()).filter(function (w) { var h = w.person && w.person._hit; return h && wx >= h.x && wx <= h.x + h.w && wy >= h.y && wy <= h.y + h.h; })[0];
@@ -1024,7 +1127,20 @@
     var hit = scene().buildings.slice().sort(function (a, b) { return (b.gx + b.gy) - (a.gx + a.gy); }).filter(function (b) { var h = b._hit; return h && wx >= h.x && wx <= h.x + h.w && wy >= h.y && wy <= h.y + h.h; })[0];
     if (hit) select(hit.id, false); else if (selected || selPerson || selPartner) { selected = null; selPerson = null; selPartner = null; renderPanel(); redraw(); }
   });
+  function setLevel(lv, site) {
+    netLevel = lv; if (site != null) netSite = site; selPartner = null; if (lv !== 'country') selSite = -1;
+    flash = performance.now(); fit(); renderHud(); renderPanel(); if (reduce) requestAnimationFrame(draw);
+  }
+  var outTicks = 0;
+  function zoomOutLevel() {
+    if (mode === 'city') { if (focusD) { focusD = null; flash = performance.now(); fit(); renderPanel(); return true; } if ((city.sites || []).length || (city.partners || []).length) { goNet(); return true; } return false; }
+    if (netLevel === 'site') { setLevel('country'); return true; }
+    if (netLevel === 'country' && levels().world) { setLevel('world'); return true; }
+    return false;
+  }
   function zoom(f, cx, cy) {
+    if (f < 1 && view.s <= 0.31) { if (++outTicks >= 3) { outTicks = 0; zoomOutLevel(); } return; }
+    outTicks = 0;
     var ns = Math.max(0.3, Math.min(2.5, view.s * f));
     cx = cx == null ? canvas.width / dpr / 2 : cx; cy = cy == null ? canvas.height / dpr / 2 : cy;
     view.x = cx - (cx - view.x) * ns / view.s; view.y = cy - (cy - view.y) * ns / view.s; view.s = ns;
@@ -1039,7 +1155,7 @@
 
   function start(data) {
     if (!data || !Array.isArray(data.buildings)) return;
-    var first = !city; city = data; scenes = {}; mode = 'city'; siteIdx = mainSiteIdx(); selPerson = null; selPartner = null;
+    var first = !city; city = data; scenes = {}; mode = 'city'; netLevel = 'country'; netSite = -1; selSite = -1; focusD = null; siteIdx = mainSiteIdx(); selPerson = null; selPartner = null;
     netBtn.hidden = !((city.sites || []).length || (city.partners || []).length);
     resize(); fit(); renderHud(); renderPanel(); renderTable();
     if (first || reduce) requestAnimationFrame(draw);

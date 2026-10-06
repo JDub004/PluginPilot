@@ -51,10 +51,14 @@ export const SiteSchema = z
     lon: z.number().min(-180).max(180).optional(),
     employees: z.number().int().min(0).max(1_000_000).optional(),
     main: z.boolean().default(false).describe('Headquarters'),
+    contact: name(60).optional().describe('Main contact person of the site (e.g. branch manager)'),
+    role: name(60).optional(),
+    ...contact,
+    country: name(40).optional(),
   })
   .strict();
 
-export const PARTNER_KINDS = ['supplier', 'customer', 'service_provider', 'authority', 'other'] as const;
+export const PARTNER_KINDS = ['supplier', 'customer', 'service_provider', 'authority', 'alliance', 'other'] as const;
 export const PartnerSchema = z
   .object({
     name: name(80).describe('External company, e.g. supplier, tax advisor, IT service provider, key customer'),
@@ -65,6 +69,9 @@ export const PartnerSchema = z
     contact: name(60).optional().describe('Contact person at the partner'),
     ...contact,
     connectedApps: z.array(name(60)).max(20).default([]).describe('Own apps used to exchange data with this partner'),
+    site: name(60).optional().describe('Own site that looks after this partner/customer (name or city)'),
+    country: name(40).optional(),
+    industry: name(40).optional(),
   })
   .strict();
 
@@ -73,8 +80,8 @@ export const CityInputSchema = z
     company: name(80).describe('Company name shown on the map'),
     apps: z.array(AppSchema).min(1).max(120),
     people: z.array(PersonSchema).max(60).optional().describe('Key persons and contacts (business contact data only, with their consent)'),
-    sites: z.array(SiteSchema).max(20).optional().describe('Company sites/locations'),
-    partners: z.array(PartnerSchema).max(40).optional().describe('External network: suppliers, customers, service providers, authorities'),
+    sites: z.array(SiteSchema).max(40).optional().describe('Company sites/locations'),
+    partners: z.array(PartnerSchema).max(400).optional().describe('External network: suppliers, customers, service providers, authorities'),
     preparedBy: z.string().trim().min(1).max(80).optional().describe('IT service provider preparing the map; shown as badge on the city and in the report'),
     brandColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe('Accent colour of the IT service provider, e.g. "#0057b8"'),
   })
@@ -117,8 +124,8 @@ export interface Contact { email?: string; phone?: string; note?: string }
 export interface Person extends Contact { id: string; name: string; role?: string; district: string; buildingIds: string[] }
 /** Layout of one site's own town (same building ids, different positions). */
 export interface SiteLayout { districts: District[]; positions: Record<string, [number, number]> }
-export interface Site { id: string; name: string; city?: string; lat?: number; lon?: number; employees?: number; main: boolean; buildingIds: string[]; layout: SiteLayout }
-export interface Partner extends Contact { id: string; name: string; kind: PartnerKind; city?: string; lat?: number; lon?: number; contact?: string; buildingIds: string[]; siteId?: string }
+export interface Site extends Contact { id: string; name: string; city?: string; country?: string; lat?: number; lon?: number; employees?: number; main: boolean; contact?: string; role?: string; buildingIds: string[]; layout: SiteLayout }
+export interface Partner extends Contact { id: string; name: string; kind: PartnerKind; city?: string; country?: string; industry?: string; lat?: number; lon?: number; contact?: string; buildingIds: string[]; siteId?: string }
 export interface Road { from: string; to: string }
 export interface Quest {
   id: string;

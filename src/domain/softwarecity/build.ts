@@ -112,6 +112,8 @@ export function buildCity(input: CityInput, opts: { today?: string } = {}): City
     return {
       id: siteIds[i] as string, name: s.name, main: isMain, buildingIds: members.map((a) => a.id), layout: lay,
       ...(s.city ? { city: s.city } : {}), ...(geo ?? {}), ...(s.employees !== undefined ? { employees: s.employees } : {}),
+      ...(s.country ? { country: s.country } : {}), ...(s.contact ? { contact: s.contact } : {}), ...(s.role ? { role: s.role } : {}),
+      ...(s.email ? { email: s.email } : {}), ...(s.phone ? { phone: s.phone } : {}), ...(s.note ? { note: s.note } : {}),
     };
   });
 
@@ -123,13 +125,14 @@ export function buildCity(input: CityInput, opts: { today?: string } = {}): City
     for (const a of apps) if (a.dataFlowsTo.some((t) => lc(t) === lc(p.name))) ids.add(a.id);
     const geo = p.lat !== undefined && p.lon !== undefined ? { lat: p.lat, lon: p.lon } : locate(p.city);
     const first = apps.find((a) => ids.has(a.id) && siteOfApp(a));
-    const site = first ? siteOfApp(first) : mainSite;
+    const named = p.site ? sitesIn.find((s) => lc(s.name) === lc(p.site!) || (s.city && lc(s.city) === lc(p.site!))) : undefined;
+    const site = named ?? (first ? siteOfApp(first) : mainSite);
     const siteId = site ? siteIds[sitesIn.indexOf(site)] : undefined;
     return {
       id: uid(`partner-${p.name}`), name: p.name, kind: p.kind, buildingIds: [...ids],
       ...(p.city ? { city: p.city } : {}), ...(geo ?? {}), ...(p.contact ? { contact: p.contact } : {}),
       ...(p.email ? { email: p.email } : {}), ...(p.phone ? { phone: p.phone } : {}), ...(p.note ? { note: p.note } : {}),
-      ...(siteId ? { siteId } : {}),
+      ...(siteId ? { siteId } : {}), ...(p.country ? { country: p.country } : {}), ...(p.industry ? { industry: p.industry } : {}),
     };
   });
 

@@ -83,10 +83,10 @@ export function renderReport(city: CityMap, opts: { preparedBy?: string; date?: 
   }
   if (city.sites.length) {
     lines.push('', '## Standorte', '');
-    for (const s of city.sites) lines.push(`- **${s.name}**${s.main ? ' (Zentrale)' : ''}${s.city ? `, ${s.city}` : ''}${s.employees !== undefined ? `, ${s.employees} Mitarbeitende` : ''}: ${s.buildingIds.length} Programme`);
+    for (const s of city.sites) lines.push(`- **${s.name}**${s.main ? ' (Zentrale)' : ''}${s.city ? `, ${s.city}` : ''}${s.contact ? `, Ansprechpartner ${s.contact}${s.role ? ` (${s.role})` : ''}` : ''}${s.employees !== undefined ? `, ${s.employees} Mitarbeitende` : ''}: ${s.buildingIds.length} Programme`);
   }
   if (city.partners.length) {
-    const KIND: Record<string, string> = { supplier: 'Lieferant', customer: 'Kunde', service_provider: 'Dienstleister', authority: 'Behörde', other: 'Partner' };
+    const KIND: Record<string, string> = { supplier: 'Lieferant', customer: 'Kunde', service_provider: 'Dienstleister', authority: 'Behörde', alliance: 'Netzwerkpartner', other: 'Partner' };
     lines.push('', '## Externes Netzwerk', '', '| Partner | Art | Ort | Kontakt | Verbunden über |', '|---|---|---|---|---|');
     for (const p of city.partners) lines.push(`| ${cell(p.name)} | ${KIND[p.kind]} | ${cell(p.city)} | ${cell([p.contact, p.email, p.phone].filter(Boolean).join(', ') || undefined)} | ${cell(nameOf(p.buildingIds) || undefined)} |`);
   }
@@ -106,6 +106,7 @@ export function shareSafe(input: CityInput): CityInput {
     ...input,
     ...(input.people ? { people: input.people.map((p) => strip(p) as typeof p) } : {}),
     ...(input.partners ? { partners: input.partners.map((p) => { const { contact: _c, ...r } = strip(p) as typeof p; return r as typeof p; }) } : {}),
+    ...(input.sites ? { sites: input.sites.map((s) => { const { contact: _c, ...r } = strip(s) as typeof s; return r as typeof s; }) } : {}),
   };
 }
 

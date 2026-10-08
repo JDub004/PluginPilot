@@ -30,7 +30,7 @@
   .zoom button { font:600 16px var(--mono); width:36px; height:36px; color:var(--cyan); cursor:pointer; border-radius:2px; }
   .zoom button:hover, .tabs button:hover { border-color:var(--line-2); }
   .zoom button:focus-visible, .tabs button:focus-visible, .quest:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
-  .panel { position:absolute; left:12px; bottom:12px; width:min(300px, calc(100% - 72px)); max-height:calc(100% - 84px); overflow:auto; padding:14px 16px; border-radius:2px; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+  .panel { position:absolute; left:12px; bottom:12px; width:min(300px, calc(100% - 72px)); max-height:calc(100% - 124px); overflow:auto; padding:14px 16px; border-radius:2px; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
   /* corner brackets that stay put while the panel scrolls */
   .panel { background-image:linear-gradient(var(--cyan),var(--cyan)),linear-gradient(var(--cyan),var(--cyan)),linear-gradient(var(--cyan),var(--cyan)),linear-gradient(var(--cyan),var(--cyan));
            background-size:14px 1.5px,1.5px 14px,14px 1.5px,1.5px 14px; background-position:0 0,0 0,100% 100%,100% 100%; background-repeat:no-repeat; }
@@ -86,9 +86,29 @@
   .amp { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:8px; vertical-align:middle; }
   .sum { display:flex; flex-wrap:wrap; gap:18px; margin:0 0 10px; font-size:13px; }
   .sum b { font:600 18px var(--mono); display:block; }
+  .search { position:absolute; right:60px; top:12px; width:min(300px, calc(100% - 84px)); z-index:4; }
+  .search input { width:100%; height:36px; padding:0 12px 0 32px; font:13px var(--font); color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:2px; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+  .search input:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan); }
+  .search::before { content:'⌕'; position:absolute; left:11px; top:7px; color:var(--muted); font-size:16px; pointer-events:none; }
+  .search kbd { position:absolute; right:8px; top:9px; font:500 10px var(--mono); color:var(--muted); border:1px solid var(--line); padding:1px 5px; border-radius:2px; pointer-events:none; }
+  .results { margin-top:4px; max-height:320px; overflow:auto; background:rgba(10,14,36,.97); border:1px solid var(--line-2); }
+  .results[hidden] { display:none; }
+  .results button { display:flex; width:100%; gap:10px; align-items:baseline; text-align:left; background:none; border:0; border-bottom:1px solid var(--line); color:var(--ink); padding:7px 10px; cursor:pointer; font:13px var(--font); }
+  .results button:hover, .results button.act { background:rgba(61,245,255,.1); }
+  .results small { font:500 9.5px var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-left:auto; flex:none; }
+  .crumbs { display:flex; flex-wrap:wrap; gap:2px; align-items:center; width:100%; pointer-events:auto; font:500 10px var(--mono); letter-spacing:.12em; text-transform:uppercase; }
+  .crumbs button { background:none; border:0; color:var(--cyan); cursor:pointer; font:inherit; letter-spacing:inherit; text-transform:inherit; padding:2px 4px; }
+  .crumbs button:hover { text-decoration:underline; } .crumbs span { color:var(--muted); } .crumbs b { color:var(--ink); font-weight:600; padding:2px 4px; }
+  .tip { position:absolute; z-index:6; pointer-events:none; padding:6px 10px; max-width:260px; background:rgba(6,8,22,.95); border:1px solid var(--line-2); font-size:12px; line-height:1.35; }
+  .tip b { display:block; font-size:13px; } .tip[hidden] { display:none; }
+  .filter { width:100%; height:30px; margin:4px 0 6px; padding:0 10px; font:12.5px var(--font); color:var(--ink); background:rgba(6,8,22,.7); border:1px solid var(--line); border-radius:2px; }
+  .table th[data-k] { cursor:pointer; } .table th[data-k]:hover { color:var(--cyan); }
+  .stage.page { height:100vh; height:100dvh; border-radius:0; }
+  .stage.max { position:fixed; inset:0; height:100vh !important; z-index:50; border-radius:0; }
+  .stage:fullscreen { height:100vh; }
   .foot { font-size:10.5px; color:var(--muted); margin-top:10px; opacity:.8; }
   .empty { padding:24px; color:var(--muted); font:500 11px var(--mono); letter-spacing:.14em; text-transform:uppercase; }
-  @media (max-width: 640px) { .table { left:12px; right:12px; top:12px; bottom:calc(40% + 20px); z-index:3; } }
+  @media (max-width: 640px) { .search { right:12px; top:auto; bottom:calc(40% + 30px); width:calc(100% - 72px); } .table { left:12px; right:12px; top:12px; bottom:calc(40% + 20px); z-index:3; } }
   @media (max-width: 520px) { .stage { height:720px; } .panel { width:calc(100% - 24px); max-height:40%; } .zoom { bottom:auto; top:140px; } .chip { min-width:0; padding:4px 10px; } .chip b { font-size:14px; } }
 </style>
 </head>
@@ -96,8 +116,10 @@
 <div class="stage" id="stage">
   <canvas id="c" aria-label="Software-Stadt: Abteilungen als Viertel, Programme als Gebäude"></canvas>
   <div class="hud" id="hud"></div>
-  <div class="zoom"><button class="glass" id="zin" type="button" aria-label="Hineinzoomen">+</button><button class="glass" id="zout" type="button" aria-label="Herauszoomen">−</button><button class="glass" id="zfit" type="button" aria-label="Ganze Stadt zeigen">⌂</button><button class="glass" id="ztab" type="button" aria-label="Tabellenansicht" title="Nüchterne Tabellenansicht" aria-pressed="false">☰</button><button class="glass" id="znet" type="button" aria-label="Netzwerk und Standorte" title="Netzwerk und Standorte" hidden>◎</button></div>
+  <div class="zoom"><button class="glass" id="zin" type="button" aria-label="Hineinzoomen">+</button><button class="glass" id="zout" type="button" aria-label="Herauszoomen">−</button><button class="glass" id="zfit" type="button" aria-label="Ganze Stadt zeigen">⌂</button><button class="glass" id="zmax" type="button" aria-label="Vollbild" title="Vollbild (F)">⛶</button><button class="glass" id="ztab" type="button" aria-label="Tabellenansicht" title="Nüchterne Tabellenansicht" aria-pressed="false">☰</button><button class="glass" id="znet" type="button" aria-label="Netzwerk und Standorte" title="Netzwerk und Standorte" hidden>◎</button></div>
   <div class="table glass" id="table" hidden></div>
+  <div class="search" role="search"><input id="q" type="search" placeholder="Suchen: Programm, Person, Ort, Kunde …" aria-label="Suchen" autocomplete="off"><kbd>/</kbd><div class="results" id="qres" hidden role="listbox"></div></div>
+  <div class="tip" id="tip" hidden></div>
   <div class="panel glass" id="panel"><div class="empty">Stadt wird gebaut …</div></div>
 </div>
 <script>
@@ -667,6 +689,10 @@
     if (s.lat == null || main.lat == null) return true;
     return Math.hypot(s.lat - main.lat, (s.lon - main.lon) * 0.65) < 6;
   }
+  function custCount(siteId) {
+    if (!city._cc) { city._cc = {}; (city.partners || []).forEach(function (p) { if (p.kind === 'customer' && p.siteId) city._cc[p.siteId] = (city._cc[p.siteId] || 0) + 1; }); }
+    return city._cc[siteId] || 0;
+  }
   function levels() {
     var sites = city.sites || [], partners = city.partners || [], main = sites[mainSiteIdx()];
     return {
@@ -777,8 +803,9 @@
         var ids = n.ref.buildingIds, cols = ids.map(function (id) { var b = city.buildings.filter(function (x) { return x.id === id; })[0]; return b ? (COLORS[b.category] || COLORS.other) : '#3df5ff'; });
         spots.slice(0, m).sort(function (a, b) { return a[1] - b[1]; }).forEach(function (sp, q) { prism(n.x + sp[0], n.y + sp[1], 6, 10 + hash(q + k, 3) * 26, cols[q % cols.length] || '#3df5ff'); });
         if (isSel) { ctx.save(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.shadowColor = '#fff'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.ellipse(n.x, n.y, 52, 26, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-        if (n.small) { ctx.restore(); label(n.x, n.y + 14, n.ref.name.length > 20 ? n.ref.name.slice(0, 19) + '…' : n.ref.name, n.ref.contact ? n.ref.contact.toUpperCase() : null, '#3df5ff'); n.r = 26; return; }
-        var sub = n.type === 'group' ? n.ref.count + ' Standorte · ' + cnt + ' Programme' : (n.ref.city ? n.ref.city + ' · ' : '') + (n.ref.contact ? n.ref.contact : cnt + ' Programme') + (n.ref.main ? ' · Zentrale' : '');
+        if (n.small) { ctx.restore(); var nc0 = custCount(n.ref.id); label(n.x, n.y + 14, n.ref.name.length > 20 ? n.ref.name.slice(0, 19) + '…' : n.ref.name, n.ref.contact || nc0 ? ((n.ref.contact || '') + (nc0 ? (n.ref.contact ? ' · ' : '') + nc0 + ' Kunden' : '')).toUpperCase() : null, '#3df5ff'); n.r = 26; return; }
+        var nc = n.type === 'site' ? custCount(n.ref.id) : 0;
+        var sub = n.type === 'group' ? n.ref.count + ' Standorte · ' + cnt + ' Programme' : (n.ref.city ? n.ref.city + ' · ' : '') + (n.ref.contact ? n.ref.contact : cnt + ' Programme') + (nc ? ' · ' + nc + ' Kunden' : '') + (n.ref.main ? ' · Zentrale' : '');
         label(n.x, n.y + 26, n.ref.name, sub.toUpperCase(), n.ref.main || n.type === 'home' || n.type === 'group' ? '#ff3dbb' : '#3df5ff');
         ctx.font = '600 8.5px ' + css('--mono'); ctx.fillStyle = 'rgba(61,245,255,' + (0.6 + pulse * 0.4).toFixed(2) + ')'; ctx.textAlign = 'center';
         ctx.fillText(n.type === 'group' ? '▸ HINEINZOOMEN' : netLevel === 'site' ? '▸ STADT BETRETEN' : '▸ ANTIPPEN', n.x, n.y - 44);
@@ -870,6 +897,7 @@
   }
   function backButton(text, fn) { panel.appendChild(button('quest back', [text], fn)); }
   function renderPanel() {
+    renderHud();
     panel.textContent = '';
     var sites = city.sites || [], partners = city.partners || [], people = city.people || [];
     if (selPerson) {
@@ -954,7 +982,14 @@
       var pn = shown.filter(function (n) { return n.type === 'partner'; }).map(function (n) { return n.ref; });
       if (pn.length) {
         panel.appendChild(el('span', 'section', [(netLevel === 'world' ? 'Netzwerkpartner' : netLevel === 'site' ? 'Betreute Kunden' : 'Externe Partner') + ' (' + pn.length + ')']));
-        pn.forEach(function (x) { var kd2 = KIND[x.kind] || KIND.other, d2 = el('span', 'dot'); d2.style.background = kd2[1]; panel.appendChild(button('quest partner', [el('b', null, [d2, x.name]), el('span', null, [kd2[0] + (x.industry ? ' · ' + x.industry : '') + (x.city ? ' · ' + x.city : x.country ? ' · ' + x.country : '') + (x.buildingIds.length ? ' · ' + x.buildingIds.length + ' Schnittstellen' : '')])], function () { selPartner = x.id; renderPanel(); redraw(); })); });
+        var listBox = el('div'), lf = el('input', 'filter'); lf.type = 'search'; lf.placeholder = 'Liste filtern (Name, Ort, Branche) …'; lf.setAttribute('aria-label', 'Liste filtern');
+        if (pn.length > 8) panel.appendChild(lf);
+        panel.appendChild(listBox);
+        var fill = function () {
+          listBox.textContent = ''; var qq = lf.value.trim().toLowerCase();
+          pn.filter(function (x) { return !qq || [x.name, x.city, x.country, x.industry].join(' ').toLowerCase().indexOf(qq) >= 0; }).forEach(function (x) { var kd2 = KIND[x.kind] || KIND.other, d2 = el('span', 'dot'); d2.style.background = kd2[1]; listBox.appendChild(button('quest partner', [el('b', null, [d2, x.name]), el('span', null, [kd2[0] + (x.industry ? ' · ' + x.industry : '') + (x.city ? ' · ' + x.city : x.country ? ' · ' + x.country : '') + (x.buildingIds.length ? ' · ' + x.buildingIds.length + ' Schnittstellen' : '')])], function () { selPartner = x.id; renderPanel(); redraw(); })); });
+        };
+        lf.addEventListener('input', fill); fill();
       }
       var unplaced = shown.filter(function (n) { return n.floating; }).length;
       panel.appendChild(el('div', 'foot', [unplaced ? unplaced + ' Einträge ohne bekannten Ort schweben am Rand.' : 'Positionen nach echten Koordinaten der Orte.']));
@@ -1005,8 +1040,29 @@
     }
     panel.appendChild(el('div', 'foot', [city.disclaimer]));
   }
+  function crumbs() {
+    var sites = city.sites || [], lv = levels(), parts = [];
+    var hasNet = sites.length || (city.partners || []).length;
+    if (hasNet && lv.world) parts.push(['Welt', function () { if (mode !== 'net') goNet(); setLevel('world'); }]);
+    if (hasNet) parts.push([lv.world ? 'Inland' : 'Netzwerk', function () { if (mode !== 'net') goNet(); setLevel('country'); }]);
+    if (mode === 'net' && netLevel === 'site' && sites[netSite]) { parts.push([sites[netSite].name, function () { selSite = netSite; setLevel('country'); }]); parts.push(['Kunden', null]); }
+    if (mode === 'city') {
+      parts.push([sites[siteIdx] ? sites[siteIdx].name : siteIdx < 0 && sites.length ? 'Alle Standorte' : city.company, focusD ? function () { focusD = null; flash = performance.now(); fit(); renderHud(); renderPanel(); } : null]);
+      if (focusD) parts.push([focusD === 'Marktplatz' ? 'Gemeinsam genutzt' : focusD, null]);
+    }
+    if (mode === 'net' && netLevel === 'world') parts.splice(1);
+    if (mode === 'net' && netLevel === 'country') parts.splice(lv.world ? 2 : 1);
+    var c = el('nav', 'crumbs'); c.setAttribute('aria-label', 'Pfad');
+    parts.forEach(function (pt, i) {
+      if (i) c.appendChild(el('span', null, ['›']));
+      var last = i === parts.length - 1;
+      c.appendChild(last || !pt[1] ? el('b', null, [pt[0]]) : button(null, [pt[0]], pt[1]));
+    });
+    return c;
+  }
   function renderHud() {
     hud.textContent = '';
+    hud.appendChild(crumbs());
     var s = city.stats, site = (city.sites || [])[siteIdx];
     function chip(cls, value, label) { hud.appendChild(el('div', 'chip glass ' + cls, [el('b', null, [value]), el('small', null, [label])])); }
     if (mode === 'net') {
@@ -1031,24 +1087,45 @@
   function urgentCount() { return city.stats.urgent != null ? city.stats.urgent : city.quests.filter(function (q) { return q.severity === 'high'; }).length; }
   function deadlineCount() { return city.stats.deadlines != null ? city.stats.deadlines : 0; }
   // ---- sober table view (for auditors, CFOs, print) --------------------------------------------
-  var tableEl = document.getElementById('table'), tabBtn = document.getElementById('ztab'), tableOn = false;
+  var tableEl = document.getElementById('table'), tabBtn = document.getElementById('ztab'), tableOn = false, tableQ = '', tableSort = -1, tableDir = 1;
   function renderTable() {
     tableEl.hidden = !tableOn; tabBtn.setAttribute('aria-pressed', String(tableOn));
     if (!tableOn) return;
     tableEl.textContent = '';
     var s = city.stats, sum = el('div', 'sum');
-    [[eur(s.monthlyCostEur * 12), 'Software pro Jahr'], [eur(s.potentialSavingsEurYear), 'davon vermeidbar'], [String(urgentCount()), 'dringende Risiken'], [String(deadlineCount()), 'Fristen < 90 Tage'], [String(city.quests.length), 'offene Aufgaben']]
+    (s.monthlyCostEur > 0 ? [[eur(s.monthlyCostEur * 12), 'Software pro Jahr'], [eur(s.potentialSavingsEurYear), 'davon vermeidbar']] : [[String(s.apps), 'Programme']])
+      .concat([[String(urgentCount()), 'dringende Risiken'], [String(deadlineCount()), 'Fristen < 90 Tage'], [String(city.quests.length), 'offene Aufgaben']])
       .forEach(function (k) { sum.appendChild(el('div', null, [el('b', null, [k[0]]), el('small', 'sub', [k[1]])])); });
     tableEl.appendChild(sum);
-    var rank = { bad: 0, warn: 1, ok: 2 }, rows = city.buildings.slice().sort(function (a, b) { return rank[mood(a)] - rank[mood(b)] || (b.monthlyCostEur || 0) - (a.monthlyCostEur || 0); });
+    var flt = el('input', 'filter'); flt.type = 'search'; flt.placeholder = 'Tabelle filtern (Name, Abteilung, Verantwortlich, Standort …)'; flt.value = tableQ;
+    flt.setAttribute('aria-label', 'Tabelle filtern');
+    flt.addEventListener('input', function () { tableQ = flt.value; var pos = flt.selectionStart; renderTable(); var f2 = tableEl.querySelector('.filter'); if (f2) { f2.focus(); f2.setSelectionRange(pos, pos); } });
+    tableEl.appendChild(flt);
+    var rank = { bad: 0, warn: 1, ok: 2 };
+    var COLS = [
+      ['Programm', function (b) { return b.name.toLowerCase(); }], ['Art', function (b) { return LABEL[b.category] || b.category; }],
+      ['Abteilung', function (b) { return b.district === 'Marktplatz' ? 'alle' : b.district; }], ['Standort', function (b) { return b.site || 'alle'; }],
+      ['Kosten/Monat', function (b) { return b.monthlyCostEur || 0; }, 1], ['Nutzer / Lizenzen', function (b) { return b.users || 0; }, 1],
+      ['Verantwortlich', function (b) { return b.owner || ''; }], ['Kündigen bis', function (b) { return b.noticeDeadline || '9999'; }], ['Aufgaben', function (b) { return b.questIds.length; }, 1]];
+    var q = tableQ.trim().toLowerCase();
+    var rows = city.buildings.filter(function (b) { return !q || [b.name, b.district, b.owner, b.site, LABEL[b.category]].join(' ').toLowerCase().indexOf(q) >= 0; });
+    rows.sort(function (x, y) {
+      if (tableSort < 0) return rank[mood(x)] - rank[mood(y)] || (y.monthlyCostEur || 0) - (x.monthlyCostEur || 0);
+      var f = COLS[tableSort][1], u = f(x), v = f(y), d = u < v ? -1 : u > v ? 1 : 0; return d * tableDir;
+    });
     var t = el('table'), head = el('tr');
-    ['Programm', 'Abteilung', 'Kosten/Monat', 'Nutzer / Lizenzen', 'Verantwortlich', 'Kündigen bis', 'Aufgaben'].forEach(function (h, i) { var th = el('th', i === 2 || i === 3 || i === 6 ? 'num' : null, [h]); head.appendChild(th); });
+    COLS.forEach(function (c, i) {
+      var th = el('th', c[2] ? 'num' : null, [c[0] + (tableSort === i ? (tableDir > 0 ? ' ▲' : ' ▼') : '')]); th.setAttribute('data-k', String(i)); th.title = 'Sortieren';
+      th.addEventListener('click', function () { if (tableSort === i) tableDir = -tableDir; else { tableSort = i; tableDir = c[2] ? -1 : 1; } renderTable(); });
+      head.appendChild(th);
+    });
     t.appendChild(el('thead', null, [head]));
     var body = el('tbody');
+    if (!rows.length) body.appendChild(el('tr', null, [el('td', null, ['Keine Treffer.'])]));
     rows.forEach(function (b) {
       var m = mood(b), dot = el('span', 'amp'); dot.style.background = m === 'bad' ? css('--bad') : m === 'warn' ? css('--warn') : css('--accent');
       dot.setAttribute('aria-label', m === 'bad' ? 'dringend' : m === 'warn' ? 'Hinweis' : 'ok');
-      var tr = el('tr', selected === b.id ? 'sel' : null, [el('td', null, [dot, b.name]), el('td', null, [b.district === 'Marktplatz' ? 'alle' : b.district]),
+      var tr = el('tr', selected === b.id ? 'sel' : null, [el('td', null, [dot, b.name]), el('td', null, [LABEL[b.category] || b.category]), el('td', null, [b.district === 'Marktplatz' ? 'alle' : b.district]), el('td', null, [b.site || 'alle']),
         el('td', 'num', [b.monthlyCostEur != null ? eur(b.monthlyCostEur) : '–']), el('td', 'num', [(b.users != null ? b.users : '–') + ' / ' + (b.licenses != null ? b.licenses : '–')]),
         el('td', null, [b.owner || 'niemand']), el('td', null, [b.noticeDeadline ? deDate(b.noticeDeadline) : '–']), el('td', 'num', [String(b.questIds.length)])]);
       tr.addEventListener('click', function () { selected = b.id; selPerson = null; selPartner = null; renderPanel(); renderTable(); });
@@ -1151,12 +1228,110 @@
   document.getElementById('zout').addEventListener('click', function () { zoom(1 / 1.2); });
   document.getElementById('zfit').addEventListener('click', function () { fit(); if (reduce) draw(performance.now()); });
   netBtn.addEventListener('click', function () { if (mode === 'net') goCity(siteIdx, false); else goNet(); });
+  // ---- search over everything ----------------------------------------------------------------
+  var qEl = document.getElementById('q'), qRes = document.getElementById('qres'), qAct = 0, qHits = [];
+  function searchIndex() {
+    if (city._idx) return city._idx;
+    var idx = [], sites = city.sites || [];
+    city.buildings.forEach(function (b) { idx.push({ t: b.name, s: (LABEL[b.category] || '') + ' · ' + (b.district === 'Marktplatz' ? 'alle' : b.district), k: 'Programm', go: function () { if (tableOn) { tableOn = false; renderTable(); } select(b.id, true); } }); });
+    (city.people || []).forEach(function (p) { idx.push({ t: p.name, s: [p.role, p.district === 'Marktplatz' ? 'firmenweit' : p.district].filter(Boolean).join(' · '), k: 'Person', go: function () { selectPerson(p.id, true); } }); });
+    sites.forEach(function (x, i) { idx.push({ t: x.name, s: [x.city, x.contact].filter(Boolean).join(' · '), k: x.main ? 'Zentrale' : 'Standort', go: function () { if (mode !== 'net') goNet(); var lv = levels(), main = sites[mainSiteIdx()]; if (domestic(x, main) || !lv.world) { selSite = i; setLevel('country'); } else setLevel('world'); } }); });
+    (city.partners || []).forEach(function (p) { var kd = KIND[p.kind] || KIND.other; idx.push({ t: p.name, s: [kd[0], p.industry, p.city || p.country].filter(Boolean).join(' · '), k: kd[0], go: function () {
+      if (mode !== 'net') goNet();
+      var si = sites.map(function (x) { return x.id; }).indexOf(p.siteId);
+      if (p.kind === 'alliance') setLevel('world'); else if (p.kind === 'customer' && levels().customers && si >= 0) setLevel('site', si); else setLevel('country');
+      selPartner = p.id; renderPanel(); redraw(); } }); });
+    return (city._idx = idx);
+  }
+  function runSearch() {
+    var q = qEl.value.trim().toLowerCase(); qRes.textContent = '';
+    if (!q) { qRes.hidden = true; return; }
+    var words = q.split(/\s+/);
+    qHits = searchIndex().filter(function (h) { var hay = (h.t + ' ' + h.s + ' ' + h.k).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); })
+      .sort(function (a, b) { return (a.t.toLowerCase().indexOf(q) === 0 ? 0 : 1) - (b.t.toLowerCase().indexOf(q) === 0 ? 0 : 1); }).slice(0, 30);
+    qAct = 0; qRes.hidden = false;
+    if (!qHits.length) { qRes.appendChild(el('div', 'sub', ['  Keine Treffer'])); return; }
+    qHits.forEach(function (h, i) { var bt = button(i === 0 ? 'act' : null, [el('span', null, [h.t, el('span', 'sub', [' ' + h.s])]), el('small', null, [h.k])], function () { pick(i); }); bt.setAttribute('role', 'option'); qRes.appendChild(bt); });
+  }
+  function pick(i) { var h = qHits[i]; if (!h) return; qRes.hidden = true; qEl.value = ''; qEl.blur(); h.go(); }
+  qEl.addEventListener('input', runSearch);
+  qEl.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); qAct = Math.max(0, Math.min(qHits.length - 1, qAct + (e.key === 'ArrowDown' ? 1 : -1))); [].forEach.call(qRes.querySelectorAll('button'), function (b, i) { b.classList.toggle('act', i === qAct); if (i === qAct) b.scrollIntoView({ block: 'nearest' }); }); }
+    else if (e.key === 'Enter') { e.preventDefault(); pick(qAct); }
+    else if (e.key === 'Escape') { qEl.value = ''; runSearch(); qEl.blur(); }
+  });
+  qEl.addEventListener('blur', function () { setTimeout(function () { qRes.hidden = true; }, 150); });
+
+  // ---- hover info --------------------------------------------------------------------------
+  var tip = document.getElementById('tip'), tipQ = null;
+  function hoverAt(wx, wy) {
+    if (mode === 'net') {
+      var n = net().nodes.filter(function (m) { return Math.hypot(m.x - wx, m.y - wy) < (m.r || 30); })[0]; if (!n) return null;
+      if (n.type === 'partner') { var kd = KIND[n.ref.kind] || KIND.other; return [n.ref.name, [kd[0], n.ref.industry, n.ref.city || n.ref.country].filter(Boolean).join(' · ') + (n.ref.buildingIds.length ? ' · ' + n.ref.buildingIds.length + ' Schnittstellen' : '')]; }
+      if (n.type === 'group') return [n.ref.name, n.ref.count + ' Standorte · klicken zum Hineinzoomen'];
+      var cc = n.type === 'site' ? custCount(n.ref.id) : 0;
+      return [n.ref.name, [n.ref.city, n.ref.contact, n.ref.buildingIds.length + ' Programme', cc ? cc + ' Kunden' : null].filter(Boolean).join(' · ')];
+    }
+    var w = walkers(scene()).filter(function (x) { var h = x.person && x.person._hit; return h && wx >= h.x && wx <= h.x + h.w && wy >= h.y && wy <= h.y + h.h; })[0];
+    if (w) return [w.person.name, [w.person.role, w.person.buildingIds.length + ' Programme'].filter(Boolean).join(' · ')];
+    var b = scene().buildings.slice().sort(function (x, y) { return (y.gx + y.gy) - (x.gx + x.gy); }).filter(function (x) { var h = x._hit; return h && wx >= h.x && wx <= h.x + h.w && wy >= h.y && wy <= h.y + h.h; })[0];
+    if (!b) return null;
+    var qs = questsOf(b);
+    return [b.name, [LABEL[b.category], b.users != null ? b.users + ' Nutzer' : null, b.monthlyCostEur != null ? eur(b.monthlyCostEur) + '/Monat' : null, b.owner ? 'verantw. ' + b.owner : 'niemand verantwortlich', qs.length ? qs.length + ' Aufgaben' : 'ok'].filter(Boolean).join(' · ')];
+  }
+  canvas.addEventListener('pointermove', function (e) {
+    if (dragging || e.pointerType === 'touch') { tip.hidden = true; return; }
+    tipQ = e;
+    requestAnimationFrame(function () {
+      if (!tipQ || !city) return; var ev = tipQ; tipQ = null;
+      var r = canvas.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top, info = hoverAt((sx - view.x) / view.s, (sy - view.y) / view.s);
+      canvas.style.cursor = info ? 'pointer' : '';
+      if (!info) { tip.hidden = true; return; }
+      tip.textContent = ''; tip.appendChild(el('b', null, [info[0]])); tip.appendChild(el('span', 'sub', [info[1]]));
+      tip.hidden = false; tip.style.left = Math.min(sx + 14, r.width - 270) + 'px'; tip.style.top = (sy + 16) + 'px';
+    });
+  });
+  canvas.addEventListener('pointerleave', function () { tip.hidden = true; });
+
+  // ---- fullscreen -----------------------------------------------------------------------------
+  var maxBtn = document.getElementById('zmax');
+  function toggleMax() {
+    var on = document.fullscreenElement || stage.classList.contains('max');
+    if (on) { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); stage.classList.remove('max'); }
+    else {
+      var fallback = function () { stage.classList.add('max'); resize(); fit(); redraw(); };
+      try { if (stage.requestFullscreen) stage.requestFullscreen().catch(fallback); else fallback(); } catch (e) { fallback(); }
+    }
+    setTimeout(function () { resize(); fit(); redraw(); reportSize(); }, 120);
+  }
+  maxBtn.addEventListener('click', toggleMax);
+  document.addEventListener('fullscreenchange', function () { setTimeout(function () { resize(); fit(); redraw(); }, 60); });
+
+  // ---- keyboard ---------------------------------------------------------------------------------
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.metaKey || e.ctrlKey || e.altKey || !city) return;
+    var k = e.key;
+    if (k === '/') { e.preventDefault(); qEl.focus(); }
+    else if (k === 'Escape') {
+      if (stage.classList.contains('max')) { toggleMax(); return; }
+      if (selected || selPerson || selPartner || selSite >= 0) { selected = null; selPerson = null; selPartner = null; selSite = -1; renderPanel(); redraw(); }
+      else zoomOutLevel();
+    }
+    else if (k === 't' || k === 'T') { tableOn = !tableOn; renderTable(); }
+    else if ((k === 'n' || k === 'N') && !netBtn.hidden) { if (mode === 'net') goCity(siteIdx, false); else goNet(); }
+    else if (k === 'f' || k === 'F') toggleMax();
+    else if (k === '+' || k === '=') zoom(1.2);
+    else if (k === '-') zoom(1 / 1.2);
+    else if (k === '0') { fit(); redraw(); }
+  });
   window.addEventListener('resize', function () { resize(); fit(); if (reduce) draw(performance.now()); });
 
   function start(data) {
     if (!data || !Array.isArray(data.buildings)) return;
-    var first = !city; city = data; scenes = {}; mode = 'city'; netLevel = 'country'; netSite = -1; selSite = -1; focusD = null; siteIdx = mainSiteIdx(); selPerson = null; selPartner = null;
+    var first = !city; city = data; city._idx = null; city._cc = null; scenes = {}; tableQ = ''; tableSort = -1; mode = 'city'; netLevel = 'country'; netSite = -1; selSite = -1; focusD = null; siteIdx = mainSiteIdx(); selPerson = null; selPartner = null;
     netBtn.hidden = !((city.sites || []).length || (city.partners || []).length);
+    if (window.__FULLPAGE) stage.classList.add('page');
     resize(); fit(); renderHud(); renderPanel(); renderTable();
     if (first || reduce) requestAnimationFrame(draw);
     reportSize();

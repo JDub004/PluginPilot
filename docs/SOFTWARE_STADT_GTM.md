@@ -44,6 +44,14 @@ Software-Stadt's position: the understandable, playful picture for people who ar
 - **Department focus:** each district can be opened on its own for large HQs.
 - ~70 more world cities in `geo.ts`.
 
+## Built 2026-10-08 (v1.6): overview and speed
+- Global search (`/`) over programs, people, sites, partners and customers; Enter jumps to the right level and selects.
+- Breadcrumb path (Welt › Inland › NL › Kunden / Standort › Abteilung), every step clickable.
+- Hover info for buildings, people and map nodes; customer counts on branch nodes.
+- Filter fields for long partner/customer lists; table view sortable per column, filterable, with type and site columns.
+- Keyboard: `/` search, `Esc` back/up a level, `T` table, `N` network, `F` fullscreen, `+`/`-`, `0` fit.
+- Fullscreen button (Fullscreen API, falls back to filling the frame); `window.__FULLPAGE` makes standalone pages fill the window.
+
 ## Optimise next (in this order)
 1. **Import instead of typing** (largest lever for activation):
    a) Paste or upload a tool list or invoice export (Excel/CSV). ChatGPT already extracts it into the tool input, so it works today; add a template and test prompts.

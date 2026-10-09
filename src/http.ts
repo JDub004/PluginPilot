@@ -24,7 +24,7 @@ const TEMPLATE_CSV = ['../web/public/', '../../web/public/'].map((d) => new URL(
 import { createServer, type PluginKind } from './mcp/server.js';
 
 // One endpoint per plugin (each is listed separately in the plugin directory).
-const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt', '/surcharge/mcp': 'surcharge', '/city/mcp': 'city' };
+const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt', '/surcharge/mcp': 'surcharge', '/city/mcp': 'city', '/ads/mcp': 'ads' };
 
 
 function readJson(req: IncomingMessage, limit: number): Promise<unknown> {

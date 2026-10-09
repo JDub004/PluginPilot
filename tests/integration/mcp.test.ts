@@ -148,6 +148,20 @@ describe('MCP over HTTP', () => {
     expect(bad.status).toBe(400);
   });
 
+  it('serves the ChatGPT Ads check on /ads/mcp and refuses internal URLs', async () => {
+    const c = new Client({ name: 'test', version: '0' });
+    await c.connect(new StreamableHTTPClientTransport(new URL('/ads/mcp', url)));
+    const { tools } = await c.listTools();
+    expect(tools.map((t) => t.name)).toEqual(['check_chatgpt_ads_readiness', 'diagnose_chatgpt_ads_results']);
+    const d = await c.callTool({ name: 'diagnose_chatgpt_ads_results', arguments: { rows: [{ name: 'A', impressions: 120, clicks: 2, spend: 9 }, { name: 'B', impressions: 6000, clicks: 12, spend: 50, conversions: 0 }] } });
+    expect((d.structuredContent as { diagnosis: { area: string }[] }).diagnosis.map((x) => x.area)).toEqual(['Auslieferung', 'Anzeige']);
+    for (const bad of ['http://127.0.0.1/', 'http://169.254.169.254/latest/meta-data/', 'http://localhost:3000/']) {
+      const r = await c.callTool({ name: 'check_chatgpt_ads_readiness', arguments: { url: bad } });
+      expect(r.isError).toBe(true);
+    }
+    await c.close();
+  });
+
   it('rejects oversized bodies with 413', async () => {
     const r = await fetch(url, {
       method: 'POST',

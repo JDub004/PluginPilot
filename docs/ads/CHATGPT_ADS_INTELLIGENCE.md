@@ -94,3 +94,11 @@ Lesart: Die Spanne ist riesig, weil CPC und Konversion unbekannt sind. Ein klein
 - Ads-Manager-Zugang (Self-Serve in DE seit ca. 31.08.2026), Budget und deine Freigabe vor jedem Kampagnenstart.
 - Echte Kampagnendaten (Impressionen, Klicks, Conversions). Erst damit lassen sich Hypothesen bestätigen.
 - Automatisierung: **nicht aktiv**. Es gibt (soweit öffentlich bekannt) keine dokumentierte Reporting-API, die ich nutzen könnte.
+
+## Update 09.10.2026: nach der Simulation gebaut (`docs/sim/ads/ERGEBNIS_SIMULATION.md`)
+- ChatGPT-Plugin `/ads/mcp` mit `check_chatgpt_ads_readiness` und `diagnose_chatgpt_ads_results`, Produktseite `/ads`, CLI `scripts/adsready.ts` (Markdown oder `--json`, Exit-Code 1 bei Blockern).
+- Konsistenz-Prozent entfernt (alle 5 Personas): nur noch eine Liste fehlender Begriffe, deutsch-tauglich (Komposita, Stämme).
+- robots.txt nach RFC 9309 mit öffentlichen Testfällen; Erreichbarkeit heißt „simuliert“, nie „verifiziert“.
+- Break-even gegen den bestehenden Kanal (`currentCostPerConversion`, z. B. Booking-Provision) und Testbarkeit des Budgets.
+- Praxistest fand und behob einen Fehlalarm (Produktseiten, die „Turnstile/CAPTCHA“ erwähnen).
+- Bewusst nicht gebaut: Abo-Monitoring, Prüfung des Consent-Pixels (Snippet nicht offiziell bekannt), Log-Upload.

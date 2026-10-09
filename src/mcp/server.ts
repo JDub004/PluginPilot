@@ -1,15 +1,30 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerAdsReadiness } from '../tools/adsReadiness.js';
 import { registerCheckSurcharges } from '../tools/checkSurcharges.js';
 import { registerDraftLetter } from '../tools/draftLetter.js';
 import { registerMapSoftwareCity } from '../tools/mapSoftwareCity.js';
 import { registerPlanAfterBirth } from '../tools/planAfterBirth.js';
 import { registerPlanAfterDeath } from '../tools/planAfterDeath.js';
 
-export type PluginKind = 'trauerfall' | 'geburt' | 'surcharge' | 'city';
+export type PluginKind = 'trauerfall' | 'geburt' | 'surcharge' | 'city' | 'ads';
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** One MCP server per plugin; all share the deadline core and the timeline widget. */
 export function createServer(kind: PluginKind = 'trauerfall', now: () => string = today, baseUrl = 'https://trauerfall-lotse.onrender.com'): McpServer {
+  if (kind === 'ads') {
+    const server = new McpServer(
+      { name: 'chatgpt-ads-check', version: '0.1.0' },
+      {
+        instructions:
+          'Helps advertisers prepare and read ChatGPT Ads honestly. Before a launch, ask for the landing page URL (the most specific page), draft ads, ' +
+          'what is offered and to whom, and optionally budget, cost-per-click and conversion-rate ranges (never invent these; ask or label them as assumptions). ' +
+          'Call check_chatgpt_ads_readiness and lead with blockers. After a launch, ask for impressions, clicks, spend and conversions per ad and call ' +
+          'diagnose_chatgpt_ads_results. Never claim to know OpenAI ranking weights or promise delivery or ROAS.',
+      },
+    );
+    registerAdsReadiness(server, now);
+    return server;
+  }
   if (kind === 'city') {
     const server = new McpServer(
       { name: 'software-stadt', version: '0.1.0' },

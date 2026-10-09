@@ -47,6 +47,19 @@ export function renderSite(path: string, env: Env): string | undefined {
 <h2>What it is not</h2>
 <p>It does not quote freight, book shipments or give legal advice. Entries based on trade press are marked and must be confirmed with the carrier before you rely on them.</p>`);
 
+    case '/ads':
+      return page('ChatGPT-Ads-Check', `
+<h1>ChatGPT-Ads-Check</h1>
+<p class="muted">Bevor Budget in ChatGPT-Werbung fließt: Kommt OpenAIs Prüf-Crawler auf deine Zielseite, passen Anzeige und Seite zusammen, und was kann dein Budget überhaupt beweisen?</p>
+<ul><li><b>Erreichbarkeit:</b> robots.txt nach RFC 9309, Bot-Sperren (z. B. Cloudflare), Login, zu wenig Text, Startseite statt Unterseite. Mit Anleitung zur Freigabe, ohne den Betrugsschutz abzuschalten.</li>
+<li><b>Anzeigen:</b> Längen und Richtlinien laut OpenAI, jeweils mit Quelle; Begriffe, die auf der Zielseite fehlen.</li>
+<li><b>Kontext-Hinweise:</b> beschreibende Sätze je Absicht statt Stichworten.</li>
+<li><b>Entscheidung:</b> Szenarien, Break-even und Testplan aus deinen eigenen Annahmen; nach dem Start die Diagnose: Auslieferung, Anzeige oder Zielseite.</li></ul>
+<h2>Was der Check nicht kann</h2>
+<p>Niemand außerhalb von OpenAI kennt die Ranking-Gewichte. Der Check verspricht keine Auslieferung und keinen ROAS. "Erreichbar" ist simuliert (gleiche Kennung, andere IP); sicher ist nur ein Blick in die Server-Logs.</p>
+<h2>Datenschutz</h2>
+<p>Kein Konto. Die Zielseite wird einmal abgerufen, Eingaben werden nicht gespeichert. <a href="/privacy">Datenschutzerklärung</a></p>`, 'de');
+
     case '/city':
       return page('Software-Stadt', `
 <img class="logo" src="/assets/software-stadt.svg" alt="Software-Stadt Logo">

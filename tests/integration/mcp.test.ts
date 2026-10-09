@@ -162,6 +162,22 @@ describe('MCP over HTTP', () => {
     await c.close();
   });
 
+  it('serves the web version of the ads check and validates input', async () => {
+    const page = await fetch(new URL('/ads/check', url));
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain('id="url"');
+    const bad = await fetch(new URL('/ads/api/check', url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url: 'http://127.0.0.1/' }) });
+    expect(bad.status).toBe(400);
+    expect((await bad.json()).error).toMatch(/Interne Adressen/);
+    const robots = await (await fetch(new URL('/robots.txt', url))).text();
+    const { robotsDecision } = await import('../../src/domain/adsready/robots.js');
+    expect(robotsDecision(robots, 'OAI-AdsBot', '/ads/demo/gesperrt').allowed).toBe(false);
+    expect(robotsDecision(robots, 'OAI-AdsBot', '/city').allowed).toBe(true);
+    expect((await fetch(new URL('/ads/demo/gesperrt', url))).status).toBe(200);
+    const invalid = await fetch(new URL('/ads/api/check', url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nope: 1 }) });
+    expect(invalid.status).toBe(400);
+  });
+
   it('rejects oversized bodies with 413', async () => {
     const r = await fetch(url, {
       method: 'POST',

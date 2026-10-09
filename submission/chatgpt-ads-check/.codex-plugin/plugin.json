@@ -1,0 +1,49 @@
+{
+  "name": "chatgpt-ads-check",
+  "version": "1.0.0",
+  "description": "Checks whether a landing page and draft ads are ready for ChatGPT Ads (crawler access, ad specs and policy with sources, missing terms, context hints) and reads campaign results honestly.",
+  "author": {
+    "name": "PluginPilot",
+    "url": "https://trauerfall-lotse.onrender.com/ads"
+  },
+  "homepage": "https://trauerfall-lotse.onrender.com/ads",
+  "license": "UNLICENSED",
+  "keywords": [
+    "ChatGPT Ads",
+    "Werbung",
+    "Landingpage",
+    "OAI-AdsBot",
+    "robots.txt",
+    "Anzeigentexte",
+    "Kontext-Hinweise",
+    "Agentur",
+    "Marketing",
+    "Testplan"
+  ],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "ChatGPT-Ads-Check",
+    "shortDescription": "Startklar für ChatGPT-Werbung?",
+    "longDescription": "Der ChatGPT-Ads-Check prüft vor dem ersten Euro, ob eine Kampagne in ChatGPT überhaupt laufen kann, und hilft danach, die Zahlen richtig zu lesen.\n\nVor dem Start ruft er die Zielseite einmal ab und prüft, ob OpenAIs Prüf-Crawler OAI-AdsBot sie erreicht: robots.txt nach RFC 9309, Bot-Sperren wie Cloudflare-Challenges, Login, zu wenig lesbarer Text oder die Startseite statt einer passenden Unterseite. Bei einer Sperre zeigt er, wie man sie freigibt, ohne den Betrugsschutz abzuschalten. Anzeigen-Entwürfe prüft er gegen die veröffentlichten Längen und Richtlinien, jeweils mit Quelle, und listet Begriffe auf, die auf der Zielseite fehlen. Aus Angebot und Zielgruppe schlägt er beschreibende Kontext-Hinweise je Nutzerabsicht vor. Mit eigenen Annahmen zu Budget, Klickpreis und Abschlussrate rechnet er Szenarien, Break-even und was das Budget überhaupt beweisen kann.\n\nNach dem Start ordnet er Einblendungen, Klicks und Abschlüsse je Anzeige ein: Auslieferung, Anzeige oder Zielseite/Tracking, mit dem nächsten Test. Einen Gewinner nennt er nur bei statistisch belastbarem Unterschied.\n\nEhrlich: Niemand außerhalb von OpenAI kennt die Ranking-Gewichte. Der Check verspricht keine Auslieferung und keinen ROAS. Kein Konto, nichts wird gespeichert.",
+    "developerName": "PluginPilot",
+    "category": "Business & Operations",
+    "capabilities": [
+      "Interactive"
+    ],
+    "websiteURL": "https://trauerfall-lotse.onrender.com/ads",
+    "privacyPolicyURL": "https://trauerfall-lotse.onrender.com/privacy",
+    "termsOfServiceURL": "https://trauerfall-lotse.onrender.com/terms",
+    "defaultPrompt": [
+      "Ist meine Landingpage bereit für ChatGPT Ads?",
+      "Prüfe diese Anzeigentexte für ChatGPT Ads",
+      "Wie lese ich die Zahlen meiner ChatGPT-Ads-Kampagne?"
+    ],
+    "composerIcon": "./assets/composer-icon.png",
+    "logo": "./assets/logo.png",
+    "screenshots": [
+      "./assets/screenshot-report.png",
+      "./assets/screenshot-form.png"
+    ],
+    "brandColor": "#0F6FDE"
+  }
+}

@@ -6,15 +6,19 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import type { Env } from './config/env.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { renderSite } from './site.js';
+import { LimitError } from './domain/adsready/limits.js';
+import { checkReadiness } from './domain/adsready/run.js';
+import { CheckInput } from './tools/adsReadiness.js';
 import { loadWidget } from './tools/widget.js';
 
 const PLAYGROUND = loadWidget('playground.html');
+const ADS_CHECK = loadWidget('ads-check.html');
 // Standalone share view: the city widget plus a loader that reads the URL fragment.
 const CITY_VIEW = loadWidget('city.html').replace('</body>', () => `<style>.report-btn{position:fixed;left:12px;bottom:12px;z-index:5;padding:8px 14px;background:#3dffa8;color:#04121a;font:600 11px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border-radius:2px;box-shadow:0 0 18px rgba(61,255,168,.4)}</style><script>${loadWidget('city-view.js')}</script></body>`);
 
 // Static brand assets (logo files) from web/public, whitelisted by name.
 const ASSETS: Record<string, string> = {};
-for (const f of ['surcharge-check.svg', 'surcharge-check-small.svg', 'software-stadt.svg']) {
+for (const f of ['surcharge-check.svg', 'surcharge-check-small.svg', 'software-stadt.svg', 'ads-check.svg']) {
   for (const rel of [`../web/public/${f}`, `../../web/public/${f}`]) {
     const u = new URL(rel, import.meta.url);
     if (existsSync(u)) { ASSETS[f] = readFileSync(u, 'utf8'); break; }
@@ -96,7 +100,7 @@ export function createApp(env: Env): Server {
     }
     if (path === '/robots.txt' && req.method === 'GET') {
       // Explicitly allow OpenAI's ads review and search crawlers (needed for ChatGPT Ads landing-page validation).
-      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }).end('User-agent: OAI-AdsBot\nAllow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: *\nAllow: /\n');
+      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }).end('User-agent: OAI-AdsBot\nAllow: /\n# Demo for reviewers: a page deliberately blocked for the ads crawler\nDisallow: /ads/demo/gesperrt\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: *\nAllow: /\n');
       return;
     }
     const sitePage = req.method === 'GET' && path ? renderSite(path, env) : undefined;
@@ -124,6 +128,30 @@ export function createApp(env: Env): Server {
         const today = new Date().toISOString().slice(0, 10);
         const city = buildCity(parsed.data, { today });
         send(res, 200, { city: { ...city, inventoryCsv: inventoryCsv(city) }, report: renderReport(city, { date: today }) });
+      }).catch((err: { status?: number }) => { if (!res.headersSent) send(res, err.status ?? 400, { error: 'bad request' }); });
+      return;
+    }
+    if (path === '/ads/demo/gesperrt' && req.method === 'GET') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end('<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Demo: gesperrte Zielseite</title></head><body><h1>Demo-Zielseite</h1><p>Diese Seite ist in robots.txt absichtlich für OAI-AdsBot gesperrt, damit der ChatGPT-Ads-Check einen Blocker zeigen kann.</p></body></html>');
+      return;
+    }
+    if (path === '/ads/check' && req.method === 'GET') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' blob:" }).end(ADS_CHECK);
+      return;
+    }
+    if (path === '/ads/api/check' && req.method === 'POST') {
+      readJson(req, env.MAX_BODY_BYTES).then(async (body) => {
+        const parsed = CheckInput.safeParse(body);
+        if (!parsed.success) return send(res, 400, { error: 'Eingabe ungültig: ' + (parsed.error.issues[0]?.path.join('.') ?? '') });
+        const i = parsed.data;
+        try {
+          const r = await checkReadiness(i.url, { date: new Date().toISOString().slice(0, 10), ads: i.ads, ...(i.offering ? { offering: i.offering } : {}), ...(i.assumptions ? { assumptions: i.assumptions } : {}), ...(i.preparedBy ? { preparedBy: i.preparedBy } : {}) });
+          const { markdown, ...rest } = r;
+          send(res, 200, { ...rest, report: markdown });
+        } catch (e) {
+          if (e instanceof LimitError) { res.writeHead(429, { 'content-type': 'application/json', 'retry-after': String(e.retryAfterSec) }).end(JSON.stringify({ error: e.message })); return; }
+          send(res, 400, { error: e instanceof Error ? e.message.slice(0, 200) : 'Prüfung fehlgeschlagen' });
+        }
       }).catch((err: { status?: number }) => { if (!res.headersSent) send(res, err.status ?? 400, { error: 'bad request' }); });
       return;
     }

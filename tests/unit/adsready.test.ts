@@ -113,3 +113,19 @@ describe('regressions: bot-wall false positives', () => {
     expect(r.reachable).toBe('blockiert');
   });
 });
+
+describe('abuse and load limits', async () => {
+  const { SlidingWindow, Semaphore, TtlCache } = await import('../../src/domain/adsready/limits.js');
+  it('limits checks per target host within a window', () => {
+    let t = 0; const w = new SlidingWindow(2, 60_000, () => t);
+    expect([w.take('a.de'), w.take('a.de'), w.take('a.de'), w.take('b.de')]).toEqual([true, true, false, true]);
+    t = 61_000; expect(w.take('a.de')).toBe(true);
+  });
+  it('caps concurrency and expires cache entries', () => {
+    const s = new Semaphore(1); expect([s.tryAcquire(), s.tryAcquire()]).toEqual([true, false]); s.release(); expect(s.tryAcquire()).toBe(true);
+    let t = 0; const c = new TtlCache<number>(1000, 2, () => t);
+    c.set('x', 1); c.set('y', 2); c.set('z', 3);
+    expect([c.get('x'), c.get('y')]).toEqual([undefined, 2]);
+    t = 2000; expect(c.get('y')).toBeUndefined();
+  });
+});

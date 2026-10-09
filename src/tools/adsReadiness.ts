@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { track } from '../analytics/events.js';
 import { compareCtr, diagnose } from '../domain/adsready/check.js';
+import { LimitError } from '../domain/adsready/limits.js';
 import { checkReadiness } from '../domain/adsready/run.js';
 
 export const CHECK_TOOL = 'check_chatgpt_ads_readiness';
@@ -52,7 +53,7 @@ export function registerAdsReadiness(server: McpServer, now: () => string): void
       const { markdown, ...structured } = r;
       return { structuredContent: { ...structured, report: markdown }, content: [{ type: 'text' as const, text: markdown }] };
     } catch (err) {
-      track({ tool: CHECK_TOOL, outcome: 'invalid_input', durationMs: Date.now() - started });
+      track({ tool: CHECK_TOOL, outcome: err instanceof LimitError ? 'error' : 'invalid_input', durationMs: Date.now() - started });
       return { isError: true, content: [{ type: 'text' as const, text: `Check nicht möglich: ${err instanceof Error ? err.message.slice(0, 300) : ''}` }] };
     }
   });

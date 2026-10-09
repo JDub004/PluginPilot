@@ -27,7 +27,7 @@ function page(title: string, body: string, lang = 'en'): string {
 ${body}</main></body></html>`;
 }
 
-const UPDATED = '2026-10-05';
+const UPDATED = '2026-10-09';
 
 export function renderSite(path: string, env: Env): string | undefined {
   const name = esc(env.OPERATOR_NAME);
@@ -49,7 +49,9 @@ export function renderSite(path: string, env: Env): string | undefined {
 
     case '/ads':
       return page('ChatGPT-Ads-Check', `
+<img class="logo" src="/assets/ads-check.svg" alt="ChatGPT-Ads-Check Logo">
 <h1>ChatGPT-Ads-Check</h1>
+<p><a href="/ads/check"><b>→ Jetzt kostenlos prüfen</b></a> (im Browser, ohne Konto) oder in ChatGPT mit dem Plugin „ChatGPT-Ads-Check“.</p>
 <p class="muted">Bevor Budget in ChatGPT-Werbung fließt: Kommt OpenAIs Prüf-Crawler auf deine Zielseite, passen Anzeige und Seite zusammen, und was kann dein Budget überhaupt beweisen?</p>
 <ul><li><b>Erreichbarkeit:</b> robots.txt nach RFC 9309, Bot-Sperren (z. B. Cloudflare), Login, zu wenig Text, Startseite statt Unterseite. Mit Anleitung zur Freigabe, ohne den Betrugsschutz abzuschalten.</li>
 <li><b>Anzeigen:</b> Längen und Richtlinien laut OpenAI, jeweils mit Quelle; Begriffe, die auf der Zielseite fehlen.</li>
@@ -88,11 +90,11 @@ export function renderSite(path: string, env: Env): string | undefined {
     case '/privacy':
       return page('Privacy Policy', `
 <h1>Privacy Policy</h1>
-<p class="muted">Last updated ${UPDATED}. Applies to Software-Stadt, Surcharge Check, Trauerfall-Lotse and Geburts-Lotse (“the plugins”).</p>
+<p class="muted">Last updated ${UPDATED}. Applies to ChatGPT-Ads-Check, Software-Stadt, Surcharge Check, Trauerfall-Lotse and Geburts-Lotse (“the plugins”).</p>
 <h2>Controller</h2>
 <p>${name}, ${addr}, ${country}. Contact: ${email}.</p>
 <h2>What we process</h2>
-<p>When ChatGPT calls a plugin, our server receives only the structured values needed for the check: for Surcharge Check the carrier, origin and destination country codes, dates, container types, charge labels and amounts; for the Lotsen a date and yes/no facts; for Software-Stadt the company name and a list of programs with department, user and licence counts, costs, owner (a role or a name, as entered by the user) and data flows. Names and addresses are optional in letter drafts and are not required for any check.</p>
+<p>When ChatGPT calls a plugin, our server receives only the structured values needed for the check: for Surcharge Check the carrier, origin and destination country codes, dates, container types, charge labels and amounts; for the Lotsen a date and yes/no facts; for Software-Stadt the company name and a list of programs with department, user and licence counts, costs, owner (a role or a name, as entered by the user) and data flows; for ChatGPT-Ads-Check the landing-page URL, draft ad texts, an optional description of the offering and optional budget assumptions. To check a landing page, our server requests that page and its robots.txt once (as OAI-AdsBot and as a browser); the fetched content is analysed in memory, identical requests are cached in memory for up to 10 minutes, and nothing is stored afterwards. Names and addresses are optional in letter drafts and are not required for any check.</p>
 <h2>What we do not do</h2>
 <ul><li>We do not create user accounts and do not use cookies or tracking.</li>
 <li>We do not store the content of requests. The server processes each request in memory and discards it.</li>

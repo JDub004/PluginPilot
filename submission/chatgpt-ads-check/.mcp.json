@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "chatgpt-ads-check": {
+      "type": "http",
+      "url": "https://trauerfall-lotse.onrender.com/ads/mcp",
+      "note": "ChatGPT-Ads-Check MCP server. No authentication. Two read-only tools: check_chatgpt_ads_readiness (fetches one public landing page) and diagnose_chatgpt_ads_results."
+    }
+  }
+}

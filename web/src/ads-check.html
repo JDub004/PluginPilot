@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChatGPT-Ads-Check</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#18202b; --muted:#5d6877; --line:#dde2e8; --accent:#0f6fde; --ok:#1d8a4b; --warn:#b26a00; --bad:#c62828; --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1218; --card:#161c25; --ink:#e7ecf3; --muted:#9aa6b6; --line:#2a3340; --accent:#5aa7ff; --ok:#4cc584; --warn:#f0b04d; --bad:#ff6b6b; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--font); }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; } .lead { color:var(--muted); margin:0 0 20px; max-width:70ch; }
+  form, .out { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; }
+  fieldset { border:0; padding:0; margin:0 0 14px; } legend { font-weight:600; margin-bottom:6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; }
+  label { display:grid; gap:4px; font-size:13px; color:var(--muted); }
+  input, textarea { font:14px var(--font); color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px 10px; width:100%; min-width:0; }
+  textarea { min-height:70px; resize:vertical; }
+  input:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  details { margin:10px 0; } summary { cursor:pointer; font-weight:600; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px; }
+  button { font:600 14px var(--font); border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:6px; padding:9px 16px; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--accent); }
+  button:disabled { opacity:.6; cursor:wait; }
+  .status { color:var(--muted); font-size:13px; } .err { color:var(--bad); }
+  .out { margin-top:18px; } .out[hidden] { display:none; }
+  .verdict { display:inline-block; padding:4px 10px; border-radius:20px; font-weight:600; font-size:13px; }
+  .v-blockiert { background:rgba(198,40,40,.12); color:var(--bad); } .v-mit { background:rgba(178,106,0,.12); color:var(--warn); } .v-bereit { background:rgba(29,138,75,.12); color:var(--ok); }
+  .md h1 { font-size:20px; } .md h2 { font-size:17px; margin-top:22px; border-top:1px solid var(--line); padding-top:14px; } .md h3 { font-size:15px; }
+  .md table { border-collapse:collapse; width:100%; font-size:13px; margin:8px 0; } .md th, .md td { border-bottom:1px solid var(--line); padding:5px 6px; text-align:left; }
+  .md ul { padding-left:20px; } .md em { color:var(--muted); }
+  .md a { color:var(--accent); }
+  footer { margin-top:24px; font-size:12.5px; color:var(--muted); }
+  @media print { body { background:#fff; color:#000; } form, .row, footer, .no-print { display:none !important; } .out { border:0; padding:0; } main { padding:0; } }
+</style>
+</head>
+<body>
+<main>
+<h1>ChatGPT-Ads-Check</h1>
+<p class="lead">Vor dem ersten Euro: Kommt OpenAIs Prüf-Crawler auf deine Zielseite? Passen Anzeige und Seite zusammen? Und was kann dein Budget beweisen? Kein Konto, nichts wird gespeichert.</p>
+<form id="f" novalidate>
+  <fieldset>
+    <legend>Zielseite</legend>
+    <label>Adresse der Seite, auf die die Anzeige führt (möglichst die passende Unterseite)
+      <input id="url" type="url" required placeholder="https://www.beispiel.de/angebot" autocomplete="url"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Anzeigen-Entwürfe (optional)</legend>
+    <label>Eine Anzeige pro Zeile: Titel | Text
+      <textarea id="ads" placeholder="Familienzeit in Oberstdorf | Kinderbetreuung und Wanderwege ab Haus"></textarea></label>
+  </fieldset>
+  <details>
+    <summary>Kontext-Hinweise vorschlagen lassen</summary>
+    <div class="grid" style="margin-top:10px">
+      <label>Was wird angeboten?<input id="offer" placeholder="Familienurlaub im Allgäu"></label>
+      <label>Für wen?<input id="audience" placeholder="Familie mit kleinen Kindern"></label>
+      <label>Ort (optional)<input id="place" placeholder="Oberstdorf"></label>
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <label>Probleme der Zielgruppe (eine pro Zeile)<textarea id="problems" placeholder="Die Kinder langweilen sich im Wellnesshotel"></textarea></label>
+      <label>Anlässe (eine pro Zeile)<textarea id="occasions" placeholder="die Sommerferien"></textarea></label>
+      <label>Bisherige Lösung / Alternative<textarea id="alternatives" placeholder="Buchung über Booking.com"></textarea></label>
+    </div>
+  </details>
+  <details>
+    <summary>Lohnt sich das? Rechnung mit deinen Annahmen</summary>
+    <div class="grid" style="margin-top:10px">
+      <label>Budget (€)<input id="budget" type="number" min="1" placeholder="1000"></label>
+      <label>Klickpreis niedrig / mittel / hoch (€)<input id="cpc" placeholder="3, 5, 8"></label>
+      <label>Abschlussrate niedrig / mittel / hoch (%)<input id="cvr" placeholder="1, 3, 6"></label>
+      <label>Wert eines Abschlusses (€)<input id="value" type="number" min="0" placeholder="2000"></label>
+      <label>Marge (%)<input id="margin" type="number" min="0" max="100" placeholder="30"></label>
+      <label>Heutige Kosten je Abschluss (€), z. B. Provision<input id="current" type="number" min="0" placeholder="300"></label>
+    </div>
+    <p class="status">Für ChatGPT Ads gibt es keine offiziellen Klickpreise. Trag deine eigenen Annahmen ein; sie stehen im Bericht als Annahmen.</p>
+  </details>
+  <label style="max-width:360px">Erstellt von (optional, z. B. Agentur)<input id="by" placeholder="Agentur Muster"></label>
+  <div class="row"><button id="go" type="submit">Prüfen</button><span id="status" class="status" role="status" aria-live="polite"></span></div>
+</form>
+<section class="out" id="out" hidden aria-live="polite">
+  <div class="row no-print" style="margin-top:0"><span id="verdict" class="verdict"></span>
+    <button id="copy" class="ghost" type="button">Text kopieren</button>
+    <button id="dl" class="ghost" type="button">Als Markdown speichern</button>
+    <button id="json" class="ghost" type="button">JSON speichern</button>
+    <button id="print" class="ghost" type="button">Drucken / PDF</button></div>
+  <div class="md" id="md"></div>
+</section>
+<footer>Der Check ruft die Zielseite einmal ab (mit der Kennung von OAI-AdsBot und eines Browsers) und speichert nichts. Er kennt keine Ranking-Gewichte von OpenAI und verspricht keine Auslieferung. <a href="/ads">Mehr</a> · <a href="/privacy">Datenschutz</a></footer>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var last = null;
+  function lines(id) { return $(id).value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean); }
+  function nums(id, pct) { var v = $(id).value.split(/[;,\s]+/).map(function (s) { return parseFloat(s.replace(',', '.')); }).filter(function (n) { return !isNaN(n); }); if (v.length === 1) v = [v[0], v[0], v[0]]; return v.length === 3 ? v.map(function (n) { return pct ? n / 100 : n; }).sort(function (a, b) { return a - b; }) : null; }
+  function el(tag, text) { var n = document.createElement(tag); if (text != null) n.textContent = text; return n; }
+  // Minimal Markdown renderer that only creates text nodes and safe http(s) links.
+  function inline(parent, s) {
+    var re = /\*\*([^*]+)\*\*|_([^_]+)_|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, i = 0, m;
+    while ((m = re.exec(s))) {
+      if (m.index > i) parent.appendChild(document.createTextNode(s.slice(i, m.index)));
+      if (m[1]) parent.appendChild(el('strong', m[1])); else if (m[2]) parent.appendChild(el('em', m[2]));
+      else { var a = el('a', m[3]); a.href = m[4]; a.target = '_blank'; a.rel = 'noopener noreferrer'; parent.appendChild(a); }
+      i = re.lastIndex;
+    }
+    if (i < s.length) parent.appendChild(document.createTextNode(s.slice(i)));
+  }
+  function render(md) {
+    var root = $('md'); root.textContent = ''; var list = null, table = null;
+    md.split('\n').forEach(function (line) {
+      if (/^\|/.test(line)) {
+        if (/^\|[-| ]+\|$/.test(line)) return;
+        var cells = line.slice(1, -1).split('|');
+        if (!table) { table = el('table'); root.appendChild(table); var tr = el('tr'); cells.forEach(function (c) { var th = el('th'); inline(th, c.trim()); tr.appendChild(th); }); table.appendChild(tr); return; }
+        var r = el('tr'); cells.forEach(function (c) { var td = el('td'); inline(td, c.trim()); r.appendChild(td); }); table.appendChild(r); return;
+      }
+      table = null;
+      var h = line.match(/^(#{1,3}) (.*)$/);
+      if (h) { list = null; var hn = el('h' + h[1].length); inline(hn, h[2]); root.appendChild(hn); return; }
+      var li = line.match(/^\s*- (.*)$/);
+      if (li) { if (!list) { list = el('ul'); root.appendChild(list); } var item = el('li'); inline(item, li[1]); list.appendChild(item); return; }
+      list = null;
+      if (line.trim()) { var p = el('p'); inline(p, line.replace(/^\s+→/, '→')); root.appendChild(p); }
+    });
+  }
+  function save(name, text, type) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  $('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var url = $('url').value.trim(); if (!/^https?:\/\//i.test(url)) { $('status').textContent = 'Bitte eine vollständige Adresse mit https:// eingeben.'; $('status').className = 'status err'; return; }
+    var body = { url: url, ads: lines('ads').map(function (l) { var p = l.split('|'); return { title: (p[0] || '').trim(), copy: (p.slice(1).join('|') || '').trim() }; }).filter(function (a) { return a.title && a.copy; }) };
+    if ($('offer').value.trim() && $('audience').value.trim()) body.offering = { offer: $('offer').value.trim(), audience: $('audience').value.trim(), problems: lines('problems').slice(0, 3), occasions: lines('occasions').slice(0, 3), alternatives: lines('alternatives').slice(0, 3) };
+    if (body.offering && $('place').value.trim()) body.offering.place = $('place').value.trim();
+    var cpc = nums('cpc'), cvr = nums('cvr', true), budget = parseFloat($('budget').value);
+    if (budget > 0 && cpc && cvr) {
+      body.assumptions = { budget: budget, cpc: cpc, cvr: cvr };
+      if (parseFloat($('value').value) > 0) body.assumptions.valuePerConversion = parseFloat($('value').value);
+      if (parseFloat($('margin').value) > 0) body.assumptions.margin = parseFloat($('margin').value) / 100;
+      if (parseFloat($('current').value) > 0) body.assumptions.currentCostPerConversion = parseFloat($('current').value);
+    }
+    if ($('by').value.trim()) body.preparedBy = $('by').value.trim();
+    $('go').disabled = true; $('status').className = 'status'; $('status').textContent = 'Prüfe … (bis zu 20 Sekunden)';
+    fetch('/ads/api/check', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Fehler'); return j; }); })
+      .then(function (j) {
+        last = j; $('out').hidden = false; render(j.report);
+        var v = $('verdict'); v.textContent = j.verdict; v.className = 'verdict ' + (j.verdict === 'blockiert' ? 'v-blockiert' : j.verdict === 'mit Hinweisen' ? 'v-mit' : 'v-bereit');
+        $('status').textContent = j.cached ? 'Ergebnis aus den letzten 10 Minuten.' : 'Fertig.';
+        $('out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+      .catch(function (err) { $('status').className = 'status err'; $('status').textContent = err.message; })
+      .then(function () { $('go').disabled = false; });
+  });
+  $('copy').addEventListener('click', function () { if (!last) return; (navigator.clipboard ? navigator.clipboard.writeText(last.report) : Promise.reject()).then(function () { $('copy').textContent = 'Kopiert ✓'; }, function () { save('chatgpt-ads-check.md', last.report, 'text/markdown'); }); });
+  $('dl').addEventListener('click', function () { if (last) save('chatgpt-ads-check.md', last.report, 'text/markdown'); });
+  $('json').addEventListener('click', function () { if (!last) return; var j = Object.assign({}, last); delete j.report; save('chatgpt-ads-check.json', JSON.stringify(j, null, 2), 'application/json'); });
+  $('print').addEventListener('click', function () { window.print(); });
+  var q = new URLSearchParams(location.search).get('url'); if (q) $('url').value = q;
+})();
+</script>
+</body>
+</html>

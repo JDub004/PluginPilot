@@ -82,14 +82,13 @@ export function contextHints(o: Offering): HintGroup[] {
   const g: HintGroup[] = [
     { intent: 'Entdecken', angle: 'Klarer Kategorie-Titel: was es ist und für wen', hints: [`${cap(o.audience)}${at} sucht ${o.offer} und will wissen, welche Möglichkeiten es gibt.`] },
   ];
-  for (const p of (o.problems ?? []).slice(0, 3)) g.push({ intent: 'Problem', angle: 'Problem im Titel, Lösung im Text', hints: [`${cap(o.audience)}${at} hat ein Problem („${p}“) und sucht eine Lösung.`, `Jemand bittet ChatGPT um Rat, weil gilt: ${lc(p)}.`] });
+  for (const p of (o.problems ?? []).slice(0, 3)) g.push({ intent: 'Problem', angle: 'Problem im Titel, Lösung im Text', hints: [`${cap(o.audience)}${at} hat ein Problem („${p}“) und sucht eine Lösung.`, `Jemand bittet ChatGPT um Rat: „${p}“.`] });
   if (o.alternatives?.length) g.push({ intent: 'Vergleich', angle: 'Unterschied zur Alternative konkret benennen', hints: [`${cap(o.audience)} vergleicht ${o.offer} mit der bisherigen Lösung („${o.alternatives.join('“, „')}“) und sucht Vor- und Nachteile.`, `Jemand will weg von „${o.alternatives[0]}“ und fragt, was ein Umstieg kostet und wie lange er dauert.`] });
   for (const occ of (o.occasions ?? []).slice(0, 3)) g.push({ intent: 'Anlass', angle: 'Anlass oder Zeitpunkt in den Titel', hints: [`${cap(o.audience)}${at} plant ${occ} und sucht dafür ${o.offer}.`] });
   g.push({ intent: 'Entscheidung', angle: 'Beleg oder Zahl statt Superlativ (Preis, Bewertung, Ergebnis)', hints: [`${cap(o.audience)} ist kurz vor der Entscheidung für ${o.offer} und fragt nach Preisen, Erfahrungen und Bedingungen.`] });
   return g;
 }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const lc = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 // ---------------------------------------------------------------------------------------------
 // Decision math: everything from stated assumptions; no hidden benchmarks, no auction model.

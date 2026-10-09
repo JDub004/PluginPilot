@@ -94,6 +94,11 @@ export function createApp(env: Env): Server {
       res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'public, max-age=86400' }).end(svg);
       return;
     }
+    if (path === '/robots.txt' && req.method === 'GET') {
+      // Explicitly allow OpenAI's ads review and search crawlers (needed for ChatGPT Ads landing-page validation).
+      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }).end('User-agent: OAI-AdsBot\nAllow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: *\nAllow: /\n');
+      return;
+    }
     const sitePage = req.method === 'GET' && path ? renderSite(path, env) : undefined;
     if (sitePage) {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; img-src 'self'" }).end(sitePage);

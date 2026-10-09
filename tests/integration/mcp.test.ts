@@ -131,6 +131,11 @@ describe('MCP over HTTP', () => {
     const tpl = await (await fetch(new URL('/city/vorlage.csv', url))).text();
     const { importTable } = await import('../../src/domain/softwarecity/import.js');
     expect(importTable(tpl).apps).toHaveLength(3); // the template must import cleanly
+    const robots = await (await fetch(new URL('/robots.txt', url))).text();
+    expect(robots).toContain('User-agent: OAI-AdsBot\nAllow: /');
+    const cityPage = await (await fetch(new URL('/city', url))).text();
+    expect(cityPage).toContain('<html lang="de">');
+    expect(cityPage).toContain('Kündigungsfristen');
     const v = await fetch(new URL('/city/view', url));
     expect(v.status).toBe(200);
     expect(await v.text()).toContain('/city/api/build');

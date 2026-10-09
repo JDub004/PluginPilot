@@ -20,8 +20,8 @@ p, li { max-width: 65ch; }
 img.logo { width:56px; height:56px; border-radius:12px; }
 code { font-family: ui-monospace, Menlo, monospace; font-size: 14px; }`;
 
-function page(title: string, body: string): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+function page(title: string, body: string, lang = 'en'): string {
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title><link rel="icon" href="/assets/surcharge-check.svg"><style>${STYLE}</style></head><body><main>
 <nav><a href="/city">Software-Stadt</a><a href="/surcharge">Surcharge Check</a><a href="/support">Support</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/imprint">Imprint</a><a href="/playground">Try it</a></nav>
 ${body}</main></body></html>`;
@@ -51,17 +51,17 @@ export function renderSite(path: string, env: Env): string | undefined {
       return page('Software-Stadt', `
 <img class="logo" src="/assets/software-stadt.svg" alt="Software-Stadt Logo">
 <h1>Software-Stadt</h1>
-<p class="muted">Die Software deiner Firma als begehbare Stadt, direkt in ChatGPT.</p>
-<p>Jede Abteilung wird ein Stadtviertel, jedes Programm ein Gebäude: Häuser für selten genutzte Tools, Türme für die großen Systeme. Datenflüsse sind Wege, auf denen Pakete laufen. Ein Diamant über jedem Gebäude zeigt den Zustand: grün, gelb oder rot.</p>
-<p>Die Software-Stadt findet automatisch Aufgaben: doppelte Tools, ungenutzte Lizenzen mit Sparpotenzial, kritische Daten in Excel-Dateien, Programme ohne Verantwortlichen, Schatten-IT und Dateninseln. Ein Klick auf eine Aufgabe führt zum betroffenen Gebäude.</p>
+<p class="muted">Software, Lizenzen, Kündigungsfristen und Risiken deiner Firma auf einen Blick, als Stadt oder als Tabelle.</p>
+<p>Jede Abteilung wird ein Stadtviertel, jedes Programm ein Gebäude: je mehr Nutzer und je wichtiger, desto höher. Datenflüsse sind Lichtbrücken, Ansprechpartner laufen als Figuren durch ihr Viertel. Ein Lichtring zeigt den Zustand: grün, gelb oder rot. Für Prüfer und Geschäftsführung gibt es eine nüchterne Tabellenansicht.</p>
+<p>Die Software-Stadt findet automatisch Aufgaben: Kündigungsfristen, die bald ablaufen, ungenutzte Lizenzen und doppelte Tools mit Sparpotenzial, kritische Daten in Excel-Dateien, Programme ohne Verantwortlichen, Schatten-IT, Dateninseln und Schlüsselpersonen ohne Vertretung. Zu jeder Aufgabe gibt es eine fertige Vorlage zum Kopieren: Kündigungsschreiben, Anfrage zur Lizenzreduzierung, Rundmail oder Checkliste.</p>
 <div class="card"><b>So geht's:</b> Software-Stadt in ChatGPT verbinden und sagen: „Zeig mir unsere Software als Stadt.“ ChatGPT fragt Abteilung für Abteilung nach, welche Programme ihr nutzt. Eine Excel-Liste mit euren Tools funktioniert auch.</div>
 <h2>Funktionen</h2>
-<ul><li><b>Import:</b> Excel-Liste einfügen (<a href="/city/vorlage.csv">Vorlage herunterladen</a>) oder den Buchhaltungs-/Bank-Export: rund 40 bekannte Programme werden in den Buchungen erkannt, mit Kosten pro Monat.</li><li><b>Teilen:</b> Jede Stadt bekommt einen Link. Die Daten stecken nur im Link, nicht auf unserem Server.</li><li><b>Vorher / Nachher:</b> Nach dem Aufräumen zeigt die Stadt, welche Aufgaben erledigt sind und wie die Gesundheit gestiegen ist.</li><li><b>Bericht:</b> Kennzahlen, Aufgaben mit Ersparnis und Programme je Abteilung als Bericht für die Geschäftsführung, auf Wunsch mit dem Namen eures IT-Dienstleisters.</li></ul>
+<ul><li><b>Import:</b> Excel-Liste einfügen (<a href="/city/vorlage.csv">Vorlage herunterladen</a>) oder den Buchhaltungs-/Bank-Export: rund 40 bekannte Programme werden in den Buchungen erkannt, mit Kosten pro Monat.</li><li><b>Teilen:</b> Jede Stadt bekommt einen Link. Die Daten stecken nur im Link, nicht auf unserem Server.</li><li><b>Vorher / Nachher:</b> Nach dem Aufräumen zeigt die Stadt, welche Aufgaben erledigt sind und wie die Gesundheit gestiegen ist.</li><li><b>Fristen und Vorlagen:</b> Vertragsende und Kündigungsfrist eintragen; die Stadt warnt 90 Tage vorher und liefert das Kündigungsschreiben.</li><li><b>Werkzeuge:</b> Software-Verzeichnis als Excel (wieder einlesbar), Notfall-Kontakte für kritische Programme, Offboarding-Checkliste je Person.</li><li><b>Standorte und Partner:</b> jeder Standort als eigene Stadt, Lieferanten, Kunden und Netzwerkpartner auf einer Karte mit echten Orten.</li><li><b>Bericht:</b> Kennzahlen, Aufgaben mit Ersparnis und Programme je Abteilung als Bericht für die Geschäftsführung, auf Wunsch mit dem Namen eures IT-Dienstleisters.</li></ul>
 <h2>Für wen?</h2>
 <ul><li>Geschäftsführung und Büroleitung in kleinen und mittleren Firmen, die den Überblick über ihre Tools und Kosten wollen</li><li>IT-Dienstleister, die die Landschaft ihrer Kunden verständlich zeigen wollen</li><li>Neue Mitarbeitende, die die Werkzeuge der Firma kennenlernen</li></ul>
 <h2>Datenschutz</h2>
 <p>Kein Konto, kein Login. Der Server berechnet die Stadt im Arbeitsspeicher und speichert keine Inhalte, auch nicht beim Teilen-Link. <a href="/privacy">Datenschutzerklärung</a></p>
-<p><a href="/playground">Ausprobieren</a></p>`);
+<p><a href="/playground">Ausprobieren</a></p>`, 'de');
 
     case '/support':
       return page('Support – Surcharge Check', `

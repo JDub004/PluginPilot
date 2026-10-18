@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Datei-Rad</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--mut:#8b949e;--acc:#3dffa8;--acc2:#58a6ff;--warn:#f0b429}
+@media (prefers-color-scheme:light){:root{--bg:#f6f8fa;--panel:#fff;--line:#d0d7de;--fg:#1f2328;--mut:#59636e;--acc:#0a7d4f;--acc2:#0969da;--warn:#9a6700}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--mut);margin:0 0 12px;font-size:13px}
+.stage{position:relative;width:min(100%,520px);aspect-ratio:1;margin:0 auto}
+svg.wheel{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.seg path{fill:var(--panel);stroke:var(--line);stroke-width:1;cursor:pointer;transition:fill .15s}
+.seg:hover path,.seg:focus path{fill:color-mix(in srgb,var(--acc2) 22%,var(--panel))}
+.seg.on path{fill:color-mix(in srgb,var(--acc) 30%,var(--panel));stroke:var(--acc)}
+.seg.off{opacity:.35;pointer-events:none}
+.seg text{fill:var(--fg);font-size:13px;text-anchor:middle;pointer-events:none}
+.seg text.ic{font-size:22px}
+.seg:focus{outline:none}
+.hub{position:absolute;left:50%;top:50%;width:54%;height:54%;transform:translate(-50%,-50%);border-radius:50%;border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;cursor:pointer;overflow:hidden;background:var(--panel);transition:border-color .15s,box-shadow .15s}
+.hub.drag{border-color:var(--acc);box-shadow:0 0 0 6px color-mix(in srgb,var(--acc) 18%,transparent)}
+.hub canvas,.hub img{max-width:78%;max-height:55%;border-radius:6px}
+.hub .big{font-size:34px}
+.hub small{color:var(--mut)}
+.files{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:3px 10px;font-size:12px;color:var(--fg);cursor:pointer}
+.chip.cur{border-color:var(--acc)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.panel h2{font-size:14px;margin:0 0 8px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+button.b{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
+button.b:hover{border-color:var(--acc2)}
+button.b.on{border-color:var(--acc);color:var(--acc)}
+button.go{background:var(--acc);color:#04121a;border:0;font-weight:600}
+input[type=range]{flex:1;min-width:140px}
+input[type=number]{width:90px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px}
+.msg{color:var(--mut);font-size:12px;margin-top:6px}
+.msg.warn{color:var(--warn)}
+.crop{position:relative;display:inline-block;max-width:100%;touch-action:none;overflow:hidden}
+.crop canvas{max-width:100%;max-height:360px;display:block}
+.crop .box{position:absolute;border:2px solid var(--acc);box-shadow:0 0 0 9999px rgba(0,0,0,.45);cursor:move}
+.crop .h{position:absolute;right:0;bottom:0;width:14px;height:14px;background:var(--acc);border-radius:3px;cursor:nwse-resize}
+.foot{color:var(--mut);font-size:12px;text-align:center;margin-top:14px}
+kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Datei-Rad</h1>
+  <p class="sub">Datei in die Mitte ziehen, dann im Rad wählen. Alles läuft in deinem Browser, nichts wird hochgeladen.</p>
+  <div class="stage">
+    <svg class="wheel" id="wheel" viewBox="-260 -260 520 520" role="menu" aria-label="Funktionen"></svg>
+    <div class="hub" id="hub" tabindex="0" role="button" aria-label="Datei ablegen oder auswählen">
+      <div class="big">⇣</div><b>Datei hier ablegen</b><small>oder klicken · Bilder, CSV, JSON, Text · mehrere möglich</small>
+    </div>
+  </div>
+  <input type="file" id="pick" multiple hidden>
+  <div class="files" id="files"></div>
+  <div class="panel" id="panel" hidden></div>
+  <p class="foot">Tastatur: <kbd>1</kbd>–<kbd>8</kbd> Funktion · <kbd>Strg</kbd>+<kbd>V</kbd> Bild einfügen · <kbd>Entf</kbd> Datei entfernen</p>
+</main>
+<script>/*CORE*/</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, attrs, kids) { var e = document.createElement(tag); for (var k in attrs || {}) { if (k === 'on') for (var ev in attrs.on) e.addEventListener(ev, attrs.on[ev]); else if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); } (kids || []).forEach(function (c) { e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); }); return e; }
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function sv(tag, attrs) { var e = document.createElementNS(SVGNS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  // State: list of items; each image item has a working canvas (edits apply to it).
+  var items = [], cur = 0, open = null;
+  var MAX = 40 * 1024 * 1024;
+
+  var TOOLS = [
+    { id: 'format', ic: '⇄', label: 'Format', for: ['image', 'csv', 'json', 'text'] },
+    { id: 'crop', ic: '⛶', label: 'Zuschneiden', for: ['image'] },
+    { id: 'rotate', ic: '⟳', label: 'Drehen', for: ['image'] },
+    { id: 'size', ic: '⤡', label: 'Größe', for: ['image'] },
+    { id: 'compress', ic: '◎', label: 'Verkleinern', for: ['image'] },
+    { id: 'filter', ic: '◐', label: 'Filter', for: ['image'] },
+    { id: 'pdf', ic: '▤', label: 'Zu PDF', for: ['image'] },
+    { id: 'save', ic: '⇩', label: 'Speichern', for: ['image', 'csv', 'json', 'text'] },
+  ];
+
+  // ---------- wheel ----------
+  function arc(a0, a1, r0, r1) {
+    var p = function (r, a) { return (r * Math.cos(a)).toFixed(1) + ' ' + (r * Math.sin(a)).toFixed(1); };
+    return 'M' + p(r1, a0) + ' A' + r1 + ' ' + r1 + ' 0 0 1 ' + p(r1, a1) + ' L' + p(r0, a1) + ' A' + r0 + ' ' + r0 + ' 0 0 0 ' + p(r0, a0) + 'Z';
+  }
+  function drawWheel() {
+    var w = $('wheel'); w.textContent = '';
+    var n = TOOLS.length, gap = 0.025, k = items[cur] ? items[cur].kind : null;
+    TOOLS.forEach(function (t, i) {
+      var a0 = -Math.PI / 2 - Math.PI / n + (i * 2 * Math.PI) / n + gap, a1 = a0 + (2 * Math.PI) / n - 2 * gap, am = (a0 + a1) / 2, rm = 208;
+      var avail = !k || t.for.indexOf(k) >= 0;
+      var g = sv('g', { class: 'seg' + (open === t.id ? ' on' : '') + (avail ? '' : ' off'), tabindex: avail ? '0' : '-1', role: 'menuitem', 'aria-label': t.label });
+      g.appendChild(sv('path', { d: arc(a0, a1, 152, 258) }));
+      var ic = sv('text', { x: (rm * Math.cos(am)).toFixed(1), y: (rm * Math.sin(am) - 4).toFixed(1), class: 'ic' }); ic.textContent = t.ic;
+      var lb = sv('text', { x: (rm * Math.cos(am)).toFixed(1), y: (rm * Math.sin(am) + 18).toFixed(1) }); lb.textContent = (i + 1) + ' ' + t.label;
+      g.appendChild(ic); g.appendChild(lb);
+      g.addEventListener('click', function () { choose(t.id); });
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(t.id); } });
+      // Drop a file directly onto a segment: load it and open that tool.
+      g.addEventListener('dragover', function (e) { e.preventDefault(); g.classList.add('on'); });
+      g.addEventListener('dragleave', function () { g.classList.remove('on'); });
+      g.addEventListener('drop', function (e) { e.preventDefault(); e.stopPropagation(); addFiles(e.dataTransfer.files).then(function () { choose(t.id); }); });
+      w.appendChild(g);
+    });
+  }
+
+  // ---------- loading ----------
+  function readBytes(f) { return f.arrayBuffer().then(function (b) { return new Uint8Array(b); }); }
+  function loadImage(f) {
+    return new Promise(function (ok, bad) {
+      var url = URL.createObjectURL(f), im = new Image();
+      im.onload = function () { var c = document.createElement('canvas'); c.width = im.naturalWidth || 800; c.height = im.naturalHeight || 600; c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok(c); };
+      im.onerror = function () { URL.revokeObjectURL(url); bad(new Error('Bild konnte nicht gelesen werden')); };
+      im.src = url;
+    });
+  }
+  function addFiles(list) {
+    var arr = Array.prototype.slice.call(list || []), msgs = [];
+    return Promise.all(arr.map(function (f) {
+      if (f.size > MAX) { msgs.push(f.name + ': größer als 40 MB'); return null; }
+      var k = DR.kind(f);
+      if (k === 'heic') { msgs.push(f.name + ': HEIC kann dein Browser meist nicht lesen. Am iPhone: Einstellungen → Kamera → Formate → „Maximale Kompatibilität“.'); return null; }
+      if (k === 'other') { msgs.push(f.name + ': dieses Format wird noch nicht unterstützt'); return null; }
+      if (k === 'image') return loadImage(f).then(function (c) { return { name: f.name, kind: k, size: f.size, canvas: c, orig: c }; }, function () { msgs.push(f.name + ': nicht lesbar'); return null; });
+      return f.text().then(function (t) { return { name: f.name, kind: k, size: f.size, text: t }; });
+    })).then(function (res) {
+      var added = res.filter(Boolean);
+      if (added.length) { items = items.concat(added); cur = items.length - added.length; }
+      render(); if (msgs.length) note(msgs.join(' · '), true);
+    });
+  }
+
+  // ---------- render ----------
+  function render() {
+    drawWheel();
+    var hub = $('hub'), it = items[cur];
+    hub.textContent = '';
+    if (!it) { hub.appendChild(el('div', { class: 'big', text: '⇣' })); hub.appendChild(el('b', { text: 'Datei hier ablegen' })); hub.appendChild(el('small', { text: 'oder klicken · Bilder, CSV, JSON, Text · mehrere möglich' })); }
+    else {
+      if (it.canvas) { var p = document.createElement('canvas'), s = Math.min(1, 260 / Math.max(it.canvas.width, it.canvas.height)); p.width = Math.max(1, Math.round(it.canvas.width * s)); p.height = Math.max(1, Math.round(it.canvas.height * s)); p.getContext('2d').drawImage(it.canvas, 0, 0, p.width, p.height); hub.appendChild(p); }
+      else hub.appendChild(el('div', { class: 'big', text: it.kind === 'csv' ? '▦' : it.kind === 'json' ? '{ }' : '¶' }));
+      hub.appendChild(el('b', { text: it.name.length > 28 ? it.name.slice(0, 25) + '…' : it.name }));
+      hub.appendChild(el('small', { text: (it.canvas ? it.canvas.width + ' × ' + it.canvas.height + ' px · ' : '') + DR.size(it.size) + (items.length > 1 ? ' · ' + items.length + ' Dateien' : '') }));
+    }
+    var fl = $('files'); fl.textContent = '';
+    if (items.length > 1) items.forEach(function (x, i) { fl.appendChild(el('button', { class: 'chip' + (i === cur ? ' cur' : ''), text: x.name, on: { click: function () { cur = i; if (open && TOOLS.filter(function (t) { return t.id === open; })[0].for.indexOf(x.kind) < 0) open = null; render(); } } })); });
+    if (items.length) fl.appendChild(el('button', { class: 'chip', text: '✕ alle entfernen', on: { click: function () { items = []; cur = 0; open = null; render(); } } }));
+    panel();
+  }
+  var lastNote = null;
+  function note(t, warn) { lastNote = { t: t, warn: warn }; var m = $('panel').querySelector('.msg'); if (m) { m.textContent = t; m.className = 'msg' + (warn ? ' warn' : ''); } else { $('panel').hidden = false; $('panel').textContent = ''; $('panel').appendChild(el('div', { class: 'msg' + (warn ? ' warn' : ''), text: t })); } }
+
+  function choose(id) {
+    if (!items.length) { open = id; $('pick').click(); return; }
+    var t = TOOLS.filter(function (x) { return x.id === id; })[0];
+    if (t.for.indexOf(items[cur].kind) < 0) return;
+    open = open === id ? null : id; render();
+  }
+
+  // ---------- operations ----------
+  function targets(all) { return all ? items.filter(function (x) { return x.kind === items[cur].kind; }) : [items[cur]]; }
+  function apply(all, fn) { targets(all).forEach(function (it) { it.canvas = fn(it.canvas); }); render(); }
+  function transform(c, w, h, draw) { var o = document.createElement('canvas'); o.width = w; o.height = h; var x = o.getContext('2d'); x.imageSmoothingQuality = 'high'; draw(x); return o; }
+  function rotate(c, deg) { var sw = deg % 180 !== 0; return transform(c, sw ? c.height : c.width, sw ? c.width : c.height, function (x) { x.translate(x.canvas.width / 2, x.canvas.height / 2); x.rotate(deg * Math.PI / 180); x.drawImage(c, -c.width / 2, -c.height / 2); }); }
+  function flip(c, hor) { return transform(c, c.width, c.height, function (x) { x.translate(hor ? c.width : 0, hor ? 0 : c.height); x.scale(hor ? -1 : 1, hor ? 1 : -1); x.drawImage(c, 0, 0); }); }
+  function resize(c, w, h) { return transform(c, Math.max(1, Math.round(w)), Math.max(1, Math.round(h)), function (x) { x.drawImage(c, 0, 0, x.canvas.width, x.canvas.height); }); }
+  function crop(c, r) { return transform(c, r.w, r.h, function (x) { x.drawImage(c, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h); }); }
+  function filt(c, f) { return transform(c, c.width, c.height, function (x) { x.filter = f; x.drawImage(c, 0, 0); }); }
+  var MIME = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+  function encode(c, fmt, q) {
+    return new Promise(function (ok) {
+      var src = c;
+      if (fmt === 'jpg') src = transform(c, c.width, c.height, function (x) { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(c, 0, 0); });
+      src.toBlob(function (b) { ok(b); }, MIME[fmt], q);
+    });
+  }
+  function blobBytes(b) { return b.arrayBuffer().then(function (x) { return new Uint8Array(x); }); }
+
+  // Download; in sandboxed hosts (ChatGPT widget) a download may be blocked, so we also offer "open in new tab".
+  function download(name, data, type) {
+    var blob = data instanceof Blob ? data : new Blob([data], { type: type });
+    var url = URL.createObjectURL(blob), a = el('a', { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    note('Fertig: ' + name + ' (' + DR.size(blob.size) + '). Falls kein Download startet: Seite im eigenen Tab öffnen (' + location.origin + '/rad).');
+  }
+  function saveMany(outs) {
+    if (outs.length === 1) return download(outs[0].name, outs[0].data, outs[0].type);
+    download('datei-rad.zip', DR.zip(outs), 'application/zip');
+  }
+
+  var opt = { fmt: 'jpg', q: 0.85, all: false, ratio: 0, scale: 50, kb: 300 };
+  function exportImages(fmt, q) {
+    var taken = {};
+    return Promise.all(targets(opt.all).map(function (it) { return encode(it.canvas, fmt, q).then(blobBytes).then(function (b) { return { name: DR.outName(it.name, fmt, taken), data: b, type: MIME[fmt] }; }); }));
+  }
+  // Binary search on JPEG quality to hit a target size.
+  function toTarget(c, kb) {
+    var lo = 0.2, hi = 0.95, best = null, n = 0;
+    function step() {
+      var q = (lo + hi) / 2;
+      return encode(c, 'jpg', q).then(function (b) { if (b.size <= kb * 1024) { best = b; lo = q; } else hi = q; return ++n < 7 ? step() : best || encode(resize(c, c.width * 0.6, c.height * 0.6), 'jpg', 0.7); });
+    }
+    return step();
+  }
+  function makePdf() {
+    var list = items.filter(function (x) { return x.kind === 'image'; });
+    return Promise.all(list.map(function (it) { return encode(it.canvas, 'jpg', 0.9).then(blobBytes).then(function (b) { return { jpeg: b, w: it.canvas.width, h: it.canvas.height }; }); }))
+      .then(function (pages) { download(list.length > 1 ? 'bilder.pdf' : DR.outName(list[0].name, 'pdf'), DR.pdf(pages), 'application/pdf'); });
+  }
+
+  // ---------- panels ----------
+  function btn(t, fn, on) { return el('button', { class: 'b' + (on ? ' on' : ''), text: t, on: { click: fn } }); }
+  function go(t, fn) { return el('button', { class: 'b go', text: t, on: { click: fn } }); }
+  function allToggle(kind) {
+    var n = items.filter(function (x) { return x.kind === kind; }).length;
+    if (n < 2) return el('span');
+    return el('label', {}, [el('input', Object.assign({ type: 'checkbox', on: { change: function (e) { opt.all = e.target.checked; } } }, opt.all ? { checked: '' } : {})), ' auf alle ' + n + ' anwenden']);
+  }
+  function panel() {
+    var p = $('panel'), it = items[cur]; p.textContent = '';
+    if (!open || !it) { p.hidden = !lastNote; if (lastNote) p.appendChild(el('div', { class: 'msg' + (lastNote.warn ? ' warn' : ''), text: lastNote.t })); lastNote = null; return; }
+    p.hidden = false; lastNote = null;
+    var t = TOOLS.filter(function (x) { return x.id === open; })[0];
+    p.appendChild(el('h2', { text: t.ic + ' ' + t.label }));
+    var B = PANELS[open]; if (B) B(p, it);
+    p.appendChild(el('div', { class: 'msg' }));
+  }
+  var PANELS = {
+    format: function (p, it) {
+      if (it.kind === 'image') {
+        p.appendChild(el('div', { class: 'row' }, ['png', 'jpg', 'webp'].map(function (f) { return btn(f.toUpperCase(), function () { opt.fmt = f; panel(); }, opt.fmt === f); }).concat([btn('PDF', function () { choose('pdf'); })])));
+        p.appendChild(el('div', { class: 'row' }, [allToggle('image'), go('Umwandeln & speichern', function () { exportImages(opt.fmt, 0.9).then(saveMany); })]));
+        p.appendChild(el('div', { class: 'msg', text: 'PNG: verlustfrei, Transparenz bleibt. JPG: klein, für Fotos (Transparenz wird weiß). WebP: modern und klein.' }));
+      } else if (it.kind === 'csv') {
+        p.appendChild(el('div', { class: 'row' }, [go('CSV → JSON', function () { var d = DR.parseCsv(it.text); download(DR.outName(it.name, 'json'), JSON.stringify(d, null, 2), 'application/json'); })]));
+        p.appendChild(el('div', { class: 'msg', text: DR.parseCsv(it.text).length + ' Zeilen erkannt (Komma, Semikolon oder Tab).' }));
+      } else if (it.kind === 'json') {
+        p.appendChild(el('div', { class: 'row' }, [go('JSON → CSV (Excel)', function () {
+          try { var d = JSON.parse(it.text); if (!Array.isArray(d)) d = Array.isArray(d && d[Object.keys(d)[0]]) ? d[Object.keys(d)[0]] : [d]; download(DR.outName(it.name, 'csv'), '﻿' + DR.toCsv(d), 'text/csv'); }
+          catch (e) { note('Kein gültiges JSON.', true); }
+        }), btn('Hübsch formatieren', function () { try { download(it.name, JSON.stringify(JSON.parse(it.text), null, 2), 'application/json'); } catch (e) { note('Kein gültiges JSON.', true); } })]));
+      } else {
+        p.appendChild(el('div', { class: 'row' }, [go('Text → CSV-Zeilen', function () { download(DR.outName(it.name, 'csv'), '﻿' + DR.toCsv(it.text.split(/\r?\n/).filter(Boolean).map(function (l) { return { Zeile: l }; })), 'text/csv'); })]));
+      }
+    },
+    crop: function (p, it) {
+      var R = [['Frei', 0], ['1:1', 1], ['4:5', 0.8], ['16:9', 16 / 9], ['9:16', 9 / 16], ['3:2', 1.5]];
+      var c = it.canvas, rect = DR.cropFor(c.width, c.height, opt.ratio || null);
+      if (!opt.ratio) rect = { x: Math.round(c.width * 0.1), y: Math.round(c.height * 0.1), w: Math.round(c.width * 0.8), h: Math.round(c.height * 0.8) };
+      p.appendChild(el('div', { class: 'row' }, R.map(function (r) { return btn(r[0], function () { opt.ratio = r[1]; panel(); }, opt.ratio === r[1]); })));
+      var wrap = el('div', { class: 'crop' }), view = document.createElement('canvas'), s = Math.min(1, 640 / c.width, 360 / c.height);
+      view.width = Math.round(c.width * s); view.height = Math.round(c.height * s); view.getContext('2d').drawImage(c, 0, 0, view.width, view.height);
+      var box = el('div', { class: 'box' }), h = el('div', { class: 'h' }); box.appendChild(h); wrap.appendChild(view); wrap.appendChild(box);
+      function show() { var k = view.getBoundingClientRect().width / c.width || s; box.style.left = rect.x * k + 'px'; box.style.top = rect.y * k + 'px'; box.style.width = rect.w * k + 'px'; box.style.height = rect.h * k + 'px'; info.textContent = rect.w + ' × ' + rect.h + ' px'; }
+      var drag = null;
+      function down(e, mode) { e.preventDefault(); e.stopPropagation(); drag = { mode: mode, x: e.clientX, y: e.clientY, r: Object.assign({}, rect) }; window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); }
+      function move(e) {
+        if (!drag) return; var k = view.getBoundingClientRect().width / c.width, dx = (e.clientX - drag.x) / k, dy = (e.clientY - drag.y) / k, r = drag.r;
+        if (drag.mode === 'move') { rect.x = Math.round(Math.max(0, Math.min(c.width - r.w, r.x + dx))); rect.y = Math.round(Math.max(0, Math.min(c.height - r.h, r.y + dy))); }
+        else { var w = Math.max(10, Math.min(c.width - r.x, r.w + dx)), hh = opt.ratio ? w / opt.ratio : Math.max(10, Math.min(c.height - r.y, r.h + dy)); if (r.y + hh > c.height) { hh = c.height - r.y; if (opt.ratio) w = hh * opt.ratio; } rect.w = Math.round(w); rect.h = Math.round(hh); }
+        show();
+      }
+      function up() { drag = null; window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); }
+      box.addEventListener('pointerdown', function (e) { down(e, 'move'); }); h.addEventListener('pointerdown', function (e) { down(e, 'size'); });
+      var info = el('span', { class: 'msg' });
+      p.appendChild(wrap);
+      p.appendChild(el('div', { class: 'row' }, [info, allToggle('image'), go('Zuschneiden', function () {
+        var all = opt.all; targets(all).forEach(function (x) { var r = x === it ? rect : DR.cropFor(x.canvas.width, x.canvas.height, opt.ratio || rect.w / rect.h); x.canvas = crop(x.canvas, r); }); render();
+      })]));
+      requestAnimationFrame(show);
+    },
+    rotate: function (p) {
+      p.appendChild(el('div', { class: 'row' }, [
+        btn('↺ 90° links', function () { apply(opt.all, function (c) { return rotate(c, -90); }); }),
+        btn('↻ 90° rechts', function () { apply(opt.all, function (c) { return rotate(c, 90); }); }),
+        btn('180°', function () { apply(opt.all, function (c) { return rotate(c, 180); }); }),
+        btn('⇋ spiegeln', function () { apply(opt.all, function (c) { return flip(c, true); }); }),
+        btn('⇵ kippen', function () { apply(opt.all, function (c) { return flip(c, false); }); }),
+        allToggle('image')]));
+    },
+    size: function (p, it) {
+      var c = it.canvas, w = el('input', { type: 'number', min: '1', value: String(c.width) }), h = el('input', { type: 'number', min: '1', value: String(c.height) });
+      w.addEventListener('input', function () { h.value = String(Math.round(+w.value * c.height / c.width)); });
+      h.addEventListener('input', function () { w.value = String(Math.round(+h.value * c.width / c.height)); });
+      p.appendChild(el('div', { class: 'row' }, [25, 50, 75].map(function (pc) { return btn(pc + ' %', function () { apply(opt.all, function (x) { return resize(x, x.width * pc / 100, x.height * pc / 100); }); }); })
+        .concat([btn('1080 px breit', function () { apply(opt.all, function (x) { return resize(x, 1080, 1080 * x.height / x.width); }); }), btn('1920 px breit', function () { apply(opt.all, function (x) { return resize(x, 1920, 1920 * x.height / x.width); }); })])));
+      p.appendChild(el('div', { class: 'row' }, ['Breite ', w, ' Höhe ', h, ' px', allToggle('image'), go('Übernehmen', function () { var sx = +w.value / c.width; apply(opt.all, function (x) { return resize(x, x.width * sx, x.height * sx); }); })]));
+    },
+    compress: function (p) {
+      var out = el('span', { text: opt.kb + ' KB' }), r = el('input', { type: 'range', min: '50', max: '2000', step: '50', value: String(opt.kb) });
+      r.addEventListener('input', function () { opt.kb = +r.value; out.textContent = opt.kb + ' KB'; });
+      p.appendChild(el('div', { class: 'row' }, ['Zielgröße je Bild: ', r, out]));
+      p.appendChild(el('div', { class: 'row' }, [btn('E-Mail (300 KB)', function () { opt.kb = 300; panel(); }), btn('Web (150 KB)', function () { opt.kb = 150; panel(); }), btn('Formular-Upload (1 MB)', function () { opt.kb = 1000; panel(); })]));
+      p.appendChild(el('div', { class: 'row' }, [allToggle('image'), go('Verkleinern & speichern', function () {
+        var taken = {};
+        Promise.all(targets(opt.all).map(function (it) { return toTarget(it.canvas, opt.kb).then(blobBytes).then(function (b) { return { name: DR.outName(it.name, 'jpg', taken), data: b, type: 'image/jpeg' }; }); })).then(saveMany);
+      })]));
+    },
+    filter: function (p) {
+      var F = [['Schwarz-weiß', 'grayscale(1)'], ['Heller', 'brightness(1.15)'], ['Dunkler', 'brightness(.87)'], ['Mehr Kontrast', 'contrast(1.2)'], ['Kräftiger', 'saturate(1.3)'], ['Sepia', 'sepia(.8)'], ['Weichzeichnen', 'blur(2px)']];
+      p.appendChild(el('div', { class: 'row' }, F.map(function (f) { return btn(f[0], function () { apply(opt.all, function (c) { return filt(c, f[1]); }); }); }).concat([allToggle('image')])));
+      p.appendChild(el('div', { class: 'row' }, [btn('↶ Original wiederherstellen', function () { targets(opt.all).forEach(function (x) { x.canvas = x.orig; }); render(); })]));
+    },
+    pdf: function (p) {
+      var n = items.filter(function (x) { return x.kind === 'image'; }).length;
+      p.appendChild(el('div', { class: 'msg', text: n > 1 ? n + ' Bilder werden zu einem PDF (eine Seite je Bild, A4, Reihenfolge wie oben).' : 'Das Bild wird zu einer A4-Seite. Weitere Bilder ins Rad ziehen = mehrseitiges PDF.' }));
+      p.appendChild(el('div', { class: 'row' }, [n > 1 ? btn('← aktuelles Bild nach vorn', function () { var x = items.splice(cur, 1)[0]; items.unshift(x); cur = 0; render(); }) : el('span'), go('PDF erstellen', makePdf)]));
+    },
+    save: function (p, it) {
+      if (it.kind !== 'image') { p.appendChild(el('div', { class: 'row' }, [go('Speichern', function () { download(it.name, it.text, 'text/plain'); })])); return; }
+      var ext = /\.png$/i.test(it.name) ? 'png' : /\.webp$/i.test(it.name) ? 'webp' : 'jpg';
+      p.appendChild(el('div', { class: 'row' }, [allToggle('image'), go('Speichern als ' + ext.toUpperCase(), function () { exportImages(ext, 0.92).then(saveMany); }), btn('Kopieren', function () {
+        encode(it.canvas, 'png').then(function (b) { if (navigator.clipboard && window.ClipboardItem) navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]).then(function () { note('In die Zwischenablage kopiert.'); }, function () { note('Kopieren hier nicht erlaubt.', true); }); else note('Kopieren hier nicht möglich.', true); });
+      })]));
+      p.appendChild(el('div', { class: 'msg', text: 'Mehrere Dateien werden als ZIP gespeichert.' }));
+    },
+  };
+
+  // ---------- input ----------
+  var hub = $('hub');
+  hub.addEventListener('click', function () { $('pick').click(); });
+  hub.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('pick').click(); } });
+  $('pick').addEventListener('change', function (e) { var o = open; addFiles(e.target.files).then(function () { if (o) { open = null; choose(o); } }); e.target.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); hub.classList.add('drag'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); if (ev === 'drop' || e.target === document.documentElement) hub.classList.remove('drag'); }); });
+  document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+  document.addEventListener('paste', function (e) { var f = Array.prototype.filter.call((e.clipboardData || {}).files || [], function (x) { return /^image\//.test(x.type); }); if (f.length) addFiles(f); });
+  document.addEventListener('keydown', function (e) {
+    if (/INPUT|TEXTAREA/.test((e.target || {}).tagName || '')) return;
+    var n = +e.key; if (n >= 1 && n <= TOOLS.length) { choose(TOOLS[n - 1].id); return; }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && items.length) { items.splice(cur, 1); cur = Math.max(0, cur - 1); if (!items.length) open = null; render(); }
+    if (e.key === 'Escape') { open = null; render(); }
+  });
+  // ChatGPT: the tool may suggest a starting function (e.g. "pdf").
+  function hint() { var o = window.openai && window.openai.toolOutput; if (o && o.tool && !open) { open = o.tool; render(); } }
+  window.addEventListener('openai:set_globals', hint);
+  render(); hint();
+})();
+</script>
+</body>
+</html>

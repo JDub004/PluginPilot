@@ -10,6 +10,7 @@ import { LimitError } from './domain/adsready/limits.js';
 import { checkReadiness } from './domain/adsready/run.js';
 import { CheckInput } from './tools/adsReadiness.js';
 import { loadWidget } from './tools/widget.js';
+import { DATEIRAD_HTML } from './tools/dateiRad.js';
 
 const PLAYGROUND = loadWidget('playground.html');
 const ADS_CHECK = loadWidget('ads-check.html');
@@ -28,7 +29,7 @@ const TEMPLATE_CSV = ['../web/public/', '../../web/public/'].map((d) => new URL(
 import { createServer, type PluginKind } from './mcp/server.js';
 
 // One endpoint per plugin (each is listed separately in the plugin directory).
-const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt', '/surcharge/mcp': 'surcharge', '/city/mcp': 'city', '/ads/mcp': 'ads' };
+const ROUTES: Record<string, PluginKind> = { '/mcp': 'trauerfall', '/trauerfall/mcp': 'trauerfall', '/geburt/mcp': 'geburt', '/surcharge/mcp': 'surcharge', '/city/mcp': 'city', '/ads/mcp': 'ads', '/rad/mcp': 'rad' };
 
 
 function readJson(req: IncomingMessage, limit: number): Promise<unknown> {
@@ -133,6 +134,10 @@ export function createApp(env: Env): Server {
     }
     if (path === '/ads/demo/gesperrt' && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end('<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Demo: gesperrte Zielseite</title></head><body><h1>Demo-Zielseite</h1><p>Diese Seite ist in robots.txt absichtlich für OAI-AdsBot gesperrt, damit der ChatGPT-Ads-Check einen Blocker zeigen kann.</p></body></html>');
+      return;
+    }
+    if (path === '/rad' && req.method === 'GET') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src blob: data:; connect-src 'none'" }).end(DATEIRAD_HTML);
       return;
     }
     if (path === '/ads/check' && req.method === 'GET') {

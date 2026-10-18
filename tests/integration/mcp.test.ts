@@ -162,6 +162,22 @@ describe('MCP over HTTP', () => {
     await c.close();
   });
 
+  it('serves the Datei-Rad on /rad/mcp and /rad with core inlined and a strict CSP', async () => {
+    const c = new Client({ name: 'test', version: '0' });
+    await c.connect(new StreamableHTTPClientTransport(new URL('/rad/mcp', url)));
+    const { tools } = await c.listTools();
+    expect(tools.map((t) => t.name)).toEqual(['open_file_wheel']);
+    const r = await c.callTool({ name: 'open_file_wheel', arguments: { tool: 'pdf' } });
+    expect(r.structuredContent).toMatchObject({ tool: 'pdf' });
+    expect((await c.callTool({ name: 'open_file_wheel', arguments: { tool: 'hack' } })).isError).toBe(true);
+    const res = await c.readResource({ uri: 'ui://datei-rad/rad-v1.html' });
+    expect((res.contents[0] as { text: string }).text).toContain('var DR =');
+    await c.close();
+    const page = await fetch(new URL('/rad', url));
+    expect(page.headers.get('content-security-policy')).toContain("connect-src 'none'");
+    expect(await page.text()).not.toContain('/*CORE*/');
+  });
+
   it('serves the web version of the ads check and validates input', async () => {
     const page = await fetch(new URL('/ads/check', url));
     expect(page.status).toBe(200);

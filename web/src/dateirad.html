@@ -44,6 +44,15 @@ input[type=number]{width:90px;background:var(--bg);color:var(--fg);border:1px so
 .crop canvas{max-width:100%;max-height:360px;display:block}
 .crop .box{position:absolute;border:2px solid var(--acc);box-shadow:0 0 0 9999px rgba(0,0,0,.45);cursor:move}
 .crop .h{position:absolute;right:0;bottom:0;width:14px;height:14px;background:var(--acc);border-radius:3px;cursor:nwse-resize}
+.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:8px 0}
+.pg{position:relative;border:2px solid var(--line);border-radius:6px;padding:4px;background:var(--bg);cursor:pointer;text-align:center}
+.pg.sel{border-color:var(--acc)}
+.pg canvas{max-width:100%;max-height:110px;display:block;margin:0 auto}
+.pg span{font-size:11px;color:var(--mut)}
+.pg .pb{position:absolute;top:2px;width:22px;height:22px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;font-size:12px;padding:0}
+.pg .pb{right:2px}.pg .pb.del{right:26px}
+select{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px}
+.msg a{color:var(--acc2)}
 .foot{color:var(--mut);font-size:12px;text-align:center;margin-top:14px}
 kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
 </style>
@@ -55,7 +64,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
   <div class="stage">
     <svg class="wheel" id="wheel" viewBox="-260 -260 520 520" role="menu" aria-label="Funktionen"></svg>
     <div class="hub" id="hub" tabindex="0" role="button" aria-label="Datei ablegen oder auswählen">
-      <div class="big">⇣</div><b>Datei hier ablegen</b><small>oder klicken · Bilder, CSV, JSON, Text · mehrere möglich</small>
+      <div class="big">⇣</div><b>Datei hier ablegen</b><small>oder klicken · Bilder, PDF, CSV, JSON, Text · mehrere möglich</small>
     </div>
   </div>
   <input type="file" id="pick" multiple hidden>
@@ -63,6 +72,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
   <div class="panel" id="panel" hidden></div>
   <p class="foot">Tastatur: <kbd>1</kbd>–<kbd>8</kbd> Funktion · <kbd>Strg</kbd>+<kbd>V</kbd> Bild einfügen · <kbd>Entf</kbd> Datei entfernen</p>
 </main>
+<script>/*VENDOR*/</script>
 <script>/*CORE*/</script>
 <script>
 (function () {
@@ -77,15 +87,17 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
   var MAX = 40 * 1024 * 1024;
 
   var TOOLS = [
-    { id: 'format', ic: '⇄', label: 'Format', for: ['image', 'csv', 'json', 'text'] },
+    { id: 'fit', ic: '✓', label: 'Passend machen', for: ['image', 'pdf'] },
+    { id: 'format', ic: '⇄', label: 'Format', for: ['image', 'pdf', 'csv', 'json', 'text'] },
     { id: 'crop', ic: '⛶', label: 'Zuschneiden', for: ['image'] },
-    { id: 'rotate', ic: '⟳', label: 'Drehen', for: ['image'] },
+    { id: 'rotate', ic: '⟳', label: 'Drehen', for: ['image', 'pdf'] },
     { id: 'size', ic: '⤡', label: 'Größe', for: ['image'] },
-    { id: 'compress', ic: '◎', label: 'Verkleinern', for: ['image'] },
-    { id: 'filter', ic: '◐', label: 'Filter', for: ['image'] },
-    { id: 'pdf', ic: '▤', label: 'Zu PDF', for: ['image'] },
-    { id: 'save', ic: '⇩', label: 'Speichern', for: ['image', 'csv', 'json', 'text'] },
+    { id: 'compress', ic: '◎', label: 'Verkleinern', for: ['image', 'pdf'] },
+    { id: 'filter', ic: '◐', label: 'Scan & Filter', for: ['image'] },
+    { id: 'pdf', ic: '▤', label: 'PDF', for: ['image', 'pdf'] },
+    { id: 'save', ic: '⇩', label: 'Speichern', for: ['image', 'pdf', 'csv', 'json', 'text'], wheel: false },
   ];
+  var WHEEL = TOOLS.filter(function (t) { return t.wheel !== false; });
 
   // ---------- wheel ----------
   function arc(a0, a1, r0, r1) {
@@ -94,8 +106,8 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
   }
   function drawWheel() {
     var w = $('wheel'); w.textContent = '';
-    var n = TOOLS.length, gap = 0.025, k = items[cur] ? items[cur].kind : null;
-    TOOLS.forEach(function (t, i) {
+    var n = WHEEL.length, gap = 0.025, k = items[cur] ? items[cur].kind : null;
+    WHEEL.forEach(function (t, i) {
       var a0 = -Math.PI / 2 - Math.PI / n + (i * 2 * Math.PI) / n + gap, a1 = a0 + (2 * Math.PI) / n - 2 * gap, am = (a0 + a1) / 2, rm = 208;
       var avail = !k || t.for.indexOf(k) >= 0;
       var g = sv('g', { class: 'seg' + (open === t.id ? ' on' : '') + (avail ? '' : ' off'), tabindex: avail ? '0' : '-1', role: 'menuitem', 'aria-label': t.label });
@@ -130,11 +142,14 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
       var k = DR.kind(f);
       if (k === 'heic') { msgs.push(f.name + ': HEIC kann dein Browser meist nicht lesen. Am iPhone: Einstellungen → Kamera → Formate → „Maximale Kompatibilität“.'); return null; }
       if (k === 'other') { msgs.push(f.name + ': dieses Format wird noch nicht unterstützt'); return null; }
+      if (k === 'pdf') libs().catch(function () {});
+      if (k === 'pdf') return readBytes(f).then(function (b) { return { name: f.name, kind: k, size: f.size, bytes: b }; });
       if (k === 'image') return loadImage(f).then(function (c) { return { name: f.name, kind: k, size: f.size, canvas: c, orig: c }; }, function () { msgs.push(f.name + ': nicht lesbar'); return null; });
       return f.text().then(function (t) { return { name: f.name, kind: k, size: f.size, text: t }; });
     })).then(function (res) {
       var added = res.filter(Boolean);
       if (added.length) { items = items.concat(added); cur = items.length - added.length; }
+      added.forEach(function (x) { if (x.kind === 'pdf') pageCount(x).then(function () { drawHubOnly(); }, function () { note(x.name + ': PDF nicht lesbar (Passwort?).', true); }); });
       render(); if (msgs.length) note(msgs.join(' · '), true);
     });
   }
@@ -144,18 +159,24 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
     drawWheel();
     var hub = $('hub'), it = items[cur];
     hub.textContent = '';
-    if (!it) { hub.appendChild(el('div', { class: 'big', text: '⇣' })); hub.appendChild(el('b', { text: 'Datei hier ablegen' })); hub.appendChild(el('small', { text: 'oder klicken · Bilder, CSV, JSON, Text · mehrere möglich' })); }
+    if (!it) { hub.appendChild(el('div', { class: 'big', text: '⇣' })); hub.appendChild(el('b', { text: 'Datei hier ablegen' })); hub.appendChild(el('small', { text: 'oder klicken · Bilder, PDF, CSV, JSON, Text · mehrere möglich' })); }
     else {
       if (it.canvas) { var p = document.createElement('canvas'), s = Math.min(1, 260 / Math.max(it.canvas.width, it.canvas.height)); p.width = Math.max(1, Math.round(it.canvas.width * s)); p.height = Math.max(1, Math.round(it.canvas.height * s)); p.getContext('2d').drawImage(it.canvas, 0, 0, p.width, p.height); hub.appendChild(p); }
-      else hub.appendChild(el('div', { class: 'big', text: it.kind === 'csv' ? '▦' : it.kind === 'json' ? '{ }' : '¶' }));
+      else hub.appendChild(el('div', { class: 'big', text: it.kind === 'pdf' ? '▤' : it.kind === 'csv' ? '▦' : it.kind === 'json' ? '{ }' : '¶' }));
       hub.appendChild(el('b', { text: it.name.length > 28 ? it.name.slice(0, 25) + '…' : it.name }));
-      hub.appendChild(el('small', { text: (it.canvas ? it.canvas.width + ' × ' + it.canvas.height + ' px · ' : '') + DR.size(it.size) + (items.length > 1 ? ' · ' + items.length + ' Dateien' : '') }));
+      hub.appendChild(el('small', { text: (it.canvas ? it.canvas.width + ' × ' + it.canvas.height + ' px · ' : '') + (it.pages ? it.pages + ' Seiten · ' : '') + DR.size(it.bytes ? it.bytes.length : it.size) + (items.length > 1 ? ' · ' + items.length + ' Dateien' : '') }));
     }
     var fl = $('files'); fl.textContent = '';
-    if (items.length > 1) items.forEach(function (x, i) { fl.appendChild(el('button', { class: 'chip' + (i === cur ? ' cur' : ''), text: x.name, on: { click: function () { cur = i; if (open && TOOLS.filter(function (t) { return t.id === open; })[0].for.indexOf(x.kind) < 0) open = null; render(); } } })); });
+    if (items.length > 1) items.forEach(function (x, i) { fl.appendChild(el('button', { class: 'chip' + (i === cur ? ' cur' : ''), draggable: 'true', title: 'Ziehen zum Sortieren', text: (i + 1) + '. ' + x.name, on: {
+      dragstart: function (e) { e.dataTransfer.setData('text/x-rad', String(i)); },
+      dragover: function (e) { if (Array.prototype.indexOf.call(e.dataTransfer.types, 'text/x-rad') >= 0) { e.preventDefault(); e.stopPropagation(); } },
+      drop: function (e) { var from = e.dataTransfer.getData('text/x-rad'); if (from === '') return; e.preventDefault(); e.stopPropagation(); var x = items.splice(+from, 1)[0]; items.splice(i, 0, x); cur = i; render(); },
+      click: function () { cur = i; if (open && TOOLS.filter(function (t) { return t.id === open; })[0].for.indexOf(x.kind) < 0) open = null; render(); } } })); });
+    if (items.length) fl.appendChild(el('button', { class: 'chip cur', text: '⇩ Speichern', on: { click: function () { choose('save'); } } }));
     if (items.length) fl.appendChild(el('button', { class: 'chip', text: '✕ alle entfernen', on: { click: function () { items = []; cur = 0; open = null; render(); } } }));
     panel();
   }
+  function drawHubOnly() { var sm = $('hub').querySelector('small'), it = items[cur]; if (sm && it && it.kind === 'pdf') sm.textContent = (it.pages ? it.pages + ' Seiten · ' : '') + DR.size(it.bytes.length) + (items.length > 1 ? ' · ' + items.length + ' Dateien' : ''); }
   var lastNote = null;
   function note(t, warn) { lastNote = { t: t, warn: warn }; var m = $('panel').querySelector('.msg'); if (m) { m.textContent = t; m.className = 'msg' + (warn ? ' warn' : ''); } else { $('panel').hidden = false; $('panel').textContent = ''; $('panel').appendChild(el('div', { class: 'msg' + (warn ? ' warn' : ''), text: t })); } }
 
@@ -218,6 +239,90 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
       .then(function (pages) { download(list.length > 1 ? 'bilder.pdf' : DR.outName(list[0].name, 'pdf'), DR.pdf(pages), 'application/pdf'); });
   }
 
+  // ---------- PDF (pdf-lib to write, pdf.js to render; loaded on first use) ----------
+  var V = window.__VENDOR || '/rad/vendor/', libP = null;
+  function libs() {
+    if (!libP) {
+      libP = Promise.all([
+        new Promise(function (ok, bad) { if (window.PDFLib) return ok(); var s = document.createElement('script'); s.src = V + 'pdf-lib.min.js'; s.onload = ok; s.onerror = function () { bad(new Error('lib')); }; document.head.appendChild(s); }),
+        import(V + 'pdf.min.mjs').then(function (m) { m.GlobalWorkerOptions.workerSrc = V + 'pdf.worker.min.mjs'; return m; }),
+      ]).then(function (r) { return { L: window.PDFLib, J: r[1] }; });
+      libP.catch(function () { libP = null; });
+    }
+    return libP;
+  }
+  function busy(t) { note(t + ' …'); }
+  function failed(e) { note(e && e.message === 'lib' ? 'PDF-Werkzeuge konnten nicht geladen werden. Bitte die Web-Version öffnen (' + location.origin + '/rad).' : 'Das PDF konnte nicht verarbeitet werden (beschädigt oder mit Passwort geschützt?).', true); }
+  function pageCount(it) { return libs().then(function (x) { return x.L.PDFDocument.load(it.bytes, { ignoreEncryption: true }); }).then(function (d) { it.pages = d.getPageCount(); return it.pages; }); }
+  // Render every page of a PDF to canvases at the given dpi.
+  function renderPdf(bytes, dpi, onPage) {
+    return libs().then(function (x) { return x.J.getDocument({ data: bytes.slice(), isEvalSupported: false }).promise; }).then(function (doc) {
+      var out = [], i = 0;
+      function next() {
+        if (++i > doc.numPages) { doc.destroy(); return out; }
+        return doc.getPage(i).then(function (pg) {
+          var vp = pg.getViewport({ scale: dpi / 72 }), c = document.createElement('canvas');
+          c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+          var cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+          return pg.render({ canvasContext: cx, viewport: vp }).promise.then(function () { out.push(c); if (onPage) onPage(i, doc.numPages); return next(); });
+        });
+      }
+      return next();
+    });
+  }
+  function grey(c) { return filt(c, 'grayscale(1)'); }
+  function jpegPages(canvases, q, g) {
+    return Promise.all(canvases.map(function (c) { var s = g ? grey(c) : c; return encode(s, 'jpg', q).then(blobBytes).then(function (b) { return { jpeg: b, w: s.width, h: s.height }; }); }));
+  }
+  // Shrink by re-rendering pages as images, stepping down the ladder until it fits.
+  function shrinkPdf(bytes, maxBytes) {
+    if (bytes.length <= maxBytes) return Promise.resolve({ bytes: bytes, raster: false });
+    var k = 0, last = null;
+    function step() {
+      var L = DR.LADDER[k];
+      busy('Verkleinere PDF (Stufe ' + (k + 1) + '/' + DR.LADDER.length + ')');
+      return renderPdf(bytes, L[0]).then(function (cs) { return jpegPages(cs, L[1], L[2]); }).then(function (pages) {
+        last = DR.pdf(pages);
+        if (last.length <= maxBytes || ++k >= DR.LADDER.length) return { bytes: last, raster: true, fits: last.length <= maxBytes };
+        return step();
+      });
+    }
+    return step();
+  }
+  // Merge images and PDFs (in list order) into one PDF.
+  function merge(list) {
+    return libs().then(function (x) {
+      var L = x.L;
+      return L.PDFDocument.create().then(function (doc) {
+        var chain = Promise.resolve();
+        list.forEach(function (it) {
+          chain = chain.then(function () {
+            if (it.kind === 'pdf') return L.PDFDocument.load(it.bytes, { ignoreEncryption: true }).then(function (src) { return doc.copyPages(src, src.getPageIndices()); }).then(function (ps) { ps.forEach(function (p) { doc.addPage(p); }); });
+            return encode(it.canvas, 'jpg', 0.88).then(blobBytes).then(function (b) { return doc.embedJpg(b); }).then(function (img) {
+              var land = img.width > img.height, W = land ? 842 : 595, H = land ? 595 : 842, s = Math.min((W - 56) / img.width, (H - 56) / img.height);
+              doc.addPage([W, H]).drawImage(img, { x: (W - img.width * s) / 2, y: (H - img.height * s) / 2, width: img.width * s, height: img.height * s });
+            });
+          });
+        });
+        return chain.then(function () { return doc.save(); });
+      });
+    });
+  }
+  // Rebuild a PDF from a page plan [{i, rot}] (keeps text, only reorders/rotates/removes).
+  function rebuild(bytes, plan) {
+    return libs().then(function (x) {
+      var L = x.L;
+      return Promise.all([L.PDFDocument.load(bytes, { ignoreEncryption: true }), L.PDFDocument.create()]).then(function (d) {
+        return d[1].copyPages(d[0], plan.map(function (p) { return p.i; })).then(function (ps) {
+          ps.forEach(function (pg, j) { pg.setRotation(L.degrees(((pg.getRotation().angle + plan[j].rot) % 360 + 360) % 360)); d[1].addPage(pg); });
+          return d[1].save();
+        });
+      });
+    });
+  }
+  function pdfItems() { return items.filter(function (x) { return x.kind === 'pdf' || x.kind === 'image'; }); }
+  function setPdf(it, bytes) { it.bytes = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes); it.size = it.bytes.length; it.pages = null; pageCount(it).then(render, function () {}); }
+
   // ---------- panels ----------
   function btn(t, fn, on) { return el('button', { class: 'b' + (on ? ' on' : ''), text: t, on: { click: fn } }); }
   function go(t, fn) { return el('button', { class: 'b go', text: t, on: { click: fn } }); }
@@ -235,12 +340,22 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
     var B = PANELS[open]; if (B) B(p, it);
     p.appendChild(el('div', { class: 'msg' }));
   }
+  function pdfToImages(it, fmt) {
+    busy('Seiten werden gerendert');
+    renderPdf(it.bytes, 150, function (i, n) { busy('Seite ' + i + '/' + n); }).then(function (cs) {
+      var taken = {}, base = it.name.replace(/\.pdf$/i, '');
+      return Promise.all(cs.map(function (c, i) { return encode(c, fmt, 0.88).then(blobBytes).then(function (b) { return { name: DR.outName(base + '-seite-' + (i + 1), fmt, taken), data: b, type: MIME[fmt] }; }); }));
+    }).then(saveMany, failed);
+  }
   var PANELS = {
     format: function (p, it) {
       if (it.kind === 'image') {
         p.appendChild(el('div', { class: 'row' }, ['png', 'jpg', 'webp'].map(function (f) { return btn(f.toUpperCase(), function () { opt.fmt = f; panel(); }, opt.fmt === f); }).concat([btn('PDF', function () { choose('pdf'); })])));
         p.appendChild(el('div', { class: 'row' }, [allToggle('image'), go('Umwandeln & speichern', function () { exportImages(opt.fmt, 0.9).then(saveMany); })]));
         p.appendChild(el('div', { class: 'msg', text: 'PNG: verlustfrei, Transparenz bleibt. JPG: klein, für Fotos (Transparenz wird weiß). WebP: modern und klein.' }));
+      } else if (it.kind === 'pdf') {
+        p.appendChild(el('div', { class: 'row' }, [go('PDF → JPG-Bilder (ZIP)', function () { pdfToImages(it, 'jpg'); }), btn('PDF → PNG-Bilder', function () { pdfToImages(it, 'png'); })]));
+        p.appendChild(el('div', { class: 'msg', text: 'Eine Bilddatei je Seite, 150 dpi.' }));
       } else if (it.kind === 'csv') {
         p.appendChild(el('div', { class: 'row' }, [go('CSV → JSON', function () { var d = DR.parseCsv(it.text); download(DR.outName(it.name, 'json'), JSON.stringify(d, null, 2), 'application/json'); })]));
         p.appendChild(el('div', { class: 'msg', text: DR.parseCsv(it.text).length + ' Zeilen erkannt (Komma, Semikolon oder Tab).' }));
@@ -279,7 +394,12 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
       })]));
       requestAnimationFrame(show);
     },
-    rotate: function (p) {
+    rotate: function (p, it) {
+      if (it.kind === 'pdf') {
+        var rot = function (d) { busy('Drehe alle Seiten'); pageCount(it).then(function (n) { var plan = []; for (var i = 0; i < n; i++) plan.push({ i: i, rot: d }); return rebuild(it.bytes, plan); }).then(function (b) { setPdf(it, b); note('Alle Seiten gedreht. Einzelne Seiten: Funktion „PDF“.'); }, failed); };
+        p.appendChild(el('div', { class: 'row' }, [btn('↺ alle 90° links', function () { rot(-90); }), btn('↻ alle 90° rechts', function () { rot(90); }), btn('180°', function () { rot(180); })]));
+        return;
+      }
       p.appendChild(el('div', { class: 'row' }, [
         btn('↺ 90° links', function () { apply(opt.all, function (c) { return rotate(c, -90); }); }),
         btn('↻ 90° rechts', function () { apply(opt.all, function (c) { return rotate(c, 90); }); }),
@@ -296,7 +416,21 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
         .concat([btn('1080 px breit', function () { apply(opt.all, function (x) { return resize(x, 1080, 1080 * x.height / x.width); }); }), btn('1920 px breit', function () { apply(opt.all, function (x) { return resize(x, 1920, 1920 * x.height / x.width); }); })])));
       p.appendChild(el('div', { class: 'row' }, ['Breite ', w, ' Höhe ', h, ' px', allToggle('image'), go('Übernehmen', function () { var sx = +w.value / c.width; apply(opt.all, function (x) { return resize(x, x.width * sx, x.height * sx); }); })]));
     },
-    compress: function (p) {
+    compress: function (p, it) {
+      if (it.kind === 'pdf') {
+        var mb = el('input', { type: 'number', min: '0.2', step: '0.1', value: '5' });
+        p.appendChild(el('div', { class: 'row' }, ['Höchstens ', mb, ' MB', btn('2 MB', function () { mb.value = '2'; }), btn('5 MB', function () { mb.value = '5'; }), btn('10 MB', function () { mb.value = '10'; })]));
+        p.appendChild(el('div', { class: 'row' }, [go('PDF verkleinern & speichern', function () {
+          var max = +mb.value * 1048576;
+          shrinkPdf(it.bytes, max).then(function (r) {
+            if (!r.raster) return note('Passt schon: ' + DR.size(it.bytes.length) + '. Nichts zu tun.');
+            download(DR.outName(it.name.replace(/\.pdf$/i, '') + '-klein', 'pdf'), r.bytes, 'application/pdf');
+            if (!r.fits) note('Kleiner ging es nicht ohne Unlesbarkeit: ' + DR.size(r.bytes.length) + '. Tipp: Datei aufteilen (Funktion „PDF“).', true);
+          }, failed);
+        })]));
+        p.appendChild(el('div', { class: 'msg', text: 'Die Seiten werden als Bilder neu aufgebaut: Text ist danach nicht mehr markierbar oder durchsuchbar. Das Original bleibt unverändert.' }));
+        return;
+      }
       var out = el('span', { text: opt.kb + ' KB' }), r = el('input', { type: 'range', min: '50', max: '2000', step: '50', value: String(opt.kb) });
       r.addEventListener('input', function () { opt.kb = +r.value; out.textContent = opt.kb + ' KB'; });
       p.appendChild(el('div', { class: 'row' }, ['Zielgröße je Bild: ', r, out]));
@@ -307,16 +441,109 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
       })]));
     },
     filter: function (p) {
+      p.appendChild(el('div', { class: 'row' }, [go('📄 Scan-Look (Dokument-Foto)', function () { apply(opt.all, function (c) { var o = transform(c, c.width, c.height, function (x) { x.drawImage(c, 0, 0); }), x = o.getContext('2d'), d = x.getImageData(0, 0, o.width, o.height); DR.scanLook(d.data); x.putImageData(d, 0, 0); return o; }); }), allToggle('image')]));
+      p.appendChild(el('div', { class: 'msg', text: 'Macht Papier weiß und Schrift schwarz – ideal für Belege, Briefe und Formulare vom Handy.' }));
       var F = [['Schwarz-weiß', 'grayscale(1)'], ['Heller', 'brightness(1.15)'], ['Dunkler', 'brightness(.87)'], ['Mehr Kontrast', 'contrast(1.2)'], ['Kräftiger', 'saturate(1.3)'], ['Sepia', 'sepia(.8)'], ['Weichzeichnen', 'blur(2px)']];
       p.appendChild(el('div', { class: 'row' }, F.map(function (f) { return btn(f[0], function () { apply(opt.all, function (c) { return filt(c, f[1]); }); }); }).concat([allToggle('image')])));
       p.appendChild(el('div', { class: 'row' }, [btn('↶ Original wiederherstellen', function () { targets(opt.all).forEach(function (x) { x.canvas = x.orig; }); render(); })]));
     },
-    pdf: function (p) {
-      var n = items.filter(function (x) { return x.kind === 'image'; }).length;
-      p.appendChild(el('div', { class: 'msg', text: n > 1 ? n + ' Bilder werden zu einem PDF (eine Seite je Bild, A4, Reihenfolge wie oben).' : 'Das Bild wird zu einer A4-Seite. Weitere Bilder ins Rad ziehen = mehrseitiges PDF.' }));
-      p.appendChild(el('div', { class: 'row' }, [n > 1 ? btn('← aktuelles Bild nach vorn', function () { var x = items.splice(cur, 1)[0]; items.unshift(x); cur = 0; render(); }) : el('span'), go('PDF erstellen', makePdf)]));
+    pdf: function (p, it) {
+      var list = pdfItems(), n = list.length;
+      p.appendChild(el('div', { class: 'msg', text: n > 1 ? n + ' Dateien (Bilder und PDFs) werden in der Reihenfolge oben zu einem PDF. Reihenfolge: Dateinamen oben ziehen.' : 'Weitere Bilder oder PDFs ins Rad ziehen, um sie zusammenzufügen.' }));
+      p.appendChild(el('div', { class: 'row' }, [go(n > 1 ? 'Alle ' + n + ' zu einem PDF' : 'Als PDF speichern', function () {
+        busy('Füge zusammen');
+        merge(list).then(function (b) { download(n > 1 ? 'zusammen.pdf' : DR.outName(list[0].name, 'pdf'), b, 'application/pdf'); }, failed);
+      })]));
+      if (it.kind !== 'pdf') return;
+      // Page editor for the current PDF.
+      p.appendChild(el('h2', { text: 'Seiten von „' + it.name + '“' }));
+      var grid = el('div', { class: 'pages' }), plan = null, sel = {};
+      p.appendChild(grid);
+      var bar = el('div', { class: 'row' });
+      p.appendChild(bar);
+      busy('Lade Seiten');
+      renderPdf(it.bytes, 36).then(function (cs) {
+        plan = cs.map(function (c, i) { return { i: i, rot: 0, c: c }; });
+        it.pages = cs.length;
+        draw();
+        bar.appendChild(go('Änderungen übernehmen', function () { busy('Speichere Seiten'); rebuild(it.bytes, plan).then(function (b) { setPdf(it, b); open = 'pdf'; note('Übernommen: ' + plan.length + ' Seiten. Speichern über „⇩ Speichern“.'); }, failed); }));
+        bar.appendChild(btn('Markierte als neues PDF', function () { var pl = plan.filter(function (x) { return sel[x.i]; }); if (!pl.length) return note('Erst Seiten anklicken (markieren).', true); rebuild(it.bytes, pl).then(function (b) { download(DR.outName(it.name.replace(/\.pdf$/i, '') + '-auszug', 'pdf'), b, 'application/pdf'); }, failed); }));
+        bar.appendChild(btn('Jede Seite einzeln (ZIP)', function () { busy('Teile auf'); var taken = {}, base = it.name.replace(/\.pdf$/i, ''); Promise.all(plan.map(function (x, j) { return rebuild(it.bytes, [x]).then(function (b) { return { name: DR.outName(base + '-seite-' + (j + 1), 'pdf', taken), data: new Uint8Array(b), type: 'application/pdf' }; }); })).then(saveMany, failed); }));
+        note('Seite anklicken = markieren · ↻ drehen · ✕ entfernen · ziehen = sortieren');
+      }, failed);
+      function draw() {
+        grid.textContent = '';
+        plan.forEach(function (x, j) {
+          var t = document.createElement('canvas'), sw = x.rot % 180 !== 0;
+          t.width = sw ? x.c.height : x.c.width; t.height = sw ? x.c.width : x.c.height;
+          var cx = t.getContext('2d'); cx.translate(t.width / 2, t.height / 2); cx.rotate(x.rot * Math.PI / 180); cx.drawImage(x.c, -x.c.width / 2, -x.c.height / 2);
+          var card = el('div', { class: 'pg' + (sel[x.i] ? ' sel' : ''), draggable: 'true', on: {
+            click: function () { sel[x.i] = !sel[x.i]; draw(); },
+            dragstart: function (e) { e.dataTransfer.setData('text/x-page', String(j)); },
+            dragover: function (e) { e.preventDefault(); e.stopPropagation(); },
+            drop: function (e) { e.preventDefault(); e.stopPropagation(); var f = e.dataTransfer.getData('text/x-page'); if (f === '') return; var m = plan.splice(+f, 1)[0]; plan.splice(j, 0, m); draw(); },
+          } }, [t, el('span', { text: String(j + 1) })]);
+          card.appendChild(el('button', { class: 'pb', title: 'drehen', text: '↻', on: { click: function (e) { e.stopPropagation(); x.rot = (x.rot + 90) % 360; draw(); } } }));
+          card.appendChild(el('button', { class: 'pb del', title: 'entfernen', text: '✕', on: { click: function (e) { e.stopPropagation(); if (plan.length > 1) { plan.splice(j, 1); draw(); } } } }));
+          grid.appendChild(card);
+        });
+      }
+    },
+    fit: function (p) {
+      var list = pdfItems();
+      var pre = el('select', {}, [el('option', { value: '', text: 'Eigene Vorgabe' })].concat(DR.TARGETS.map(function (t) { return el('option', { value: t.id, text: t.name }); })));
+      var mb = el('input', { type: 'number', min: '0.1', step: '0.1', value: '5' });
+      var fmt = el('select', {}, [['pdf', 'PDF'], ['jpg', 'JPG'], ['any', 'egal']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+      var one = el('input', { type: 'checkbox', checked: '' }), nm = el('input', { type: 'text', placeholder: 'Dateiname (optional)', style: 'flex:1;min-width:140px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px' });
+      var info = el('div', { class: 'msg' }), ratio = 0;
+      pre.addEventListener('change', function () {
+        var t = DR.TARGETS.filter(function (x) { return x.id === pre.value; })[0]; info.textContent = ''; ratio = 0;
+        if (!t) return;
+        mb.value = String(t.maxMb); fmt.value = t.format; one.checked = !!t.single; ratio = t.ratio || 0;
+        info.appendChild(document.createTextNode(t.note + ' · Sicherheit: ' + t.confidence + ' · geprüft ' + t.checked.split('-').reverse().join('.') + ' · '));
+        info.appendChild(el('a', { href: t.source, target: '_blank', rel: 'noopener noreferrer', text: 'Quelle' }));
+        info.appendChild(document.createTextNode(' · Bitte die Hilfe des Portals prüfen, Grenzen ändern sich.'));
+      });
+      p.appendChild(el('div', { class: 'row' }, ['Für: ', pre]));
+      p.appendChild(el('div', { class: 'row' }, ['Höchstens ', mb, ' MB je Datei · Format ', fmt, el('label', {}, [one, ' alles in eine Datei'])]));
+      p.appendChild(info);
+      p.appendChild(el('div', { class: 'row' }, [nm, go('Passend machen (' + list.length + ' ' + (list.length === 1 ? 'Datei' : 'Dateien') + ')', function () {
+        var target = { maxMb: +mb.value || 5, format: fmt.value, single: one.checked }, max = target.maxMb * 1048576;
+        var plan = DR.fitPlan(list.map(function (x) { return { kind: x.kind, bytes: x.bytes ? x.bytes.length : x.size }; }), target);
+        var name = nm.value.trim();
+        if (plan.output === 'pdf') {
+          busy('Erstelle PDF');
+          (list.length === 1 && list[0].kind === 'pdf' ? Promise.resolve(list[0].bytes) : merge(list)).then(function (b) { return shrinkPdf(new Uint8Array(b), max); }).then(function (r) {
+            download(DR.outName(name || (list.length === 1 ? list[0].name : 'unterlagen'), 'pdf'), r.bytes, 'application/pdf');
+            note((r.bytes.length <= max ? '✓ Passt: ' : '⚠ Zu groß: ') + DR.size(r.bytes.length) + ' (Grenze ' + target.maxMb + ' MB)' + (r.raster ? ' · Seiten als Bilder neu aufgebaut.' : '') + (r.bytes.length <= max ? '' : ' Tipp: „alles in eine Datei“ abwählen oder aufteilen.'), r.bytes.length > max);
+          }, failed);
+          return;
+        }
+        busy('Bearbeite Dateien');
+        var taken = {}, outs = [];
+        var chain = Promise.resolve();
+        list.forEach(function (it, k) {
+          chain = chain.then(function () {
+            var base = name ? name + (list.length > 1 ? '-' + (k + 1) : '') : it.name;
+            if (it.kind === 'pdf') {
+              if (target.format !== 'jpg') return shrinkPdf(it.bytes, max).then(function (r) { outs.push({ name: DR.outName(base, 'pdf', taken), data: r.bytes, type: 'application/pdf' }); });
+              return renderPdf(it.bytes, 150).then(function (cs) { return Promise.all(cs.map(function (c, j) { return toTarget(c, target.maxMb * 1024).then(blobBytes).then(function (b) { outs.push({ name: DR.outName(base.replace(/\.pdf$/i, '') + '-seite-' + (j + 1), 'jpg', taken), data: b, type: 'image/jpeg' }); }); })); });
+            }
+            var c = ratio ? crop(it.canvas, DR.cropFor(it.canvas.width, it.canvas.height, ratio)) : it.canvas;
+            if (target.format === 'any' && it.size <= max && c === it.canvas) return encode(c, /\.png$/i.test(it.name) ? 'png' : 'jpg', 0.92).then(blobBytes).then(function (b) { outs.push({ name: DR.outName(base, /\.png$/i.test(it.name) ? 'png' : 'jpg', taken), data: b, type: 'image/jpeg' }); });
+            return toTarget(c, target.maxMb * 1024).then(blobBytes).then(function (b) { outs.push({ name: DR.outName(base, 'jpg', taken), data: b, type: 'image/jpeg' }); });
+          });
+        });
+        chain.then(function () {
+          saveMany(outs);
+          var big = outs.filter(function (o) { return o.data.length > max; }).length;
+          note((big ? '⚠ ' + big + ' Datei(en) noch über ' + target.maxMb + ' MB.' : '✓ Alle ' + outs.length + ' Dateien unter ' + target.maxMb + ' MB.') + (outs.length > 1 ? ' Gespeichert als ZIP.' : ''), !!big);
+        }, failed);
+      })]));
+      p.appendChild(el('div', { class: 'msg', text: 'Sagt das Portal z. B. „max. 5 MB, nur PDF“? Genau das hier eintragen. Nichts wird hochgeladen.' }));
     },
     save: function (p, it) {
+      if (it.kind === 'pdf') { p.appendChild(el('div', { class: 'row' }, [go('PDF speichern', function () { download(it.name, it.bytes, 'application/pdf'); })])); return; }
       if (it.kind !== 'image') { p.appendChild(el('div', { class: 'row' }, [go('Speichern', function () { download(it.name, it.text, 'text/plain'); })])); return; }
       var ext = /\.png$/i.test(it.name) ? 'png' : /\.webp$/i.test(it.name) ? 'webp' : 'jpg';
       p.appendChild(el('div', { class: 'row' }, [allToggle('image'), go('Speichern als ' + ext.toUpperCase(), function () { exportImages(ext, 0.92).then(saveMany); }), btn('Kopieren', function () {
@@ -337,7 +564,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
   document.addEventListener('paste', function (e) { var f = Array.prototype.filter.call((e.clipboardData || {}).files || [], function (x) { return /^image\//.test(x.type); }); if (f.length) addFiles(f); });
   document.addEventListener('keydown', function (e) {
     if (/INPUT|TEXTAREA/.test((e.target || {}).tagName || '')) return;
-    var n = +e.key; if (n >= 1 && n <= TOOLS.length) { choose(TOOLS[n - 1].id); return; }
+    var n = +e.key; if (n >= 1 && n <= WHEEL.length) { choose(WHEEL[n - 1].id); return; }
     if ((e.key === 'Delete' || e.key === 'Backspace') && items.length) { items.splice(cur, 1); cur = Math.max(0, cur - 1); if (!items.length) open = null; render(); }
     if (e.key === 'Escape') { open = null; render(); }
   });

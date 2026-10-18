@@ -92,12 +92,54 @@ var DR = (function () {
   function kind(file) {
     var t = (file.type || '').toLowerCase(), n = (file.name || '').toLowerCase();
     if (/^image\/(png|jpe?g|webp|gif|bmp|svg\+xml|avif)$/.test(t) || /\.(png|jpe?g|webp|gif|bmp|svg|avif)$/.test(n)) return 'image';
+    if (/\.pdf$/.test(n) || t === 'application/pdf') return 'pdf';
     if (/\.(heic|heif)$/.test(n) || /heic|heif/.test(t)) return 'heic';
     if (/\.csv$/.test(n) || t === 'text/csv') return 'csv';
     if (/\.json$/.test(n) || t === 'application/json') return 'json';
     if (/\.(txt|md)$/.test(n) || t === 'text/plain') return 'text';
     return 'other';
   }
+  /** Scan look: grey, paper to white, ink darker. Works in place on RGBA bytes. */
+  function scanLook(px) {
+    var hist = new Uint32Array(256), i, n = px.length / 4;
+    for (i = 0; i < px.length; i += 4) hist[(px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8]++;
+    // Paper = median brightness (paper dominates a document photo); ink = 2nd percentile.
+    var acc = 0, p2 = 0, med = 255;
+    for (i = 0; i < 256; i++) { acc += hist[i]; if (acc < n * 0.02) p2 = i; if (acc < n * 0.5) med = i + 1; }
+    var hi = Math.max(med, 40), lo = Math.min(p2, hi * 0.5);
+    for (i = 0; i < px.length; i += 4) {
+      var y = (px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8, v = (y - lo) / (hi - lo);
+      v = (v - 0.15) / 0.6; // pushes paper noise to white, keeps ink dark
+      v = v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v);
+      px[i] = px[i + 1] = px[i + 2] = Math.round(v * 255);
+    }
+    return px;
+  }
+  /** Settings tried in order when shrinking a PDF by re-rendering pages (dpi, jpeg quality, grey). */
+  var LADDER = [[150, 0.8, false], [120, 0.7, false], [110, 0.6, true], [90, 0.55, true], [72, 0.5, true]];
+  /**
+   * Plan for "Passend machen": which steps a target needs.
+   * items: [{kind:'image'|'pdf', bytes}], target: {maxMb, format:'pdf'|'jpg'|'any', single:boolean}
+   */
+  function fitPlan(items, target) {
+    var steps = [], total = items.reduce(function (a, x) { return a + x.bytes; }, 0), max = target.maxMb * 1024 * 1024;
+    var wantPdf = target.format === 'pdf' || (target.single && items.length > 1);
+    if (target.format === 'jpg' && items.some(function (x) { return x.kind === 'pdf'; })) steps.push('pdf_to_images');
+    if (wantPdf && (items.length > 1 || items[0].kind !== 'pdf')) steps.push('merge');
+    if (wantPdf ? total > max : items.some(function (x) { return x.bytes > max || (target.format === 'jpg' && x.kind === 'image'); })) steps.push('shrink');
+    if (target.format !== 'any' && !wantPdf && items.some(function (x) { return x.kind === 'image'; })) steps.push('convert');
+    return { steps: steps, output: wantPdf ? 'pdf' : target.format === 'any' ? 'same' : target.format, files: wantPdf ? 1 : items.length };
+  }
+  /**
+   * Upload targets. Only entries with a source; confidence says how sure we are.
+   * Never present these as guaranteed: limits change and differ by state/city.
+   */
+  var TARGETS = [
+    { id: 'elster', name: 'ELSTER Belegnachreichung', maxMb: 10, format: 'pdf', single: true, note: 'je Anhang 10,4 MB, gesamt 14 MB, max. 100 Seiten', source: 'https://forum.elster.de/anwenderforum/forum/elster-webanwendungen/mein-elster/412772-maximale-dateigrößen-bei-belegnachreichungen-viel-zu-klein', confidence: 'mittel', checked: '2026-10-18' },
+    { id: 'koeln-kita', name: 'Stadt Köln Elternbeiträge (Kita)', maxMb: 5, format: 'pdf', single: false, note: 'je Datei 5 MB, gesamt 15 MB; JPG, PNG, PDF', source: 'https://www.stadt-koeln.de/service/onlinedienste/elternbeitraege/index.html', confidence: 'hoch', checked: '2026-10-18' },
+    { id: 'ba', name: 'Arbeitsagentur Online-Portal', maxMb: 5, format: 'pdf', single: false, note: 'PDF, JPG, PNG, BMP; lieber mehrere kleine Dateien. Keine MB-Grenze veröffentlicht – 5 MB ist unsere vorsichtige Annahme.', source: 'https://www.arbeitsagentur.de/datei/anleitung-zum-hochladen-von-umfangreichen-dokumenten_ba146460.pdf', confidence: 'niedrig (Größe angenommen)', checked: '2026-10-18' },
+    { id: 'vinted', name: 'Vinted Artikelfotos', maxMb: 2, format: 'jpg', single: false, ratio: 0.8, note: '4:5 Hochformat (1080 × 1350), bis 20 Fotos; MB-Grenze nicht veröffentlicht', source: 'https://marszalstudio.pl/en/vinted-photos-tips/', confidence: 'niedrig (Ratgeber)', checked: '2026-10-18' },
+  ];
   function size(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1).replace('.', ',') + ' MB'; }
-  return { crc32: crc32, zip: zip, pdf: pdf, parseCsv: parseCsv, toCsv: toCsv, cropFor: cropFor, outName: outName, kind: kind, size: size };
+  return { crc32: crc32, zip: zip, pdf: pdf, parseCsv: parseCsv, toCsv: toCsv, cropFor: cropFor, outName: outName, kind: kind, size: size, scanLook: scanLook, LADDER: LADDER, fitPlan: fitPlan, TARGETS: TARGETS };
 })();

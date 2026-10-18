@@ -50,3 +50,43 @@ describe('Datei-Rad core', () => {
     expect(['x.PNG', 'y.heic', 'z.csv', 'q.exe'].map((n) => DR.kind({ name: n, type: '' }))).toEqual(['image', 'heic', 'csv', 'other']);
   });
 });
+
+type Core2 = Core & {
+  scanLook(p: Uint8ClampedArray): Uint8ClampedArray;
+  fitPlan(i: { kind: string; bytes: number }[], t: { maxMb: number; format: string; single: boolean }): { steps: string[]; output: string; files: number };
+  TARGETS: { name: string; source: string; confidence: string; checked: string }[];
+};
+const D2 = DR as Core2;
+const MB = 1024 * 1024;
+
+describe('Datei-Rad: PDFs and "Passend machen"', () => {
+  it('detects PDFs', () => expect(DR.kind({ name: 'x.PDF', type: '' })).toBe('pdf'));
+  it('plans merge + shrink for 23 photos into one PDF under 10 MB', () => {
+    const photos = Array.from({ length: 23 }, () => ({ kind: 'image', bytes: 3 * MB }));
+    expect(D2.fitPlan(photos, { maxMb: 10, format: 'pdf', single: true })).toEqual({ steps: ['merge', 'shrink'], output: 'pdf', files: 1 });
+  });
+  it('does nothing for a PDF that already fits', () => {
+    expect(D2.fitPlan([{ kind: 'pdf', bytes: 2 * MB }], { maxMb: 5, format: 'pdf', single: true }).steps).toEqual([]);
+  });
+  it('converts images separately when several files are allowed', () => {
+    expect(D2.fitPlan([{ kind: 'image', bytes: MB }, { kind: 'image', bytes: 8 * MB }], { maxMb: 2, format: 'jpg', single: false })).toEqual({ steps: ['shrink', 'convert'], output: 'jpg', files: 2 });
+  });
+  it('turns paper grey into white and ink into black', () => {
+    const px = new Uint8ClampedArray(4 * 100);
+    for (let i = 0; i < 100; i++) { const v = i < 10 ? 60 : 190; px.set([v, v, v, 255], i * 4); }
+    D2.scanLook(px);
+    expect(px[0]).toBe(0);
+    expect(px[50 * 4]).toBe(255);
+  });
+  it('regression: noisy grey paper becomes white, not speckled', () => {
+    const px = new Uint8ClampedArray(4 * 1000);
+    for (let i = 0; i < 1000; i++) { const v = i < 50 ? 50 : 180 + (i * 7919 % 41); px.set([v, v, v, 255], i * 4); }
+    D2.scanLook(px);
+    let white = 0; for (let i = 50; i < 1000; i++) if (px[i * 4]! >= 230) white++;
+    expect(white / 950).toBeGreaterThan(0.97);
+    expect(px[0]).toBe(0);
+  });
+  it('every upload target has a source, confidence and check date (no guarantees)', () => {
+    for (const t of D2.TARGETS) { expect(t.source).toMatch(/^https:\/\//); expect(t.confidence).toBeTruthy(); expect(t.checked).toMatch(/^\d{4}-\d\d-\d\d$/); }
+  });
+});

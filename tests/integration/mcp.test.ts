@@ -172,10 +172,17 @@ describe('MCP over HTTP', () => {
     expect((await c.callTool({ name: 'open_file_wheel', arguments: { tool: 'hack' } })).isError).toBe(true);
     const res = await c.readResource({ uri: 'ui://datei-rad/rad-v1.html' });
     expect((res.contents[0] as { text: string }).text).toContain('var DR =');
+    expect((res.contents[0] as { text: string }).text).toContain('window.__VENDOR="https://');
     await c.close();
     const page = await fetch(new URL('/rad', url));
     expect(page.headers.get('content-security-policy')).toContain("connect-src 'none'");
     expect(await page.text()).not.toContain('/*CORE*/');
+    expect(page.headers.get('content-security-policy')).toContain("script-src 'self'");
+    const lib = await fetch(new URL('/rad/vendor/pdf-lib.min.js', url));
+    expect(lib.status).toBe(200);
+    expect(lib.headers.get('content-type')).toContain('javascript');
+    expect((await fetch(new URL('/rad/vendor/../../package.json', url))).status).toBe(404);
+    expect((await fetch(new URL('/rad/vendor/secret.js', url))).status).toBe(404);
   });
 
   it('serves the web version of the ads check and validates input', async () => {

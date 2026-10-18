@@ -10,7 +10,7 @@ import { LimitError } from './domain/adsready/limits.js';
 import { checkReadiness } from './domain/adsready/run.js';
 import { CheckInput } from './tools/adsReadiness.js';
 import { loadWidget } from './tools/widget.js';
-import { DATEIRAD_HTML } from './tools/dateiRad.js';
+import { DATEIRAD_HTML, vendorFile } from './tools/dateiRad.js';
 
 const PLAYGROUND = loadWidget('playground.html');
 const ADS_CHECK = loadWidget('ads-check.html');
@@ -137,7 +137,13 @@ export function createApp(env: Env): Server {
       return;
     }
     if (path === '/rad' && req.method === 'GET') {
-      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src blob: data:; connect-src 'none'" }).end(DATEIRAD_HTML);
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'none'; script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; style-src 'unsafe-inline'; img-src blob: data:; connect-src 'none'; form-action 'none'; base-uri 'none'" }).end(DATEIRAD_HTML);
+      return;
+    }
+    if (path?.startsWith('/rad/vendor/') && req.method === 'GET') {
+      const js = vendorFile(path.slice('/rad/vendor/'.length));
+      if (!js) { res.writeHead(404).end(); return; }
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'public, max-age=604800', 'access-control-allow-origin': '*', 'x-content-type-options': 'nosniff' }).end(js);
       return;
     }
     if (path === '/ads/check' && req.method === 'GET') {
